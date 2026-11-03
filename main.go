@@ -331,6 +331,7 @@ options:
   -r, --root <dir>       root directory for run/config
   -u, --user <name>      username for run/config
   -P, --password <pass>  password for run/config (hashed; leaks into shell history)
+  -x, --max-size         max size for up file
   -q, --quiet            do not log every request
   -o, --cross-origin <origin>  exact Origin allowed to call the API (experimental)
   -c, --color            colored log output
