@@ -512,7 +512,7 @@
 						'<a class="tile-main" href="' + esc(entry.href) + '">' +
 						thumb +
 						'<span class="tile-name" title="' + esc(entry.name) + '">' + esc(entry.name) + "</span>" +
-						'<span class="tile-meta"><span>' + meta + "</span><span>" + formatRelative(entry.mod) + "</span></span>" +
+						'<span class="tile-meta"><span>' + meta + "</span><span>" + formatDate(entry.mod) + "</span></span>" +
 						"</a>" +
 						'<div class="tile-actions row-actions">' + actionsMarkup(entry) + "</div>" +
 						"</div>"
