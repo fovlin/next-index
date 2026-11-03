@@ -39,12 +39,12 @@ next-index [command] [options] [root]
         │
         ├── initProgram   opt.Parse, then cmdMap lookup
         ├── loadConfig    read ~/.next_index.json, fill defaults and credentials
-        ├── parseFlag     override config from -a/-p/-r/-u/-P
+        ├── parseFlag     override config from -i/-p/-r/-u/-P/-o
         └── run / config
                           run:    resolveRoot
                                   → save if new/credentials generated
                                   → newServer → listenAndServe
-                          config: save if flags/credentials generated, then print
+                          config: save if flags/credentials generated (silent)
 ```
 
 `main` dispatches through `cmdMap`. With no command, or when the first argument
@@ -52,12 +52,14 @@ is an existing directory or looks like a path (`/`, `./`, `~/`, contains a
 separator), it selects `run` with that directory. Anything else is an unknown
 command.
 
-`parseFlag` runs after `loadConfig` and writes any non-empty `-a`, `-p`, `-r`,
-`-u` or `-P` value directly into the config struct. `run` resolves the root from
-the positional argument, then the config, then the current directory. It saves
-the config on first use and when credentials had to be generated; after that its
-flags stay in memory. `config` saves flag overrides (and generated credentials),
-then prints the config; without flags it prints, creating the file if missing.
+`parseFlag` runs after `loadConfig` and writes any non-empty `-i`, `-p`, `-r`,
+`-u`, `-P` or `-o` value directly into the config struct, setting
+`configChanged`. `run` resolves the root from the positional argument, then the
+config, then the current directory. It saves the config on first use and when
+credentials had to be generated; otherwise its flags stay in memory. `config`
+saves flag overrides (and generated credentials) silently; without flags it
+prints a complete existing config, and a missing config or missing credentials
+are created or repaired silently.
 
 ## Server
 
@@ -76,6 +78,12 @@ GET  / and /<path>                            page or file
 `Server.wrap` sets the security headers, records the status for the access log
 and recovers panics. Every request is logged with `record.Info` unless `--quiet`
 is set.
+
+It also handles CORS. When the request `Origin` exactly matches
+`config.AllowOrigin`, it adds `Access-Control-Allow-Origin`,
+`Access-Control-Allow-Credentials` and `Vary: Origin`; an `OPTIONS` preflight
+returns `204` with `GET, POST, OPTIONS` and `Content-Type, Authorization`.
+Preflights from other origins get `403`.
 
 `handleRoot` resolves the URL path, checks that the real path is still inside
 the root, then either renders a listing (directories, with a redirect to add the
@@ -103,9 +111,15 @@ the config, so a crash cannot leave a truncated file.
 `loadConfig` reads the file (or `defaultConfig()` when missing), fills missing
 defaults, then calls `initUser`: it fills an empty username with `admin` (or the
 `-u` value) and generates a password only when the config has none and `-P` was
-not given. It never writes. `run` and `config` save when the file is new, when
-credentials were generated, or when flags changed the config; later `run` flags
+not given. It never writes. `run` saves when the file is new or credentials were
+generated; `config` also saves when `configChanged` is set. Later `run` flags
 stay in memory.
+
+`needSaveConfig` tracks a new file, filled defaults or generated credentials;
+`configChanged` tracks flag overrides. `run` saves only the former, while
+`config` saves either. `-o/--cross-origin` stores an exact `Origin` in
+`allow_origin`; the same value is used by `sameOrigin`, the CORS headers and the
+preflight response.
 
 `max_upload_mb` is applied with `http.MaxBytesReader` before
 `ParseMultipartForm`; `0` disables the limit. Each uploaded file is streamed into
@@ -124,7 +138,10 @@ place, so a failed upload never leaves a partial file.
 - `loginLimiter` blocks one address for five minutes after five failures.
 - Write endpoints accept the session cookie or HTTP Basic auth. `checkWrite`
   also enforces same-origin `Origin` headers, so a page on another site cannot
-  reuse a logged-in browser session.
+  reuse a logged-in browser session unless its exact Origin is listed in
+  `allow_origin`.
+- Cross-site cookies stay `SameSite=Lax`; cross-origin writes need Basic auth or
+  a deliberate cookie-policy change.
 
 ## Frontend
 
@@ -145,14 +162,24 @@ deep links deterministic.
 
 ## Tests
 
-There is no automated test suite in the tree at the moment. The previous suite
-is kept in `.tests-backup.tar.gz`; extract it with
-`tar -xzf .tests-backup.tar.gz` when you want `go test ./...` back.
+There is no automated test suite in the tree at the moment; `go test ./...`
+reports `[no test files]`. Until tests are restored, use a temporary `HOME` and
+a scratch root for manual checks:
+
+- fresh `config` / `run`, generated password, second `run` with `-p`;
+- login, upload, mkdir, rename and delete;
+- path traversal and symlink-escape attempts;
+- CORS: allowed Origin preflight/login, denied Origin `403`.
 
 ## Release
 
-1. Update `CHANGELOG.md` and the version constant in `main.go`.
-2. Run `gofmt -l .` and `go vet ./...`.
-3. Smoke-test `run`, `config` (with and without flags) and a fresh first run
-   with a temporary `HOME`.
-4. Run `./build.sh` and attach the archives under `build/` to the release.
+1. Pick one version string and use it everywhere: `main.go`, the
+   `CHANGELOG.md` heading and the git tag (`v0.0.2-alpha` for a pre-release or
+   `v0.0.2` for a stable release).
+2. Run `gofmt -l .`, `go vet ./...` and `go test ./...` (currently no test
+   files), then do the manual smoke test above.
+3. Run `./build.sh` (set `GOCACHE` to a writable directory when the default
+   cache is read-only), verify one archive with `--version` and `help`, and
+   attach all six `build/*.tar.gz` files.
+4. Commit first, then create the tag; do not attach the stale root
+   `./next-index` binary.

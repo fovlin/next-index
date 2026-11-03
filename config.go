@@ -35,7 +35,7 @@ type Config struct {
 	Password    string    `json:"password"`
 	TLS         TLSConfig `json:"tls"`
 	MaxUploadMB int64     `json:"max_upload_mb"`
-	CrossOrigin bool      `json:"cross_origin"`
+	AllowOrigin string    `json:"allow_origin"`
 }
 
 var (
@@ -87,38 +87,42 @@ func loadConfig() error {
 func (config *Config) normalize() {
 	if config.Root == "" {
 		config.Root = defaultRoot
+		needSaveConfig = true
 	}
 
 	if config.Addr == "" {
 		config.Addr = defaultAddr
+		needSaveConfig = true
 	}
 
 	if config.Port <= 0 || config.Port > 65535 {
 		config.Port = defaultPort
+		needSaveConfig = true
 	}
 
 	if config.Title == "" {
 		config.Title = defaultTitle
+		needSaveConfig = true
 	}
 
 	if config.MaxUploadMB < 0 {
 		config.MaxUploadMB = 0
+		needSaveConfig = true
 	}
 
 	if config.MaxUploadMB > 1<<20 {
 		config.MaxUploadMB = 1 << 20
+		needSaveConfig = true
 	}
 }
 
 func initUser() error {
-
 	if config.Username == "" {
 		if userFlag != "" {
 			config.Username = userFlag
 		} else {
 			config.Username = defaultUsername
 		}
-
 		needSaveConfig = true
 	}
 

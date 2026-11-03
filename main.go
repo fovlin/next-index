@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -21,15 +22,16 @@ var (
 	cmd        string
 	subCmdArgs []string
 
-	addrFlag     string
-	portFlag     string
-	rootFlag     string
-	userFlag     string
-	passwordFlag string
-	quietFlag    bool
+	addrFlag        string
+	portFlag        string
+	rootFlag        string
+	userFlag        string
+	passwordFlag    string
+	allowOriginFlag string
+	quietFlag       bool
 
-	needSaveConfig    bool
-	enbaleCrossOrigin bool
+	needSaveConfig bool
+	configChanged  bool
 )
 
 type CmdFunc struct {
@@ -76,7 +78,8 @@ func newCmdFunction(loadConfig bool, function func() error) CmdFunc {
 func initProgram() error {
 	cmdMap = map[string]CmdFunc{
 		"run":    newCmdFunction(true, run),
-		"config": newCmdFunction(true, manageConfig),
+		"config": newCmdFunction(true, addConfig),
+		"unset":  newCmdFunction(true, unsetConfig),
 		"about":  newCmdFunction(false, about),
 		"help":   newCmdFunction(false, help),
 	}
@@ -86,10 +89,10 @@ func initProgram() error {
 	opt.StringVar(&rootFlag, "r", "root", "")
 	opt.StringVar(&userFlag, "u", "user", "")
 	opt.StringVar(&passwordFlag, "P", "password", "")
+	opt.StringVar(&allowOriginFlag, "o", "cross-origin", "")
 
 	opt.BoolSwitch(&quietFlag, "q", "quiet")
 	opt.BoolSwitch(&record.EnableColor, "c", "color")
-	opt.BoolSwitch(&enbaleCrossOrigin, "d", "cross-origin")
 	opt.BoolSwitch(&record.EnableTimestamp, "t", "time")
 
 	opt.BoolFunc("h", "help", func() {
@@ -145,7 +148,7 @@ func parseFlag() error {
 
 	if addrFlag != "" {
 		config.Addr = addrFlag
-		needSaveConfig = true
+		configChanged = true
 	}
 
 	if portFlag != "" {
@@ -154,7 +157,7 @@ func parseFlag() error {
 			return fmt.Errorf("invalid port: %v", portFlag)
 		}
 
-		needSaveConfig = true
+		configChanged = true
 		config.Port = port
 	}
 
@@ -176,12 +179,12 @@ func parseFlag() error {
 		}
 
 		config.Root = absolute
-		needSaveConfig = true
+		configChanged = true
 	}
 
 	if userFlag != "" {
 		config.Username = userFlag
-		needSaveConfig = true
+		configChanged = true
 	}
 
 	if passwordFlag != "" {
@@ -190,19 +193,45 @@ func parseFlag() error {
 		}
 
 		config.Password = hashPassword(passwordFlag)
-		needSaveConfig = true
+		configChanged = true
 	}
 
-	if enbaleCrossOrigin != false {
-		config.CrossOrigin = true
-		needSaveConfig = true
+	if allowOriginFlag != "" {
+		origin, err := normalizeOrigin(allowOriginFlag)
+		if err != nil {
+			return fmt.Errorf("cross-origin: %w", err)
+		}
+
+		config.AllowOrigin = origin
+		configChanged = true
 	}
 
 	return nil
 }
 
-func manageConfig() error {
-	if needSaveConfig {
+func normalizeOrigin(value string) (string, error) {
+	parsed, err := url.Parse(value)
+	if err != nil {
+		return "", err
+	}
+
+	if parsed.Scheme != "http" && parsed.Scheme != "https" {
+		return "", fmt.Errorf("must start with http:// or https://")
+	}
+
+	if parsed.Host == "" {
+		return "", fmt.Errorf("missing host")
+	}
+
+	if parsed.Path != "" && parsed.Path != "/" {
+		return "", fmt.Errorf("must not contain a path")
+	}
+
+	return strings.ToLower(parsed.Scheme) + "://" + strings.ToLower(parsed.Host), nil
+}
+
+func addConfig() error {
+	if configChanged || needSaveConfig {
 		if err := saveConfig(); err != nil {
 			return err
 		}
@@ -217,6 +246,38 @@ func manageConfig() error {
 
 	record.Print(string(data))
 	record.Println()
+
+	return nil
+}
+
+func unsetConfig() error {
+	if len(subCmdArgs) < 1 {
+		record.Error("usage: next-index unset <value>")
+	}
+
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return err
+	}
+
+	var newConfig map[string]any
+	err = json.Unmarshal(data, &newConfig)
+	if err != nil {
+		return fmt.Errorf("unmarshal json data:, %w", err)
+	}
+
+	if _, ok := newConfig[subCmdArgs[0]]; !ok {
+		return fmt.Errorf("value not found")
+	}
+
+	delete(newConfig, subCmdArgs[0])
+
+	data, err = json.MarshalIndent(newConfig, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal json data:, %w", err)
+	}
+
+	os.WriteFile(configPath, data, 0600)
 
 	return nil
 }
@@ -260,7 +321,7 @@ options:
   -u, --user <name>      username for run/config
   -P, --password <pass>  password for run/config (hashed; leaks into shell history)
   -q, --quiet            do not log every request
-  -d, --cross-origin     allow different origin use api
+  -o, --cross-origin <origin>  exact Origin allowed to call the API (experimental)
   -c, --color            colored log output
   -t, --time             timestamp every log line
       --version          print the version
@@ -268,16 +329,18 @@ options:
 
 examples:
   next-index ~/Downloads
-  next-index run -p 9000 -a 127.0.0.1 ./public
-  next-index config -p 9000 -a 127.0.0.1
+  next-index run -p 9000 -i 127.0.0.1 ./public
+  next-index config -p 9000 -i 127.0.0.1
   next-index config -u admin -P "new password"
   next-index config -r ~/Downloads
+  next-index config -o http://localhost:3000
   next-index config
 
 config:
   ~/.next_index.json stores the root, address, port, credentials and limits.
   The password is stored as a SHA-256 hash.
-  config without flags prints the file; with flags it saves them and prints the result.
+  config without flags prints a complete file; missing fields are saved silently.
+  with flags it saves them silently.
   config and run create the file on first use; later run flags are not saved.
 
 browsing is public; the username and password are only required to upload
