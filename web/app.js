@@ -38,7 +38,7 @@
 		moon: '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z"/>',
 		sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
 		upload: '<path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
-		download: '<path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/>',
+		// download: '<path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/>',
 		folder: '<path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h4l2 2.5h9A1.5 1.5 0 0 1 21 11v7.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5v-10Z"/>',
 		folderOpen: '<path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h4l2 2.5h9A1.5 1.5 0 0 1 21 11v7.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5v-10Z"/><path d="M8 14h8"/>',
 		folderPlus: '<path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h4l2 2.5h9A1.5 1.5 0 0 1 21 11v7.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5v-10Z"/><path d="M12 12.5v5M9.5 15h5"/>',
@@ -487,10 +487,6 @@
 		}
 
 		var parts = [];
-
-		if (entry.kind === "file") {
-			parts.push('<a class="row-action" href="' + esc(entry.href) + '" download title="Download" aria-label="Download">' + icon("download") + "</a>");
-		}
 
 		parts.push('<button class="row-action" data-action="rename" data-name="' + esc(entry.name) + '" title="Rename" aria-label="Rename">' + icon("pencil") + "</button>");
 		parts.push('<button class="row-action danger" data-action="delete" data-name="' + esc(entry.name) + '" title="Delete" aria-label="Delete">' + icon("trash") + "</button>");
