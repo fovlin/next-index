@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>{{.Title}}</title>
+<link rel="icon" href="/_next/favicon.ico?v=5" sizes="any">
+<link rel="icon" href="/_next/favicon.svg?v=5" type="image/svg+xml">
+<link rel="stylesheet" href="/_next/style.css">
+</head>
+<body>
+<div class="app">
+	<header class="topbar" id="topbar"></header>
+	<main class="main" id="main">
+		<noscript>{{.NoScript}}</noscript>
+	</main>
+	<footer class="footer" id="footer"></footer>
+</div>
+<div class="toast-root" id="toast-root" aria-live="polite"></div>
+<div id="modal-root"></div>
+<script type="application/json" id="next-index-bootstrap">{{.Bootstrap}}</script>
+<script src="/_next/app.js" defer></script>
+</body>
+</html>

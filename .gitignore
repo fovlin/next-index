@@ -1,0 +1,11 @@
+/next-index
+/next-index.exe
+/build/
+/.bin/
+/.gocache/
+/.tmp/
+/.testroot/
+/.testhome*
+/.refs/
+/.recovered-akaya*
+/.tests-backup*

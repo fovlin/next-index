@@ -1,0 +1,193 @@
+package main
+
+import (
+	"bytes"
+	"embed"
+	"encoding/json"
+	"fmt"
+	"html"
+	"html/template"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+)
+
+//go:embed web
+var webAssets embed.FS
+
+const contentSecurityPolicy = "default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+
+type pageData struct {
+	Title     string
+	Bootstrap template.JS
+	NoScript  template.HTML
+}
+
+type bootstrapData struct {
+	Title         string  `json:"title"`
+	Site          string  `json:"site"`
+	Path          string  `json:"path"`
+	Parent        string  `json:"parent"`
+	Crumbs        []Crumb `json:"crumbs"`
+	Entries       []Entry `json:"entries"`
+	Authenticated bool    `json:"authenticated"`
+	Username      string  `json:"username,omitempty"`
+	Writable      bool    `json:"writable"`
+	Root          string  `json:"root,omitempty"`
+	Version       string  `json:"version"`
+	MaxUploadMB   int64   `json:"maxUploadMB"`
+	Now           int64   `json:"now"`
+}
+
+func (server *Server) renderListing(w http.ResponseWriter, r *http.Request, list *listing) {
+	authenticated := server.authenticated(r)
+
+	title := server.config.Title
+	if list.Path != "/" {
+		title += " · " + strings.Trim(list.Path, "/")
+	}
+
+	data := bootstrapData{
+		Title:         title,
+		Site:          server.config.Title,
+		Path:          list.Path,
+		Parent:        list.Parent,
+		Crumbs:        list.Crumbs,
+		Entries:       list.Entries,
+		Authenticated: authenticated,
+		Writable:      server.config.writable(),
+		Version:       version,
+		MaxUploadMB:   server.config.MaxUploadMB,
+		Now:           time.Now().Unix(),
+	}
+
+	if authenticated {
+		data.Username = server.config.Username
+		data.Root = server.root
+	}
+
+	bootstrap, err := json.Marshal(data)
+	if err != nil {
+		server.fail(w, r, http.StatusInternalServerError, "could not render this directory")
+		return
+	}
+
+	page := pageData{
+		Title:     title,
+		Bootstrap: template.JS(bootstrap),
+		NoScript:  template.HTML(buildNoScript(list, title)),
+	}
+
+	var buffer bytes.Buffer
+	if err := server.template.ExecuteTemplate(&buffer, "index.html", page); err != nil {
+		server.fail(w, r, http.StatusInternalServerError, "could not render this directory")
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Content-Security-Policy", contentSecurityPolicy)
+	w.WriteHeader(http.StatusOK)
+	w.Write(buffer.Bytes())
+}
+
+func buildNoScript(list *listing, title string) string {
+	var builder strings.Builder
+
+	builder.WriteString(`<div class="noscript"><p class="noscript-hint">JavaScript is disabled, showing a plain listing.</p><h1>`)
+	builder.WriteString(html.EscapeString(title))
+	builder.WriteString(`</h1><ul>`)
+
+	if list.Parent != "" {
+		builder.WriteString(`<li><a href="`)
+		builder.WriteString(html.EscapeString(list.Parent))
+		builder.WriteString(`">../</a></li>`)
+	}
+
+	for _, entry := range list.Entries {
+		name := entry.Name
+		if entry.Kind == "dir" {
+			name += "/"
+		}
+
+		builder.WriteString(`<li><a href="`)
+		builder.WriteString(html.EscapeString(entry.Href))
+		builder.WriteString(`">`)
+		builder.WriteString(html.EscapeString(name))
+		builder.WriteString(`</a>`)
+
+		if entry.Kind == "file" {
+			builder.WriteString(` <span>`)
+			builder.WriteString(humanSize(entry.Size))
+			builder.WriteString(`</span>`)
+		}
+
+		builder.WriteString(`</li>`)
+	}
+
+	builder.WriteString(`</ul></div>`)
+
+	return builder.String()
+}
+
+func humanSize(size int64) string {
+	const unit = 1024
+
+	if size < unit {
+		return fmt.Sprintf("%d B", size)
+	}
+
+	divisor := int64(unit)
+	exponent := 0
+
+	for value := size / unit; value >= unit; value /= unit {
+		divisor *= unit
+		exponent++
+	}
+
+	return fmt.Sprintf("%.1f %cB", float64(size)/float64(divisor), "KMGTPE"[exponent])
+}
+
+const errorPageTemplate = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{status}} · NEXT_INDEX</title>
+<link rel="icon" href="/_next/favicon.ico?v=5">
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#121212;color:#e8e8e8;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI","Noto Sans SC",sans-serif;padding:24px}
+.card{max-width:420px;width:100%;text-align:center;background:#171717;border:1px solid #2c2c2c;border-radius:8px;padding:40px 32px}
+.code{color:#6cb0e0;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:44px;font-weight:600}
+h1{font-size:16px;margin:6px 0 8px;font-weight:600}
+p{color:#a0a0a0;font-size:13px;line-height:1.6;margin:0 0 22px}
+a{display:inline-block;padding:8px 14px;border-radius:6px;background:#004f8f;color:#fff;text-decoration:none;font-size:13px}
+a:hover{background:#003f73}
+</style>
+</head>
+<body>
+<main class="card">
+<div class="code">{{status}}</div>
+<h1>{{title}}</h1>
+<p>{{message}}</p>
+<a href="/">Back to root</a>
+</main>
+</body>
+</html>
+`
+
+func writeErrorPage(w http.ResponseWriter, status int, message string) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	w.WriteHeader(status)
+
+	replacer := strings.NewReplacer(
+		"{{status}}", strconv.Itoa(status),
+		"{{title}}", html.EscapeString(http.StatusText(status)),
+		"{{message}}", html.EscapeString(message),
+	)
+
+	fmt.Fprint(w, replacer.Replace(errorPageTemplate))
+}

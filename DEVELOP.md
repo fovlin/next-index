@@ -1,0 +1,145 @@
+# Develop docs
+
+## Contributing policy
+
+- AI-generated code is accepted, but generating the whole project with AI is not allowed.
+
+## Layout
+
+```text
+next-index
+├── main.go            entry point, flags, command table, passwd/about/help
+├── serve.go           serve command: root resolution, first-run credentials, listen
+├── config.go          ~/.next_index.json: defaults, load, atomic save
+├── server.go          Server type, routes, middleware, graceful shutdown
+├── handler.go         page and file handler, error responses
+├── listing.go         path containment, directory entries, upload saving, names
+├── api.go             JSON API, sessions, credentials, write checks
+├── view.go            page template, bootstrap JSON, embedded assets, error page
+├── web/               index.html, style.css, app.js, favicon.svg
+├── opt/               vendored option parser, module acovia.net/opt
+├── record/            vendored logging helpers, module acovia.net/record
+├── build.sh           cross-compile the release targets
+├── CHANGELOG.md       release history
+├── README.md          user documentation
+└── DEVELOP.md         this file
+```
+
+Build and run from the repository root:
+
+```bash
+go build .
+./next-index ~/Downloads
+```
+
+## Request flow
+
+```text
+next-index [command] [options] [root]
+        │
+        ├── initProgram   opt.Parse, then cmdMap lookup
+        ├── loadConfig    ~/.next_index.json (created on the first serve)
+        └── serve         resolveRoot → newServer → listenAndServe
+```
+
+`main` dispatches through `cmdMap`. A first argument that is an existing
+directory, or that looks like a path (`/`, `./`, `~/`, contains a separator),
+selects `serve` with that directory. Anything else is an unknown command.
+
+`serve` resolves the root from the positional argument, then `--root`, then the
+config, then the current directory. It saves the root, address and port back to
+the config when they changed. When the config was just created it also generates
+`admin` + a 16 character password, stores only the hash and prints the password
+once.
+
+## Server
+
+`Server.handler` registers the routes on a `http.ServeMux`:
+
+```text
+GET  /_next/{style.css,app.js,favicon.svg,favicon.ico}   embedded assets
+GET  /api/session                             login state
+POST /api/login, /api/logout                  session handling
+GET  /api/list                                directory entries as JSON
+POST /api/upload, /api/mkdir, /api/rename,
+     /api/delete                              write endpoints
+GET  / and /<path>                            page or file
+```
+
+`Server.wrap` sets the security headers, records the status for the access log
+and recovers panics. Every request is logged with `record.Info` unless `--quiet`
+is set.
+
+`handleRoot` resolves the URL path, checks that the real path is still inside
+the root, then either renders a listing (directories, with a redirect to add the
+trailing slash) or streams the file with `http.ServeContent`, which gives range
+requests and conditional requests for free.
+
+## Path safety
+
+`resolve` joins the cleaned URL path onto the root and verifies with
+`filepath.Rel` that the result is inside it. `ensureReal` then resolves symlinks
+and repeats the check, so a symlink in the root cannot expose a file outside it.
+
+Write handlers resolve their target directory the same way. File names from
+uploads go through `sanitizeName` (base name, control characters removed,
+reserved Windows names prefixed); names typed by the user go through
+`validateName`, which rejects separators, `..`, control characters and reserved
+names outright.
+
+## Configuration
+
+`Config` is a plain struct serialized with `encoding/json`. `saveConfig` writes
+to a temporary file in the same directory, `chmod 0600`, then renames it over
+the config, so a crash cannot leave a truncated file.
+
+If `~/.next_index.json` does not exist but a legacy `~/.revix.json` does, the
+legacy file is read once and migrated to the new path on the next save.
+
+`max_upload_mb` is applied with `http.MaxBytesReader` before
+`ParseMultipartForm`; `0` disables the limit. Each uploaded file is streamed into
+a `.next_index-upload-*` temporary file in the target directory and renamed into
+place, so a failed upload never leaves a partial file.
+
+## Auth
+
+- `hashPassword` produces `pbkdf2-sha256$<iterations>$<salt>$<key>` with 210,000
+  iterations and a 16-byte random salt.
+- `verifyPassword` compares with `subtle.ConstantTimeCompare`.
+- `sessionStore` keeps random 256-bit tokens in memory for 12 hours. Sessions are
+  lost on restart, which is fine for a single-user file server.
+- `loginLimiter` blocks one address for five minutes after five failures.
+- Write endpoints accept the session cookie or HTTP Basic auth. `checkWrite`
+  also enforces same-origin `Origin` headers, so a page on another site cannot
+  reuse a logged-in browser session.
+
+## Frontend
+
+There is no build step. `web/index.html` is a `html/template` with three slots:
+the title, a `<noscript>` fallback generated by `buildNoScript`, and a JSON
+bootstrap document. `web/app.js` renders the topbar, summary, table/grid and
+footer from that bootstrap and talks to the JSON API. `web/style.css` holds the
+theme variables and the responsive rules.
+
+All three files are embedded with `//go:embed web`, so editing them requires a
+rebuild. They are served with `Cache-Control: no-cache` and the pages use a
+restrictive `Content-Security-Policy` (`script-src 'self'`, so no inline
+handlers; the bootstrap JSON is a `type="application/json"` data block).
+
+Sort order, view mode and theme are stored in `localStorage`. The `?view=` and
+`?theme=` query parameters override them once, which keeps screenshots and
+deep links deterministic.
+
+## Tests
+
+There is no automated test suite in the tree at the moment. The previous suite
+is kept in `.tests-backup.tar.gz`; extract it with
+`tar -xzf .tests-backup.tar.gz` when you want `go test ./...` back.
+
+## Release
+
+1. Update `CHANGELOG.md` and the version constant in `main.go`.
+2. Run `gofmt -l .` and `go vet ./...`.
+3. Smoke-test `serve`, `passwd`, `config` and a fresh first run with a temporary
+   `HOME`.
+4. Run `./build.sh` and attach the archives under `build/` to the release.
