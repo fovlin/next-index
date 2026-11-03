@@ -52,7 +52,7 @@ next-index [command] [options] [root]
 next-index ~/Downloads                # serve a directory for this run
 next-index run -p 9000 .              # serve with overrides for this run
 next-index config                     # print the config file
-next-index config -p 9000 -a 0.0.0.0  # save address and port
+next-index config -p 9000 -i 0.0.0.0  # save address and port
 next-index config -u admin -P "new password"  # save credentials
 next-index config -r ~/Downloads      # save the root
 next-index about                      # build information
@@ -68,7 +68,7 @@ file and then prints the config.
 
 | Option | Description |
 | --- | --- |
-| `-a, --addr <ip>` | address for `run` / `config` (default `0.0.0.0`) |
+| `-i, --addr <ip>` | address for `run` / `config` (default `0.0.0.0`) |
 | `-p, --port <port>` | port for `run` / `config` (default `8080`) |
 | `-r, --root <dir>` | root directory for `run` / `config` |
 | `-u, --user <name>` | username for `run` / `config` |

@@ -38,8 +38,8 @@ type Config struct {
 }
 
 var (
-	configPath   string
-	config       Config
+	configPath string
+	config     Config
 )
 
 func defaultConfig() Config {

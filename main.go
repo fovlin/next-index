@@ -28,7 +28,8 @@ var (
 	passwordFlag string
 	quietFlag    bool
 
-	needSaveConfig bool
+	needSaveConfig    bool
+	enbaleCrossOrigin bool
 )
 
 type CmdFunc struct {
@@ -80,7 +81,7 @@ func initProgram() error {
 		"help":   newCmdFunction(false, help),
 	}
 
-	opt.StringVar(&addrFlag, "a", "addr", "")
+	opt.StringVar(&addrFlag, "i", "addr", "")
 	opt.StringVar(&portFlag, "p", "port", "")
 	opt.StringVar(&rootFlag, "r", "root", "")
 	opt.StringVar(&userFlag, "u", "user", "")
@@ -88,6 +89,7 @@ func initProgram() error {
 
 	opt.BoolSwitch(&quietFlag, "q", "quiet")
 	opt.BoolSwitch(&record.EnableColor, "c", "color")
+	opt.BoolSwitch(&enbaleCrossOrigin, "d", "cross-origin")
 	opt.BoolSwitch(&record.EnableTimestamp, "t", "time")
 
 	opt.BoolFunc("h", "help", func() {
@@ -247,12 +249,13 @@ commands:
   help       print this message
 
 options:
-  -a, --addr <ip>        address for run/config (default: 0.0.0.0)
+  -i, --addr <ip>        address for run/config (default: 0.0.0.0)
   -p, --port <port>      port for run/config (default: 8080)
   -r, --root <dir>       root directory for run/config
   -u, --user <name>      username for run/config
   -P, --password <pass>  password for run/config (hashed; leaks into shell history)
   -q, --quiet            do not log every request
+  -d, --cross-origin     allow different origin use api
   -c, --color            colored log output
   -t, --time             timestamp every log line
       --version          print the version
