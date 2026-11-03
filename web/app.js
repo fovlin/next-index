@@ -183,44 +183,14 @@
 		return (index === 0 ? String(value) : value.toFixed(1)) + " " + units[index];
 	}
 
-	function formatRelative(unix) {
-		var seconds = Math.max(0, Math.floor(Date.now() / 1000) - unix);
-
-		if (seconds < 60) {
-			return "just now";
-		}
-
-		var minutes = Math.floor(seconds / 60);
-		if (minutes < 60) {
-			return minutes + "m ago";
-		}
-
-		var hours = Math.floor(minutes / 60);
-		if (hours < 24) {
-			return hours + "h ago";
-		}
-
-		var days = Math.floor(hours / 24);
-		if (days === 1) {
-			return "yesterday";
-		}
-
-		if (days < 7) {
-			return days + "d ago";
-		}
-
-		if (days < 30) {
-			return Math.floor(days / 7) + "w ago";
-		}
-
-		return formatDate(unix);
+	function formatDate(unix) {
+		return new Date(unix * 1000).toLocaleDateString('en-US', {
+		});
 	}
 
-	function formatDate(unix) {
-		return new Date(unix * 1000).toLocaleDateString(undefined, {
-			year: "numeric",
-			month: "short",
-			day: "numeric"
+	function formatTime(unix) {
+		return new Date(unix * 1000).toLocaleTimeString('en-US', {
+			hour12: false,
 		});
 	}
 
@@ -486,7 +456,7 @@
 			"</a>" +
 			"</td>" +
 			'<td class="col-size size" title="' + (entry.kind === "file" ? entry.size + " bytes" : "") + '">' + size + "</td>" +
-			'<td class="col-time time" title="' + esc(formatFull(entry.mod)) + '">' + formatRelative(entry.mod) + "<small>" + esc(formatDate(entry.mod)) + "</small></td>" +
+			'<td class="col-time time" title="' + esc(formatFull(entry.mod)) + '">' + esc(formatDate(entry.mod)) + '<small>' + esc(formatTime(entry.mod)) + '</small></td>' +
 			'<td class="col-actions"><div class="row-actions">' + actionsMarkup(entry) + "</div></td>" +
 			"</tr>"
 		);

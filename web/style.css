@@ -605,7 +605,7 @@ th.sorted.desc .arrow {
 }
 
 .table tbody td {
-	padding: 6px 14px;
+	padding: 8px 12px;
 	font-size: 14px;
 	vertical-align: middle;
 }
@@ -613,7 +613,7 @@ th.sorted.desc .arrow {
 .entry {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 6px;
 	min-width: 0;
 	color: var(--text);
 	text-decoration: none;
@@ -675,7 +675,7 @@ th.sorted.desc .arrow {
 
 .time {
 	color: var(--muted);
-	font-size: 12px;
+	font-family: "Cascadia Code", "Lucida Console", Courier, monospace;
 	white-space: nowrap;
 }
 
