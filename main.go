@@ -248,22 +248,17 @@ func promptPassword(prompt string) (string, error) {
 }
 
 func showConfig() error {
-	if configFromLegacy {
-		record.Info("config file:", configPath, "(not created yet)")
-		record.Warn("reading legacy config from", legacyConfigPath+", it will be migrated on the next serve or passwd")
-	} else {
-		info, err := os.Stat(configPath)
+	info, err := os.Stat(configPath)
 
-		switch true {
-		case err == nil:
-			record.Info("config file:", configPath, fmt.Sprintf("(%d bytes)", info.Size()))
+	switch true {
+	case err == nil:
+		record.Info("config file:", configPath, fmt.Sprintf("(%d bytes)", info.Size()))
 
-		case os.IsNotExist(err):
-			record.Info("config file:", configPath, "(not created yet, the first `next-index serve` will create it)")
+	case os.IsNotExist(err):
+		record.Info("config file:", configPath, "(not created yet, the first `next-index serve` will create it)")
 
-		default:
-			return fmt.Errorf("stat config file: %w", err)
-		}
+	default:
+		return fmt.Errorf("stat config file: %w", err)
 	}
 
 	data, err := json.MarshalIndent(config.masked(), "", "  ")

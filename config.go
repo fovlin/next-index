@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	configFileName       = ".next_index.json"
-	legacyConfigFileName = ".revix.json"
+	configFileName = ".next_index.json"
 
 	defaultAddr        = "0.0.0.0"
 	defaultPort        = 8080
@@ -36,10 +35,8 @@ type Config struct {
 }
 
 var (
-	configPath       string
-	legacyConfigPath string
-	configFromLegacy bool
-	config           Config
+	configPath string
+	config     Config
 )
 
 func defaultConfig() Config {
@@ -58,42 +55,12 @@ func initConfigPath() error {
 	}
 
 	configPath = filepath.Join(homeDir, configFileName)
-	legacyConfigPath = filepath.Join(homeDir, legacyConfigFileName)
 
 	return nil
 }
 
 func loadConfig() (bool, error) {
-	configFromLegacy = false
-
 	data, err := os.ReadFile(configPath)
-
-	if os.IsNotExist(err) && legacyConfigPath != "" {
-		legacyData, legacyErr := os.ReadFile(legacyConfigPath)
-
-		switch true {
-		case legacyErr == nil:
-			if err := json.Unmarshal(legacyData, &config); err != nil {
-				return false, fmt.Errorf("parse config file %v: %w", legacyConfigPath, err)
-			}
-
-			if config.Title == "revix" {
-				config.Title = defaultTitle
-			}
-
-			config.normalize()
-			configFromLegacy = true
-
-			return false, nil
-
-		case os.IsNotExist(legacyErr):
-			config = defaultConfig()
-			return true, nil
-
-		default:
-			return false, fmt.Errorf("read legacy config file: %w", legacyErr)
-		}
-	}
 
 	switch true {
 	case os.IsNotExist(err):
@@ -176,8 +143,6 @@ func saveConfig() error {
 		os.Remove(tempPath)
 		return fmt.Errorf("save config file: %w", err)
 	}
-
-	configFromLegacy = false
 
 	return nil
 }

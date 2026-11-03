@@ -79,8 +79,7 @@ directory. A root given on the command line is saved back to the config.
 
 The config lives in `~/.next_index.json` (next to `~/.ssh`, not in `~/.config`). It is
 created on the first run and written with `0600` permissions because it stores
-the password hash. If an old `~/.revix.json` exists, it is read once and
-migrated to the new path on the next `next-index serve` or `next-index passwd`.
+the password hash.
 
 ```json
 {

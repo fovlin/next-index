@@ -14,8 +14,8 @@ All notable changes to NEXT_INDEX are documented here. The project follows
 
 ### Added
 
-- Renamed the project to NEXT_INDEX. The binary is `next-index`, the config is
-  `~/.next_index.json`, and a legacy `~/.revix.json` is read once and migrated.
+- Renamed the project to NEXT_INDEX. The binary is `next-index` and the config
+  is `~/.next_index.json`.
 - Serve any directory over HTTP with a list/grid interface, breadcrumbs,
   search, sortable columns, thumbnails, relative timestamps and a light/dark
   theme.

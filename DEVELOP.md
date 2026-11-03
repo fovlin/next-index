@@ -93,9 +93,6 @@ names outright.
 to a temporary file in the same directory, `chmod 0600`, then renames it over
 the config, so a crash cannot leave a truncated file.
 
-If `~/.next_index.json` does not exist but a legacy `~/.revix.json` does, the
-legacy file is read once and migrated to the new path on the next save.
-
 `max_upload_mb` is applied with `http.MaxBytesReader` before
 `ParseMultipartForm`; `0` disables the limit. Each uploaded file is streamed into
 a `.next_index-upload-*` temporary file in the target directory and renamed into

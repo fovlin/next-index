@@ -43,11 +43,6 @@ func serve() error {
 
 	generatedPassword := ""
 
-	if configFromLegacy {
-		record.Info("migrating config from", legacyConfigPath)
-		changed = true
-	}
-
 	if configCreated {
 		if config.Username == "" {
 			config.Username = defaultUsername
