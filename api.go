@@ -493,7 +493,7 @@ func queryPath(r *http.Request) string {
 }
 
 func sameOrigin(r *http.Request) bool {
-	if enbaleCrossOrigin {
+	if config.CrossOrigin {
 		return true
 	}
 	origin := r.Header.Get("Origin")

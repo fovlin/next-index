@@ -193,6 +193,11 @@ func parseFlag() error {
 		needSaveConfig = true
 	}
 
+	if enbaleCrossOrigin != false {
+		config.CrossOrigin = true
+		needSaveConfig = true
+	}
+
 	return nil
 }
 
