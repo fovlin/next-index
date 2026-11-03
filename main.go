@@ -13,7 +13,7 @@ import (
 	"acovia.net/record"
 )
 
-const version = "0.1.0"
+const version = "v0.0.1-alpha"
 
 var (
 	cmdMap map[string]CmdFunc
