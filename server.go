@@ -48,22 +48,22 @@ func newServer(cfg Config, root string) (*Server, error) {
 func (server *Server) handler() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /_next/style.css", server.serveAsset("style.css", "text/css; charset=utf-8"))
-	mux.HandleFunc("GET /_next/app.js", server.serveAsset("app.js", "text/javascript; charset=utf-8"))
-	mux.HandleFunc("GET /_next/favicon.svg", server.serveAsset("favicon.svg", "image/svg+xml"))
-	mux.HandleFunc("GET /_next/favicon.ico", server.serveAsset("favicon.ico", "image/x-icon"))
+	mux.HandleFunc("GET /@next-index/assets/style.css", server.serveAsset("style.css", "text/css; charset=utf-8"))
+	mux.HandleFunc("GET /@next-index/assets/app.js", server.serveAsset("app.js", "text/javascript; charset=utf-8"))
+	mux.HandleFunc("GET /@next-index/assets/favicon.svg", server.serveAsset("favicon.svg", "image/svg+xml"))
+	mux.HandleFunc("GET /@next-index/assets/favicon.ico", server.serveAsset("favicon.ico", "image/x-icon"))
 	mux.HandleFunc("GET /favicon.ico", server.serveAsset("favicon.ico", "image/x-icon"))
 
-	mux.HandleFunc("GET /api/session", server.handleSession)
-	mux.HandleFunc("POST /api/login", server.handleLogin)
-	mux.HandleFunc("POST /api/logout", server.handleLogout)
-	mux.HandleFunc("GET /api/list", server.handleList)
-	mux.HandleFunc("POST /api/upload", server.handleUpload)
-	mux.HandleFunc("POST /api/mkdir", server.handleMkdir)
-	mux.HandleFunc("POST /api/rename", server.handleRename)
-	mux.HandleFunc("POST /api/delete", server.handleDelete)
+	mux.HandleFunc("GET /@next-index/api/session", server.handleSession)
+	mux.HandleFunc("POST /@next-index/api/login", server.handleLogin)
+	mux.HandleFunc("POST /@next-index/api/logout", server.handleLogout)
+	mux.HandleFunc("GET /@next-index/api/list", server.handleList)
+	mux.HandleFunc("POST /@next-index/api/upload", server.handleUpload)
+	mux.HandleFunc("POST /@next-index/api/mkdir", server.handleMkdir)
+	mux.HandleFunc("POST /@next-index/api/rename", server.handleRename)
+	mux.HandleFunc("POST /@next-index/api/delete", server.handleDelete)
 
-	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/@next-index/api/", func(w http.ResponseWriter, r *http.Request) {
 		server.apiError(w, http.StatusNotFound, "not found")
 	})
 

@@ -763,7 +763,7 @@
 			spinner.classList.add("spin");
 		}
 
-		return api("/api/list?path=" + encodeURIComponent(state.path))
+		return api("/@next-index/api/list?path=" + encodeURIComponent(state.path))
 			.then(function (result) {
 				state.entries = Array.isArray(result.entries) ? result.entries : [];
 				state.crumbs = Array.isArray(result.crumbs) ? result.crumbs : state.crumbs;
@@ -798,7 +798,7 @@
 
 	function openLogin(message) {
 		if (!state.writable) {
-			toast("error", "Write access is disabled. Run `next-index passwd` on the server to enable it.");
+			toast("error", "Write access is disabled. Run `next-index config -P` on the server to enable it.");
 			return;
 		}
 
@@ -843,7 +843,7 @@
 			submitButton.disabled = true;
 			submitButton.textContent = "Signing in…";
 
-			api("/api/login", {
+			api("/@next-index/api/login", {
 				method: "POST",
 				body: JSON.stringify({ username: username, password: password })
 			})
@@ -868,7 +868,7 @@
 	}
 
 	function logout() {
-		api("/api/logout", { method: "POST" })
+		api("/@next-index/api/logout", { method: "POST" })
 			.catch(function () {
 				return {};
 			})
@@ -952,7 +952,7 @@
 
 			errorElement.textContent = "";
 
-			api("/api/mkdir", {
+			api("/@next-index/api/mkdir", {
 				method: "POST",
 				body: JSON.stringify({ path: state.path, name: name })
 			})
@@ -1026,7 +1026,7 @@
 
 			errorElement.textContent = "";
 
-			api("/api/rename", {
+			api("/@next-index/api/rename", {
 				method: "POST",
 				body: JSON.stringify({ path: state.path, from: entry.name, to: name })
 			})
@@ -1068,7 +1068,7 @@
 			button.disabled = true;
 			button.textContent = "Deleting…";
 
-			api("/api/delete", {
+			api("/@next-index/api/delete", {
 				method: "POST",
 				body: JSON.stringify({ path: state.path, names: [entry.name] })
 			})
@@ -1092,7 +1092,7 @@
 
 	function openUpload(items) {
 		if (!state.writable) {
-			toast("error", "Write access is disabled. Run `next-index passwd` on the server to enable it.");
+			toast("error", "Write access is disabled. Run `next-index config -P` on the server to enable it.");
 			return;
 		}
 
@@ -1312,7 +1312,7 @@
 
 			if (!ensuredDirectories[relative]) {
 				try {
-					await api("/api/mkdir", {
+					await api("/@next-index/api/mkdir", {
 						method: "POST",
 						body: JSON.stringify({ path: current, name: segment })
 					});
@@ -1450,7 +1450,7 @@
 			var request = new XMLHttpRequest();
 			var query = "?path=" + encodeURIComponent(targetPath) + (overwrite ? "&overwrite=1" : "");
 
-			request.open("POST", "/api/upload" + query);
+			request.open("POST", "/@next-index/api/upload" + query);
 			request.withCredentials = true;
 
 			request.upload.addEventListener("progress", function (event) {

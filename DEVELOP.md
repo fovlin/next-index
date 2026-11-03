@@ -8,8 +8,8 @@
 
 ```text
 next-index
-├── main.go            entry point, flags, command table, passwd/username/about/help
-├── serve.go           serve command: root resolution, first-run credentials, listen
+├── main.go            entry point, flag parsing, command table, help text
+├── serve.go           run command: root resolution and listen
 ├── config.go          ~/.next_index.json: defaults, load, atomic save
 ├── server.go          Server type, routes, middleware, graceful shutdown
 ├── handler.go         page and file handler, error responses
@@ -38,31 +38,38 @@ go build .
 next-index [command] [options] [root]
         │
         ├── initProgram   opt.Parse, then cmdMap lookup
-        ├── loadConfig    ~/.next_index.json (created on the first serve)
-        └── serve         resolveRoot → newServer → listenAndServe
+        ├── loadConfig    read ~/.next_index.json, fill defaults and credentials
+        ├── parseFlag     override config from -a/-p/-r/-u/-P
+        └── run / config
+                          run:    resolveRoot
+                                  → save if new/credentials generated
+                                  → newServer → listenAndServe
+                          config: save if flags/credentials generated, then print
 ```
 
-`main` dispatches through `cmdMap`. A first argument that is an existing
-directory, or that looks like a path (`/`, `./`, `~/`, contains a separator),
-selects `serve` with that directory. Anything else is an unknown command.
+`main` dispatches through `cmdMap`. With no command, or when the first argument
+is an existing directory or looks like a path (`/`, `./`, `~/`, contains a
+separator), it selects `run` with that directory. Anything else is an unknown
+command.
 
-`serve` resolves the root from the positional argument, then `--root`, then the
-config, then the current directory. It saves the root, address and port back to
-the config when they changed. When the config was just created it also generates
-`admin` + a 16 character password, stores only the hash and prints the password
-once.
+`parseFlag` runs after `loadConfig` and writes any non-empty `-a`, `-p`, `-r`,
+`-u` or `-P` value directly into the config struct. `run` resolves the root from
+the positional argument, then the config, then the current directory. It saves
+the config on first use and when credentials had to be generated; after that its
+flags stay in memory. `config` saves flag overrides (and generated credentials),
+then prints the config; without flags it prints, creating the file if missing.
 
 ## Server
 
 `Server.handler` registers the routes on a `http.ServeMux`:
 
 ```text
-GET  /_next/{style.css,app.js,favicon.svg,favicon.ico}   embedded assets
-GET  /api/session                             login state
-POST /api/login, /api/logout                  session handling
-GET  /api/list                                directory entries as JSON
-POST /api/upload, /api/mkdir, /api/rename,
-     /api/delete                              write endpoints
+GET  /@next-index/assets/{style.css,app.js,favicon.svg,favicon.ico}   embedded assets
+GET  /@next-index/api/session                             login state
+POST /@next-index/api/login, /@next-index/api/logout                  session handling
+GET  /@next-index/api/list                                directory entries as JSON
+POST /@next-index/api/upload, /@next-index/api/mkdir, /@next-index/api/rename,
+     /@next-index/api/delete                              write endpoints
 GET  / and /<path>                            page or file
 ```
 
@@ -92,6 +99,13 @@ names outright.
 `Config` is a plain struct serialized with `encoding/json`. `saveConfig` writes
 to a temporary file in the same directory, `chmod 0600`, then renames it over
 the config, so a crash cannot leave a truncated file.
+
+`loadConfig` reads the file (or `defaultConfig()` when missing), fills missing
+defaults, then calls `initUser`: it fills an empty username with `admin` (or the
+`-u` value) and generates a password only when the config has none and `-P` was
+not given. It never writes. `run` and `config` save when the file is new, when
+credentials were generated, or when flags changed the config; later `run` flags
+stay in memory.
 
 `max_upload_mb` is applied with `http.MaxBytesReader` before
 `ParseMultipartForm`; `0` disables the limit. Each uploaded file is streamed into
@@ -139,6 +153,6 @@ is kept in `.tests-backup.tar.gz`; extract it with
 
 1. Update `CHANGELOG.md` and the version constant in `main.go`.
 2. Run `gofmt -l .` and `go vet ./...`.
-3. Smoke-test `serve`, `passwd`, `username`, `config` and a fresh first run with
-   a temporary `HOME`.
+3. Smoke-test `run`, `config` (with and without flags) and a fresh first run
+   with a temporary `HOME`.
 4. Run `./build.sh` and attach the archives under `build/` to the release.

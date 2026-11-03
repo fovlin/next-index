@@ -11,57 +11,13 @@ import (
 	"acovia.net/record"
 )
 
-func serve() error {
+func run() error {
 	root, err := resolveRoot()
 	if err != nil {
 		return err
 	}
 
-	changed := false
-
-	if config.Root != root {
-		config.Root = root
-		changed = true
-	}
-
-	if addrFlag != "" && config.Addr != addrFlag {
-		config.Addr = addrFlag
-		changed = true
-	}
-
-	if portFlag != "" {
-		port, err := strconv.Atoi(portFlag)
-		if err != nil || port <= 0 || port > 65535 {
-			return fmt.Errorf("invalid port: %v", portFlag)
-		}
-
-		if config.Port != port {
-			config.Port = port
-			changed = true
-		}
-	}
-
-	generatedPassword := ""
-
-	if configCreated {
-		if config.Username == "" {
-			config.Username = defaultUsername
-		}
-
-		if config.Password == "" {
-			password, err := randomPassword(16)
-			if err != nil {
-				return err
-			}
-
-			config.Password = hashPassword(password)
-			generatedPassword = password
-		}
-
-		changed = true
-	}
-
-	if changed {
+	if needSaveConfig {
 		if err := saveConfig(); err != nil {
 			return err
 		}
@@ -97,26 +53,18 @@ func serve() error {
 		listenAddress = net.JoinHostPort("localhost", strconv.Itoa(config.Port))
 	}
 
-	record.Info("next-index", version)
-	record.Info("serving", root)
-	record.Info("listening on", scheme+"://"+listenAddress)
+	record.Info("next-index:", version)
+	record.Info("serving:", root)
+	record.Info("listening on:", scheme+"://"+listenAddress)
 
 	if config.writable() {
 		record.Info("uploads and file management: enabled (user:", config.Username+")")
 	} else {
-		record.Warn("uploads and file management: disabled, run `next-index passwd` to enable them")
+		record.Warn("uploads and file management: disabled, run `next-index config -P <password>` to enable them")
 	}
 
 	if config.Password != "" && !validPasswordHash(config.Password) {
-		record.Warn("the stored password hash is not a SHA-256 digest, run `next-index passwd` to set a new password")
-	}
-
-	if generatedPassword != "" {
-		record.Info("generated a password for this server")
-		record.Info("username:", config.Username)
-		record.Info("password:", generatedPassword)
-		record.Info("stored hashed in", configPath)
-		record.Info("change it with `next-index passwd`")
+		record.Warn("the stored password hash is not a SHA-256 digest, run `next-index config -P <password>` to set a new password")
 	}
 
 	return server.listenAndServe()
@@ -128,12 +76,10 @@ func resolveRoot() (string, error) {
 	switch true {
 	case len(subCmdArgs) > 0:
 		root = subCmdArgs[0]
-	case rootFlag != "":
-		root = rootFlag
 	case config.Root != "":
 		root = config.Root
 	default:
-		root = "."
+		root = "./"
 	}
 
 	root = expandHome(root)

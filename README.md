@@ -49,27 +49,30 @@ Or cross-compile every release target with `./build.sh`.
 ```bash
 next-index [command] [options] [root]
 
-next-index ~/Downloads          # serve a directory
-next-index serve -p 9000 .      # serve the current directory on port 9000
-next-index passwd               # set or change the upload credentials
-next-index username fovlin      # change the username only
-next-index config               # print the config file
-next-index about                # build information
-next-index help                 # the full usage text
+next-index ~/Downloads                # serve a directory for this run
+next-index run -p 9000 .              # serve with overrides for this run
+next-index config                     # print the config file
+next-index config -p 9000 -a 0.0.0.0  # save address and port
+next-index config -u admin -P "new password"  # save credentials
+next-index config -r ~/Downloads      # save the root
+next-index about                      # build information
+next-index help                       # the full usage text
 ```
 
-`root` defaults to the `root` value in `~/.next_index.json`, and then to the current
-directory. A root given on the command line is saved back to the config.
+The root directory defaults to the `root` value in `~/.next_index.json`, then to the
+current directory. `run` applies `-a`, `-p`, `-r`, `-u` and `-P` to that process
+only and never writes them back. `config` with flags saves those fields to the
+file and then prints the config.
 
 ### Options
 
 | Option | Description |
 | --- | --- |
-| `-a, --addr <ip>` | address to listen on (default `0.0.0.0`) |
-| `-p, --port <port>` | port to listen on (default `8080`) |
-| `-r, --root <dir>` | directory to serve |
-| `-u, --user <name>` | username for `passwd` |
-| `-P, --password <pass>` | password for `passwd` (leaks into shell history) |
+| `-a, --addr <ip>` | address for `run` / `config` (default `0.0.0.0`) |
+| `-p, --port <port>` | port for `run` / `config` (default `8080`) |
+| `-r, --root <dir>` | root directory for `run` / `config` |
+| `-u, --user <name>` | username for `run` / `config` |
+| `-P, --password <pass>` | password for `run` / `config` (hashed; leaks into shell history) |
 | `-q, --quiet` | do not log every request |
 | `-c, --color` | colored log output |
 | `-t, --time` | timestamp every log line |
@@ -79,8 +82,16 @@ directory. A root given on the command line is saved back to the config.
 ## Configuration
 
 The config lives in `~/.next_index.json` (next to `~/.ssh`, not in `~/.config`). It is
-created on the first run and written with `0600` permissions because it stores
-the password hash.
+created by the first `run` or the first `config` and written with `0600`
+permissions because it stores the password hash. A new config gets the defaults
+below, `admin` as the username and a generated password, printed once.
+
+`loadConfig` fills missing defaults and credentials in memory. `run` saves the
+file when it is missing or credentials had to be generated, and otherwise applies
+its flags to that process only. `config` saves flags and generated credentials,
+then prints; without flags it prints (and creates the file if missing). The root
+argument of `run` is not persisted: use `next-index config -r` or edit the file
+for that.
 
 ```json
 {
@@ -106,17 +117,19 @@ the password hash.
 | `port` | listen port |
 | `title` | site title shown in the header and page title |
 | `username` | username required for writes |
-| `password` | SHA-256 hash (hex); use `next-index passwd` to change it |
+| `password` | SHA-256 hash (hex); use `next-index config -P` to change it |
 | `tls` | enable HTTPS with a certificate and key file |
 | `max_upload_mb` | maximum request size in MiB, `0` means no limit |
 
-Leave `username` and `password` empty to run read-only: the login button
-disappears and every write endpoint answers `403`.
+If `username` or `password` is empty, the next `run` or `config` fills it with
+`admin` and a generated password and saves the config. There is no separate
+read-only mode.
 
-`next-index passwd` prompts twice without echoing, and accepts `-u` and `-P` for
-scripted setup. A password shorter than 8 characters is accepted with a warning.
-`next-index username <name>` changes only the username and keeps the current
-password; run it with no argument to print the configured username.
+`next-index config -u admin -P "new password"` writes new credentials. A
+password shorter than 8 characters is accepted with a warning.
+
+`next-index config -p 9000 -a 127.0.0.1` saves the address and port;
+`next-index config -r ~/Downloads` saves the root.
 
 ## The interface
 
@@ -135,21 +148,21 @@ The UI is a small client over a JSON API, which is also usable with `curl`.
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
 | `GET` | `/` and `/<path>` | public | directory page or file download |
-| `GET` | `/api/list?path=/dir/` | public | directory entries as JSON |
-| `GET` | `/api/session` | public | current login state |
-| `POST` | `/api/login` | public | `{"username":...,"password":...}`, sets a session cookie |
-| `POST` | `/api/logout` | session | clears the session |
-| `POST` | `/api/upload?path=/dir/` | write | multipart field `file`, optional `overwrite=1` |
-| `POST` | `/api/mkdir` | write | `{"path":"/dir/","name":"new folder"}` |
-| `POST` | `/api/rename` | write | `{"path":"/dir/","from":"a.txt","to":"b.txt"}` |
-| `POST` | `/api/delete` | write | `{"path":"/dir/","names":["a.txt","folder"]}` |
+| `GET` | `/@next-index/api/list?path=/dir/` | public | directory entries as JSON |
+| `GET` | `/@next-index/api/session` | public | current login state |
+| `POST` | `/@next-index/api/login` | public | `{"username":...,"password":...}`, sets a session cookie |
+| `POST` | `/@next-index/api/logout` | session | clears the session |
+| `POST` | `/@next-index/api/upload?path=/dir/` | write | multipart field `file`, optional `overwrite=1` |
+| `POST` | `/@next-index/api/mkdir` | write | `{"path":"/dir/","name":"new folder"}` |
+| `POST` | `/@next-index/api/rename` | write | `{"path":"/dir/","from":"a.txt","to":"b.txt"}` |
+| `POST` | `/@next-index/api/delete` | write | `{"path":"/dir/","names":["a.txt","folder"]}` |
 
 Write endpoints accept either the `next_index_session` cookie or HTTP Basic auth, so
 a scripted upload can simply do:
 
 ```bash
 curl -u admin:password -F "file=@photo.jpg" \
-  "http://localhost:8080/api/upload?path=/photos/"
+  "http://localhost:8080/@next-index/api/upload?path=/photos/"
 ```
 
 State-changing requests with a mismatched `Origin` header are rejected.

@@ -21,7 +21,7 @@ func (server *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 		urlPath = "/"
 	}
 
-	if strings.HasPrefix(urlPath, "/api/") || strings.HasPrefix(urlPath, "/_next/") {
+	if strings.HasPrefix(urlPath, "/@next-index/api/") || strings.HasPrefix(urlPath, "/@next-index/assets/") {
 		server.fail(w, r, http.StatusNotFound, "page not found")
 		return
 	}
@@ -82,7 +82,7 @@ func (server *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server *Server) fail(w http.ResponseWriter, r *http.Request, status int, message string) {
-	if strings.HasPrefix(r.URL.Path, "/api/") {
+	if strings.HasPrefix(r.URL.Path, "/@next-index/api/") {
 		server.apiError(w, status, message)
 		return
 	}

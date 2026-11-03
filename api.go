@@ -61,7 +61,7 @@ func (server *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !server.config.writable() {
-		server.apiError(w, http.StatusForbidden, "write access is disabled, run `next-index passwd` on the server")
+		server.apiError(w, http.StatusForbidden, "write access is disabled, run `next-index config -P <password>` on the server")
 		return
 	}
 
@@ -410,7 +410,7 @@ func (server *Server) checkWrite(w http.ResponseWriter, r *http.Request) bool {
 	}
 
 	if !server.config.writable() {
-		server.apiError(w, http.StatusForbidden, "write access is disabled, run `next-index passwd` on the server")
+		server.apiError(w, http.StatusForbidden, "write access is disabled, run `next-index config -P <password>` on the server")
 		return false
 	}
 

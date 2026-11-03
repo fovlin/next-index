@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"acovia.net/record"
 )
 
 const (
 	configFileName = ".next_index.json"
 
+	defaultRoot        = "./"
 	defaultAddr        = "0.0.0.0"
 	defaultPort        = 8080
 	defaultTitle       = "NEXT_INDEX"
@@ -35,12 +38,13 @@ type Config struct {
 }
 
 var (
-	configPath string
-	config     Config
+	configPath   string
+	config       Config
 )
 
 func defaultConfig() Config {
 	return Config{
+		Root:        defaultRoot,
 		Addr:        defaultAddr,
 		Port:        defaultPort,
 		Title:       defaultTitle,
@@ -59,28 +63,31 @@ func initConfigPath() error {
 	return nil
 }
 
-func loadConfig() (bool, error) {
+func loadConfig() error {
 	data, err := os.ReadFile(configPath)
 
-	switch true {
-	case os.IsNotExist(err):
+	if os.IsNotExist(err) {
+		needSaveConfig = true
 		config = defaultConfig()
-		return true, nil
-
-	case err != nil:
-		return false, fmt.Errorf("read config file: %w", err)
-	}
-
-	if err := json.Unmarshal(data, &config); err != nil {
-		return false, fmt.Errorf("parse config file %v: %w", configPath, err)
+	} else if err != nil {
+		return fmt.Errorf("read config file: %w", err)
+	} else {
+		if err := json.Unmarshal(data, &config); err != nil {
+			return fmt.Errorf("parse config file %v: %w", configPath, err)
+		}
 	}
 
 	config.normalize()
+	err = initUser()
 
-	return false, nil
+	return err
 }
 
 func (config *Config) normalize() {
+	if config.Root == "" {
+		config.Root = defaultRoot
+	}
+
 	if config.Addr == "" {
 		config.Addr = defaultAddr
 	}
@@ -100,6 +107,37 @@ func (config *Config) normalize() {
 	if config.MaxUploadMB > 1<<20 {
 		config.MaxUploadMB = 1 << 20
 	}
+}
+
+func initUser() error {
+
+	if config.Username == "" {
+		if userFlag != "" {
+			config.Username = userFlag
+		} else {
+			config.Username = defaultUsername
+		}
+
+		needSaveConfig = true
+	}
+
+	if config.Password == "" && passwordFlag == "" {
+		password, err := randomPassword(16)
+		if err != nil {
+			return err
+		}
+
+		config.Password = hashPassword(password)
+		needSaveConfig = true
+
+		record.Info("generated a password for this server")
+		record.Info("username:", config.Username)
+		record.Info("password:", password)
+		record.Info("stored hashed in", configPath)
+		record.Info("change it with `next-index config -P`")
+	}
+
+	return nil
 }
 
 func saveConfig() error {

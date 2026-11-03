@@ -1,26 +1,22 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"os"
-	"os/signal"
+	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
-	"syscall"
 
 	"acovia.net/opt"
 	"acovia.net/record"
-	"golang.org/x/term"
 )
 
 const version = "0.1.0"
 
 var (
-	cmdMap map[string]func() error
+	cmdMap map[string]CmdFunc
 
 	cmd        string
 	subCmdArgs []string
@@ -32,9 +28,13 @@ var (
 	passwordFlag string
 	quietFlag    bool
 
-	configCreated bool
-	stdinReader   *bufio.Reader
+	needSaveConfig bool
 )
+
+type CmdFunc struct {
+	Function   func() error
+	LoadConfig bool
+}
 
 func main() {
 	if err := initProgram(); err != nil {
@@ -45,31 +45,39 @@ func main() {
 		record.Error(err)
 	}
 
-	created, err := loadConfig()
-	if err != nil {
-		record.Error(err)
-	}
-
-	configCreated = created
-
 	function, ok := cmdMap[cmd]
 	if !ok {
 		record.Error("unknown command:", cmd)
 	}
 
-	if err := function(); err != nil {
+	if function.LoadConfig {
+		if err := loadConfig(); err != nil {
+			record.Error(err)
+		}
+
+		if err := parseFlag(); err != nil {
+			record.Error(err)
+		}
+	}
+
+	if err := function.Function(); err != nil {
 		record.Error(err)
 	}
 }
 
+func newCmdFunction(loadConfig bool, function func() error) CmdFunc {
+	return CmdFunc{
+		LoadConfig: loadConfig,
+		Function:   function,
+	}
+}
+
 func initProgram() error {
-	cmdMap = map[string]func() error{
-		"serve":    serve,
-		"passwd":   changePassword,
-		"username": changeUsername,
-		"config":   showConfig,
-		"about":    about,
-		"help":     help,
+	cmdMap = map[string]CmdFunc{
+		"run":    newCmdFunction(true, run),
+		"config": newCmdFunction(true, manageConfig),
+		"about":  newCmdFunction(false, about),
+		"help":   newCmdFunction(false, help),
 	}
 
 	opt.StringVar(&addrFlag, "a", "addr", "")
@@ -99,7 +107,7 @@ func initProgram() error {
 	args := opt.Args()
 
 	if len(args) == 0 {
-		cmd = "serve"
+		cmd = "run"
 		return nil
 	}
 
@@ -110,7 +118,7 @@ func initProgram() error {
 	}
 
 	if isDirectory(args[0]) || looksLikePath(args[0]) {
-		cmd = "serve"
+		cmd = "run"
 		subCmdArgs = args
 		return nil
 	}
@@ -131,166 +139,68 @@ func looksLikePath(value string) bool {
 	return strings.ContainsAny(value, `/\`) || value == "." || value == ".." || strings.HasPrefix(value, "~")
 }
 
-func changePassword() error {
-	if len(subCmdArgs) > 0 {
-		return fmt.Errorf("usage: next-index passwd [-u user] [-P password]")
+func parseFlag() error {
+
+	if addrFlag != "" {
+		config.Addr = addrFlag
+		needSaveConfig = true
 	}
 
-	username := config.Username
+	if portFlag != "" {
+		port, err := strconv.Atoi(portFlag)
+		if err != nil || port <= 0 || port > 65535 {
+			return fmt.Errorf("invalid port: %v", portFlag)
+		}
+
+		needSaveConfig = true
+		config.Port = port
+	}
+
+	if rootFlag != "" {
+		rootPath := expandHome(rootFlag)
+
+		absolute, err := filepath.Abs(rootPath)
+		if err != nil {
+			return fmt.Errorf("root: %w", err)
+		}
+
+		info, err := os.Stat(absolute)
+		if err != nil {
+			return fmt.Errorf("root: %w", err)
+		}
+
+		if !info.IsDir() {
+			return fmt.Errorf("root is not a directory: %v", absolute)
+		}
+
+		config.Root = absolute
+		needSaveConfig = true
+	}
+
 	if userFlag != "" {
-		username = userFlag
+		config.Username = userFlag
+		needSaveConfig = true
 	}
 
-	if username == "" {
-		username = defaultUsername
-	}
-
-	password := passwordFlag
-
-	if password == "" {
-		first, err := promptPassword("New password: ")
-		if err != nil {
-			return err
+	if passwordFlag != "" {
+		if len(passwordFlag) < 8 {
+			record.Warn("this password is shorter than 8 characters")
 		}
 
-		if first == "" {
-			return fmt.Errorf("password must not be empty")
-		}
-
-		second, err := promptPassword("Confirm password: ")
-		if err != nil {
-			return err
-		}
-
-		if first != second {
-			return fmt.Errorf("passwords do not match")
-		}
-
-		password = first
+		config.Password = hashPassword(passwordFlag)
+		needSaveConfig = true
 	}
-
-	if password == "" {
-		return fmt.Errorf("password must not be empty")
-	}
-
-	if len(password) < 8 {
-		record.Warn("this password is shorter than 8 characters")
-	}
-
-	config.Username = username
-	config.Password = hashPassword(password)
-
-	if err := saveConfig(); err != nil {
-		return err
-	}
-
-	record.Info("credentials updated for", username)
-	record.Info("config saved to", configPath)
 
 	return nil
 }
 
-func changeUsername() error {
-	if len(subCmdArgs) == 0 {
-		if config.Username == "" {
-			record.Info("username: (not set)")
-			return nil
+func manageConfig() error {
+	if needSaveConfig {
+		if err := saveConfig(); err != nil {
+			return err
 		}
 
-		record.Info("username:", config.Username)
 		return nil
-	}
-
-	if len(subCmdArgs) > 1 {
-		return fmt.Errorf("usage: next-index username <name>")
-	}
-
-	username := strings.TrimSpace(subCmdArgs[0])
-	if username == "" {
-		return fmt.Errorf("username must not be empty")
-	}
-
-	if strings.ContainsAny(username, "\r\n\t") {
-		return fmt.Errorf("username must not contain control characters")
-	}
-
-	config.Username = username
-
-	if err := saveConfig(); err != nil {
-		return err
-	}
-
-	record.Info("username updated to", username)
-	record.Info("config saved to", configPath)
-
-	return nil
-}
-
-func promptPassword(prompt string) (string, error) {
-	fmt.Fprint(os.Stdout, prompt)
-
-	descriptor := int(os.Stdin.Fd())
-
-	if term.IsTerminal(descriptor) {
-		// Restore the terminal if the user leaves the prompt with Ctrl+C or
-		// SIGTERM. ReadPassword only restores it on a normal return, so a
-		// signal would otherwise leave echo turned off.
-		state, stateErr := term.GetState(descriptor)
-		if stateErr == nil {
-			interrupt := make(chan os.Signal, 1)
-			done := make(chan struct{})
-
-			signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
-			defer close(done)
-			defer signal.Stop(interrupt)
-
-			go func() {
-				select {
-				case <-interrupt:
-					term.Restore(descriptor, state)
-					fmt.Fprintln(os.Stdout)
-					os.Exit(130)
-				case <-done:
-				}
-			}()
-		}
-
-		data, err := term.ReadPassword(descriptor)
-		fmt.Fprintln(os.Stdout)
-
-		if err != nil {
-			return "", fmt.Errorf("read password: %w", err)
-		}
-
-		return string(data), nil
-	}
-
-	if stdinReader == nil {
-		stdinReader = bufio.NewReader(os.Stdin)
-	}
-
-	line, err := stdinReader.ReadString('\n')
-	if err != nil && !errors.Is(err, io.EOF) {
-		return "", fmt.Errorf("read password: %w", err)
-	}
-
-	fmt.Fprintln(os.Stdout)
-
-	return strings.TrimRight(line, "\r\n"), nil
-}
-
-func showConfig() error {
-	info, err := os.Stat(configPath)
-
-	switch true {
-	case err == nil:
-		record.Info("config file:", configPath, fmt.Sprintf("(%d bytes)", info.Size()))
-
-	case os.IsNotExist(err):
-		record.Info("config file:", configPath, "(not created yet, the first `next-index serve` will create it)")
-
-	default:
-		return fmt.Errorf("stat config file: %w", err)
 	}
 
 	data, err := json.MarshalIndent(config.masked(), "", "  ")
@@ -331,19 +241,17 @@ usage:
   next-index [command] [options] [root]
 
 commands:
-  serve      serve a directory over http (default)
-  passwd     set the username and password used for uploads
-  username   change the username without touching the password
-  config     print the config file and its location
+  run        serve a directory over http (default)
+  config     update the config from flags, or print it
   about      print build information
   help       print this message
 
 options:
-  -a, --addr <ip>        address to listen on (default: 0.0.0.0)
-  -p, --port <port>      port to listen on (default: 8080)
-  -r, --root <dir>       directory to serve
-  -u, --user <name>      username for passwd
-  -P, --password <pass>  password for passwd (leaks into shell history)
+  -a, --addr <ip>        address for run/config (default: 0.0.0.0)
+  -p, --port <port>      port for run/config (default: 8080)
+  -r, --root <dir>       root directory for run/config
+  -u, --user <name>      username for run/config
+  -P, --password <pass>  password for run/config (hashed; leaks into shell history)
   -q, --quiet            do not log every request
   -c, --color            colored log output
   -t, --time             timestamp every log line
@@ -352,13 +260,17 @@ options:
 
 examples:
   next-index ~/Downloads
-  next-index serve -p 9000 -a 127.0.0.1 ./public
-  next-index passwd -u admin
-  next-index username fovlin
+  next-index run -p 9000 -a 127.0.0.1 ./public
+  next-index config -p 9000 -a 127.0.0.1
+  next-index config -u admin -P "new password"
+  next-index config -r ~/Downloads
+  next-index config
 
 config:
   ~/.next_index.json stores the root, address, port, credentials and limits.
   The password is stored as a SHA-256 hash.
+  config without flags prints the file; with flags it saves them and prints the result.
+  config and run create the file on first use; later run flags are not saved.
 
 browsing is public; the username and password are only required to upload
 files or to rename, create and delete them.

@@ -15,10 +15,12 @@ All notable changes to NEXT_INDEX are documented here. The project follows
 - A plain, flat interface with a single #004f8f accent.
 - Public browsing and downloads; a username and password are only required to
   upload, create folders, rename and delete.
-- Config file at `~/.next_index.json`, created on the first run, with a generated
+- Config file at `~/.next_index.json`, created on first use, with a generated
   password printed once.
-- `serve`, `passwd`, `username`, `config`, `about` and `help` commands.
-- `next-index username <name>` changes only the username, keeping the password.
+- `run`, `config`, `about` and `help` commands.
+- `run` starts the server; `-a`, `-p`, `-r`, `-u` and `-P` apply to that run only.
+- `config` prints the config when called without flags, and saves `-a`, `-p`,
+  `-r`, `-u` and `-P` when they are given.
 - Multipart uploads with progress, drag and drop of files and folders,
   multi-file selection, overwrite and automatic `name-1.ext` renaming.
 - Folder creation, rename and recursive delete.
@@ -30,10 +32,14 @@ All notable changes to NEXT_INDEX are documented here. The project follows
 ### Changed
 
 - Passwords are stored as a plain SHA-256 hash instead of PBKDF2.
+- Replaced the `passwd` and `username` commands with `config` flags.
+- API endpoints moved from `/api/` to `/@next-index/api/`, so a served directory named
+  `api` is no longer shadowed.
+- Static assets moved from `/_next/` to `/@next-index/assets/`.
+- Removed the read-only mode. Empty credentials are replaced with `admin` and a
+  generated password when the config is loaded.
 
 ### Fixed
 
-- Ctrl+C while `next-index passwd` is reading a password now restores the
-  terminal state before exiting.
 - The first-run credentials are logged through the INFO logger instead of a
   hand-drawn box.
