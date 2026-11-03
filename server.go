@@ -80,6 +80,29 @@ func (server *Server) wrap(next http.Handler) http.Handler {
 		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("Referrer-Policy", "no-referrer")
 
+		origin := r.Header.Get("Origin")
+		allowed := allowedOrigin(origin)
+
+		if allowed {
+			w.Header().Set("Access-Control-Allow-Origin", config.AllowOrigin)
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			w.Header().Add("Vary", "Origin")
+		}
+
+		if r.Method == http.MethodOptions && origin != "" {
+			if !allowed {
+				http.Error(w, "cross-origin request blocked", http.StatusForbidden)
+				return
+			}
+
+			w.Header().Set("SameSite", "None")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			w.Header().Set("Access-Control-Max-Age", "600")
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
 		recorder := &statusRecorder{
 			ResponseWriter: w,
 			status:         http.StatusOK,

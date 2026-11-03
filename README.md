@@ -51,18 +51,21 @@ next-index [command] [options] [root]
 
 next-index ~/Downloads                # serve a directory for this run
 next-index run -p 9000 .              # serve with overrides for this run
-next-index config                     # print the config file
+next-index config                     # print an existing config
 next-index config -p 9000 -i 0.0.0.0  # save address and port
 next-index config -u admin -P "new password"  # save credentials
 next-index config -r ~/Downloads      # save the root
+next-index config -o http://localhost:3000  # save an allowed Origin
 next-index about                      # build information
 next-index help                       # the full usage text
 ```
 
 The root directory defaults to the `root` value in `~/.next_index.json`, then to the
-current directory. `run` applies `-a`, `-p`, `-r`, `-u` and `-P` to that process
-only and never writes them back. `config` with flags saves those fields to the
-file and then prints the config.
+current directory. `run` applies `-i`, `-p`, `-r`, `-u`, `-P` and `-o` to that
+process only and never writes them back, except when it creates the config or
+fills missing credentials. `config` with flags saves those fields silently;
+without flags it prints an existing config, and a missing config is created
+silently.
 
 ### Options
 
@@ -73,6 +76,7 @@ file and then prints the config.
 | `-r, --root <dir>` | root directory for `run` / `config` |
 | `-u, --user <name>` | username for `run` / `config` |
 | `-P, --password <pass>` | password for `run` / `config` (hashed; leaks into shell history) |
+| `-o, --cross-origin <origin>` | exact Origin allowed to call the API (experimental) |
 | `-q, --quiet` | do not log every request |
 | `-c, --color` | colored log output |
 | `-t, --time` | timestamp every log line |
@@ -88,8 +92,9 @@ below, `admin` as the username and a generated password, printed once.
 
 `loadConfig` fills missing defaults and credentials in memory. `run` saves the
 file when it is missing or credentials had to be generated, and otherwise applies
-its flags to that process only. `config` saves flags and generated credentials,
-then prints; without flags it prints (and creates the file if missing). The root
+its flags to that process only. `config` saves flags and generated credentials
+silently; without flags it prints a complete existing config, and a missing
+config or missing credentials are created or repaired silently. The root
 argument of `run` is not persisted: use `next-index config -r` or edit the file
 for that.
 
@@ -106,7 +111,8 @@ for that.
     "cert": "",
     "key": ""
   },
-  "max_upload_mb": 1024
+  "max_upload_mb": 1024,
+  "allow_origin": ""
 }
 ```
 
@@ -120,6 +126,7 @@ for that.
 | `password` | SHA-256 hash (hex); use `next-index config -P` to change it |
 | `tls` | enable HTTPS with a certificate and key file |
 | `max_upload_mb` | maximum request size in MiB, `0` means no limit |
+| `allow_origin` | exact Origin allowed for cross-origin API calls (experimental) |
 
 If `username` or `password` is empty, the next `run` or `config` fills it with
 `admin` and a generated password and saves the config. There is no separate
@@ -128,8 +135,12 @@ read-only mode.
 `next-index config -u admin -P "new password"` writes new credentials. A
 password shorter than 8 characters is accepted with a warning.
 
-`next-index config -p 9000 -a 127.0.0.1` saves the address and port;
-`next-index config -r ~/Downloads` saves the root.
+`next-index config -p 9000 -i 127.0.0.1` saves the address and port;
+`next-index config -r ~/Downloads` saves the root. Cross-origin support is
+experimental: `allow_origin` must be an exact Origin such as
+`http://localhost:3000`; the server answers CORS preflight and sends the matching
+headers. Cross-site session cookies are still `SameSite=Lax`, so cross-origin
+writes may need Basic auth or a cookie-policy change.
 
 ## The interface
 
@@ -165,7 +176,26 @@ curl -u admin:password -F "file=@photo.jpg" \
   "http://localhost:8080/@next-index/api/upload?path=/photos/"
 ```
 
-State-changing requests with a mismatched `Origin` header are rejected.
+State-changing requests with a mismatched `Origin` header are rejected unless
+that exact Origin is configured with `allow_origin`; allowed origins also get
+CORS preflight and response headers.
+
+### Cross-origin API
+
+Cross-origin access is experimental. Configure exactly one Origin:
+
+```bash
+next-index config -o http://localhost:3000
+```
+
+`allow_origin` is a full Origin (`scheme://host[:port]`), not a bare host and not
+a path. When an allowed Origin calls the API, the server answers `OPTIONS`
+preflight for `GET`/`POST` with `Content-Type`/`Authorization` and sends
+`Access-Control-Allow-Origin`, `Access-Control-Allow-Credentials` and
+`Vary: Origin`. Requests from other origins are rejected for writes.
+
+Cross-site session cookies remain `SameSite=Lax`; for cross-origin writes use
+HTTP Basic auth, or change the cookie policy only when serving over HTTPS.
 
 ## Security
 

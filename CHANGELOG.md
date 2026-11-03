@@ -3,14 +3,14 @@
 All notable changes to NEXT_INDEX are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
-## 0.1.0 - 2026-11-03
+## 0.0.2-alpha - 2026-11-03
 
 ### Added
 
 - Renamed the project to NEXT_INDEX. The binary is `next-index` and the config
   is `~/.next_index.json`.
 - Serve any directory over HTTP with a list/grid interface, breadcrumbs,
-  search, sortable columns, thumbnails, relative timestamps and a light/dark
+  search, sortable columns, thumbnails, absolute date/time and a light/dark
   theme.
 - A plain, flat interface with a single #004f8f accent.
 - Public browsing and downloads; a username and password are only required to
@@ -18,14 +18,17 @@ All notable changes to NEXT_INDEX are documented here. The project follows
 - Config file at `~/.next_index.json`, created on first use, with a generated
   password printed once.
 - `run`, `config`, `about` and `help` commands.
-- `run` starts the server; `-a`, `-p`, `-r`, `-u` and `-P` apply to that run only.
-- `config` prints the config when called without flags, and saves `-a`, `-p`,
-  `-r`, `-u` and `-P` when they are given.
+- `run` starts the server; `-i`, `-p`, `-r`, `-u`, `-P` and `-o` apply to that
+  run only.
+- `config` prints an existing config when called without flags, and saves `-i`,
+  `-p`, `-r`, `-u`, `-P` and `-o` silently when they are given.
 - Multipart uploads with progress, drag and drop of files and folders,
   multi-file selection, overwrite and automatic `name-1.ext` renaming.
 - Folder creation, rename and recursive delete.
 - `opt` and `record` vendored from mc-saver, wired with `replace` directives.
-- Optional HTTPS, upload size limit and request logging.
+- Optional HTTPS, upload size limit, request logging and an experimental
+  cross-origin API allowlist (`-o`, `allow_origin`) with exact-Origin matching
+  and preflight handling.
 - Path containment checks, symlink escape protection, attachment disposition
   for active content, login rate limiting and security headers.
 

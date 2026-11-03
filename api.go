@@ -493,9 +493,6 @@ func queryPath(r *http.Request) string {
 }
 
 func sameOrigin(r *http.Request) bool {
-	if config.CrossOrigin {
-		return true
-	}
 	origin := r.Header.Get("Origin")
 	if origin == "" {
 		return true
@@ -506,7 +503,13 @@ func sameOrigin(r *http.Request) bool {
 		return false
 	}
 
-	return strings.EqualFold(parsed.Host, r.Host)
+	return strings.EqualFold(parsed.Host, r.Host) || allowedOrigin(origin)
+}
+
+func allowedOrigin(origin string) bool {
+	return origin != "" &&
+		config.AllowOrigin != "" &&
+		strings.EqualFold(origin, config.AllowOrigin)
 }
 
 func clientIP(r *http.Request) string {
