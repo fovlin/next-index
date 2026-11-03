@@ -16,7 +16,7 @@ const (
 	defaultAddr        = "0.0.0.0"
 	defaultPort        = 8080
 	defaultTitle       = "NEXT_INDEX"
-	defaultMaxUploadMB = 1024
+	defaultMaxUploadMB = 0
 	defaultUsername    = "admin"
 )
 

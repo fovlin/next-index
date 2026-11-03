@@ -28,6 +28,7 @@ var (
 	userFlag        string
 	passwordFlag    string
 	allowOriginFlag string
+	upfileMaxSizeFlag   string
 	quietFlag       bool
 
 	needSaveConfig bool
@@ -78,7 +79,7 @@ func newCmdFunction(loadConfig bool, function func() error) CmdFunc {
 func initProgram() error {
 	cmdMap = map[string]CmdFunc{
 		"run":    newCmdFunction(true, run),
-		"config": newCmdFunction(true, addConfig),
+		"config": newCmdFunction(true, setConfig),
 		"unset":  newCmdFunction(true, unsetConfig),
 		"about":  newCmdFunction(false, about),
 		"help":   newCmdFunction(false, help),
@@ -88,6 +89,7 @@ func initProgram() error {
 	opt.StringVar(&portFlag, "p", "port", "")
 	opt.StringVar(&rootFlag, "r", "root", "")
 	opt.StringVar(&userFlag, "u", "user", "")
+	opt.StringVar(&upfileMaxSizeFlag, "x", "max-size", "")
 	opt.StringVar(&passwordFlag, "P", "password", "")
 	opt.StringVar(&allowOriginFlag, "o", "cross-origin", "")
 
@@ -196,6 +198,15 @@ func parseFlag() error {
 		configChanged = true
 	}
 
+	if upfileMaxSizeFlag != "" {
+		var err error
+		config.MaxUploadMB, err = strconv.ParseInt(upfileMaxSizeFlag, 10, 64)
+		if err != nil {
+			return fmt.Errorf("parse max size option: %w", err)
+		}
+		configChanged = true
+	}
+
 	if allowOriginFlag != "" {
 		origin, err := normalizeOrigin(allowOriginFlag)
 		if err != nil {
@@ -230,7 +241,7 @@ func normalizeOrigin(value string) (string, error) {
 	return strings.ToLower(parsed.Scheme) + "://" + strings.ToLower(parsed.Host), nil
 }
 
-func addConfig() error {
+func setConfig() error {
 	if configChanged || needSaveConfig {
 		if err := saveConfig(); err != nil {
 			return err
