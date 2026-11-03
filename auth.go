@@ -1,110 +1,44 @@
 package main
 
 import (
-	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 )
 
 const (
-	passwordScheme     = "pbkdf2-sha256"
-	pbkdf2Iterations   = 210000
-	pbkdf2KeyLength    = 32
-	pbkdf2SaltLength   = 16
 	passwordAlphabet   = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 	sessionCookieName  = "next_index_session"
 	sessionDuration    = 12 * time.Hour
 	sessionTokenLength = 32
 )
 
-func pbkdf2SHA256(password, salt []byte, iterations int, keyLength int) []byte {
-	prf := hmac.New(sha256.New, password)
-	hashLength := prf.Size()
-	blocks := (keyLength + hashLength - 1) / hashLength
+func hashPassword(password string) string {
+	sum := sha256.Sum256([]byte(password))
 
-	derived := make([]byte, 0, blocks*hashLength)
-
-	var counter [4]byte
-	u := make([]byte, hashLength)
-	t := make([]byte, hashLength)
-
-	for block := 1; block <= blocks; block++ {
-		prf.Reset()
-		prf.Write(salt)
-		counter[0] = byte(block >> 24)
-		counter[1] = byte(block >> 16)
-		counter[2] = byte(block >> 8)
-		counter[3] = byte(block)
-		prf.Write(counter[:])
-
-		u = prf.Sum(u[:0])
-		copy(t, u)
-
-		for round := 1; round < iterations; round++ {
-			prf.Reset()
-			prf.Write(u)
-			u = prf.Sum(u[:0])
-			for index := range t {
-				t[index] ^= u[index]
-			}
-		}
-
-		derived = append(derived, t...)
-	}
-
-	return derived[:keyLength]
+	return hex.EncodeToString(sum[:])
 }
 
-func hashPassword(password string) (string, error) {
-	salt := make([]byte, pbkdf2SaltLength)
-	if _, err := rand.Read(salt); err != nil {
-		return "", fmt.Errorf("create password salt: %w", err)
-	}
+func validPasswordHash(encoded string) bool {
+	decoded, err := hex.DecodeString(encoded)
 
-	key := pbkdf2SHA256([]byte(password), salt, pbkdf2Iterations, pbkdf2KeyLength)
-
-	encoded := fmt.Sprintf(
-		"%v$%v$%v$%v",
-		passwordScheme,
-		pbkdf2Iterations,
-		base64.RawStdEncoding.EncodeToString(salt),
-		base64.RawStdEncoding.EncodeToString(key),
-	)
-
-	return encoded, nil
+	return err == nil && len(decoded) == sha256.Size
 }
 
 func verifyPassword(encoded string, password string) bool {
-	fields := strings.Split(encoded, "$")
-	if len(fields) != 4 || fields[0] != passwordScheme {
+	expected, err := hex.DecodeString(encoded)
+	if err != nil || len(expected) != sha256.Size {
 		return false
 	}
 
-	iterations, err := strconv.Atoi(fields[1])
-	if err != nil || iterations <= 0 || iterations > 10000000 {
-		return false
-	}
+	sum := sha256.Sum256([]byte(password))
 
-	salt, err := base64.RawStdEncoding.DecodeString(fields[2])
-	if err != nil || len(salt) == 0 {
-		return false
-	}
-
-	expected, err := base64.RawStdEncoding.DecodeString(fields[3])
-	if err != nil || len(expected) == 0 {
-		return false
-	}
-
-	actual := pbkdf2SHA256([]byte(password), salt, iterations, len(expected))
-
-	return subtle.ConstantTimeCompare(actual, expected) == 1
+	return subtle.ConstantTimeCompare(sum[:], expected) == 1
 }
 
 func randomPassword(length int) (string, error) {

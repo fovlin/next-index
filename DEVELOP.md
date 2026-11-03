@@ -8,7 +8,7 @@
 
 ```text
 next-index
-├── main.go            entry point, flags, command table, passwd/about/help
+├── main.go            entry point, flags, command table, passwd/username/about/help
 ├── serve.go           serve command: root resolution, first-run credentials, listen
 ├── config.go          ~/.next_index.json: defaults, load, atomic save
 ├── server.go          Server type, routes, middleware, graceful shutdown
@@ -100,9 +100,11 @@ place, so a failed upload never leaves a partial file.
 
 ## Auth
 
-- `hashPassword` produces `pbkdf2-sha256$<iterations>$<salt>$<key>` with 210,000
-  iterations and a 16-byte random salt.
-- `verifyPassword` compares with `subtle.ConstantTimeCompare`.
+- `hashPassword` returns the hex SHA-256 digest of the password.
+- `verifyPassword` decodes the hex digest and compares it with
+  `subtle.ConstantTimeCompare`.
+- The digest is intentionally unsalted: simple, but only suitable for a
+  single-user tool with a long password.
 - `sessionStore` keeps random 256-bit tokens in memory for 12 hours. Sessions are
   lost on restart, which is fine for a single-user file server.
 - `loginLimiter` blocks one address for five minutes after five failures.
@@ -137,6 +139,6 @@ is kept in `.tests-backup.tar.gz`; extract it with
 
 1. Update `CHANGELOG.md` and the version constant in `main.go`.
 2. Run `gofmt -l .` and `go vet ./...`.
-3. Smoke-test `serve`, `passwd`, `config` and a fresh first run with a temporary
-   `HOME`.
+3. Smoke-test `serve`, `passwd`, `username`, `config` and a fresh first run with
+   a temporary `HOME`.
 4. Run `./build.sh` and attach the archives under `build/` to the release.

@@ -54,12 +54,7 @@ func serve() error {
 				return err
 			}
 
-			hashed, err := hashPassword(password)
-			if err != nil {
-				return err
-			}
-
-			config.Password = hashed
+			config.Password = hashPassword(password)
 			generatedPassword = password
 		}
 
@@ -110,6 +105,10 @@ func serve() error {
 		record.Info("uploads and file management: enabled (user:", config.Username+")")
 	} else {
 		record.Warn("uploads and file management: disabled, run `next-index passwd` to enable them")
+	}
+
+	if config.Password != "" && !validPasswordHash(config.Password) {
+		record.Warn("the stored password hash is not a SHA-256 digest, run `next-index passwd` to set a new password")
 	}
 
 	if generatedPassword != "" {

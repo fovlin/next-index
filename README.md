@@ -52,6 +52,7 @@ next-index [command] [options] [root]
 next-index ~/Downloads          # serve a directory
 next-index serve -p 9000 .      # serve the current directory on port 9000
 next-index passwd               # set or change the upload credentials
+next-index username fovlin      # change the username only
 next-index config               # print the config file
 next-index about                # build information
 next-index help                 # the full usage text
@@ -88,7 +89,7 @@ the password hash.
   "port": 8080,
   "title": "NEXT_INDEX",
   "username": "admin",
-  "password": "pbkdf2-sha256$210000$...$...",
+  "password": "<sha256 hex>",
   "tls": {
     "enable": false,
     "cert": "",
@@ -105,7 +106,7 @@ the password hash.
 | `port` | listen port |
 | `title` | site title shown in the header and page title |
 | `username` | username required for writes |
-| `password` | salted pbkdf2-sha256 hash; use `next-index passwd` to change it |
+| `password` | SHA-256 hash (hex); use `next-index passwd` to change it |
 | `tls` | enable HTTPS with a certificate and key file |
 | `max_upload_mb` | maximum request size in MiB, `0` means no limit |
 
@@ -114,6 +115,8 @@ disappears and every write endpoint answers `403`.
 
 `next-index passwd` prompts twice without echoing, and accepts `-u` and `-P` for
 scripted setup. A password shorter than 8 characters is accepted with a warning.
+`next-index username <name>` changes only the username and keeps the current
+password; run it with no argument to print the configured username.
 
 ## The interface
 
@@ -159,7 +162,8 @@ State-changing requests with a mismatched `Origin` header are rejected.
   Windows-reserved names are prefixed with `_`.
 - `.html`, `.svg`, `.xml` and script files are served with
   `Content-Disposition: attachment` so they cannot run in the site's origin.
-- Passwords are stored as salted pbkdf2-sha256 hashes (210,000 iterations).
+- Passwords are stored as a single SHA-256 hash. The hash is deliberately
+  unsalted; use a long password.
 - Sessions are random 256-bit tokens kept in memory, valid for 12 hours, in an
   `HttpOnly` cookie (`SameSite=Lax`, `Secure` when TLS is on).
 - Five failed logins from one address block that address for five minutes.

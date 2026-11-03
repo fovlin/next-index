@@ -5,13 +5,6 @@ All notable changes to NEXT_INDEX are documented here. The project follows
 
 ## 0.1.0 - 2026-11-03
 
-### Fixed
-
-- Ctrl+C while `next-index passwd` is reading a password now restores the
-  terminal state before exiting.
-- The first-run credentials are logged through the INFO logger instead of a
-  hand-drawn box.
-
 ### Added
 
 - Renamed the project to NEXT_INDEX. The binary is `next-index` and the config
@@ -24,7 +17,8 @@ All notable changes to NEXT_INDEX are documented here. The project follows
   upload, create folders, rename and delete.
 - Config file at `~/.next_index.json`, created on the first run, with a generated
   password printed once.
-- `serve`, `passwd`, `config`, `about` and `help` commands.
+- `serve`, `passwd`, `username`, `config`, `about` and `help` commands.
+- `next-index username <name>` changes only the username, keeping the password.
 - Multipart uploads with progress, drag and drop of files and folders,
   multi-file selection, overwrite and automatic `name-1.ext` renaming.
 - Folder creation, rename and recursive delete.
@@ -32,3 +26,14 @@ All notable changes to NEXT_INDEX are documented here. The project follows
 - Optional HTTPS, upload size limit and request logging.
 - Path containment checks, symlink escape protection, attachment disposition
   for active content, login rate limiting and security headers.
+
+### Changed
+
+- Passwords are stored as a plain SHA-256 hash instead of PBKDF2.
+
+### Fixed
+
+- Ctrl+C while `next-index passwd` is reading a password now restores the
+  terminal state before exiting.
+- The first-run credentials are logged through the INFO logger instead of a
+  hand-drawn box.

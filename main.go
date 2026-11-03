@@ -64,11 +64,12 @@ func main() {
 
 func initProgram() error {
 	cmdMap = map[string]func() error{
-		"serve":  serve,
-		"passwd": changePassword,
-		"config": showConfig,
-		"about":  about,
-		"help":   help,
+		"serve":    serve,
+		"passwd":   changePassword,
+		"username": changeUsername,
+		"config":   showConfig,
+		"about":    about,
+		"help":     help,
 	}
 
 	opt.StringVar(&addrFlag, "a", "addr", "")
@@ -176,19 +177,50 @@ func changePassword() error {
 		record.Warn("this password is shorter than 8 characters")
 	}
 
-	hashed, err := hashPassword(password)
-	if err != nil {
-		return err
-	}
-
 	config.Username = username
-	config.Password = hashed
+	config.Password = hashPassword(password)
 
 	if err := saveConfig(); err != nil {
 		return err
 	}
 
 	record.Info("credentials updated for", username)
+	record.Info("config saved to", configPath)
+
+	return nil
+}
+
+func changeUsername() error {
+	if len(subCmdArgs) == 0 {
+		if config.Username == "" {
+			record.Info("username: (not set)")
+			return nil
+		}
+
+		record.Info("username:", config.Username)
+		return nil
+	}
+
+	if len(subCmdArgs) > 1 {
+		return fmt.Errorf("usage: next-index username <name>")
+	}
+
+	username := strings.TrimSpace(subCmdArgs[0])
+	if username == "" {
+		return fmt.Errorf("username must not be empty")
+	}
+
+	if strings.ContainsAny(username, "\r\n\t") {
+		return fmt.Errorf("username must not contain control characters")
+	}
+
+	config.Username = username
+
+	if err := saveConfig(); err != nil {
+		return err
+	}
+
+	record.Info("username updated to", username)
 	record.Info("config saved to", configPath)
 
 	return nil
@@ -301,6 +333,7 @@ usage:
 commands:
   serve      serve a directory over http (default)
   passwd     set the username and password used for uploads
+  username   change the username without touching the password
   config     print the config file and its location
   about      print build information
   help       print this message
@@ -321,10 +354,11 @@ examples:
   next-index ~/Downloads
   next-index serve -p 9000 -a 127.0.0.1 ./public
   next-index passwd -u admin
+  next-index username fovlin
 
 config:
   ~/.next_index.json stores the root, address, port, credentials and limits.
-  The password is stored as a salted pbkdf2-sha256 hash.
+  The password is stored as a SHA-256 hash.
 
 browsing is public; the username and password are only required to upload
 files or to rename, create and delete them.
