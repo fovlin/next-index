@@ -31,7 +31,6 @@ var (
 	upfileMaxSizeFlag   string
 	quietFlag       bool
 
-	needSaveConfig bool
 	configChanged  bool
 )
 
@@ -242,7 +241,7 @@ func normalizeOrigin(value string) (string, error) {
 }
 
 func setConfig() error {
-	if configChanged || needSaveConfig {
+	if configChanged {
 		if err := saveConfig(); err != nil {
 			return err
 		}

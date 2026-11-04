@@ -68,7 +68,7 @@ func loadConfig() error {
 	data, err := os.ReadFile(configPath)
 
 	if os.IsNotExist(err) {
-		needSaveConfig = true
+		configChanged = true
 		config = defaultConfig()
 	} else if err != nil {
 		return fmt.Errorf("read config file: %w", err)
@@ -87,32 +87,32 @@ func loadConfig() error {
 func (config *Config) normalize() {
 	if config.Root == "" {
 		config.Root = defaultRoot
-		needSaveConfig = true
+		configChanged = true
 	}
 
 	if config.Addr == "" {
 		config.Addr = defaultAddr
-		needSaveConfig = true
+		configChanged = true
 	}
 
 	if config.Port <= 0 || config.Port > 65535 {
 		config.Port = defaultPort
-		needSaveConfig = true
+		configChanged = true
 	}
 
 	if config.Title == "" {
 		config.Title = defaultTitle
-		needSaveConfig = true
+		configChanged = true
 	}
 
 	if config.MaxUploadMB < 0 {
 		config.MaxUploadMB = 0
-		needSaveConfig = true
+		configChanged = true
 	}
 
 	if config.MaxUploadMB > 1<<20 {
 		config.MaxUploadMB = 1 << 20
-		needSaveConfig = true
+		configChanged = true
 	}
 }
 
@@ -123,7 +123,7 @@ func initUser() error {
 		} else {
 			config.Username = defaultUsername
 		}
-		needSaveConfig = true
+		configChanged = true
 	}
 
 	if config.Password == "" && passwordFlag == "" {
@@ -133,7 +133,7 @@ func initUser() error {
 		}
 
 		config.Password = hashPassword(password)
-		needSaveConfig = true
+		configChanged = true
 
 		record.Info("generated a password for this server")
 		record.Info("username:", config.Username)

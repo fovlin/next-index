@@ -17,12 +17,6 @@ func run() error {
 		return err
 	}
 
-	if needSaveConfig {
-		if err := saveConfig(); err != nil {
-			return err
-		}
-	}
-
 	if config.TLS.Enable {
 		if config.TLS.Cert == "" || config.TLS.Key == "" {
 			return fmt.Errorf("tls is enabled but the certificate or key is missing from the config")
