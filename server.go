@@ -9,9 +9,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"path/filepath"
 	"runtime/debug"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -20,28 +22,28 @@ import (
 )
 
 type Server struct {
-	config   Config
-	root     string
-	sessions *sessionStore
-	limiter  *loginLimiter
-	template *template.Template
-	fsMutex  sync.Mutex
-	quiet    bool
+	Config   Config
+	Root     *os.Root
+	Sessions *sessionStore
+	Limiter  *loginLimiter
+	Template *template.Template
+	FsMutex  sync.Mutex
+	Quiet    bool
 }
 
-func newServer(cfg Config, root string) (*Server, error) {
+func newServer(cfg Config, root *os.Root) (*Server, error) {
 	pageTemplate, err := template.ParseFS(webAssets, "web/index.html")
 	if err != nil {
 		return nil, fmt.Errorf("parse page template: %w", err)
 	}
 
 	return &Server{
-		config:   cfg,
-		root:     root,
-		sessions: newSessionStore(sessionDuration),
-		limiter:  newLoginLimiter(5, 5*time.Minute),
-		template: pageTemplate,
-		quiet:    quietFlag,
+		Config:   cfg,
+		Root:     root,
+		Sessions: newSessionStore(sessionDuration),
+		Limiter:  newLoginLimiter(5, 5*time.Minute),
+		Template: pageTemplate,
+		Quiet:    quietFlag,
 	}, nil
 }
 
@@ -110,12 +112,12 @@ func (server *Server) wrap(next http.Handler) http.Handler {
 
 		defer func() {
 			if value := recover(); value != nil {
-				record.ErrorNoExit("panic while serving", r.URL.Path, ":", value)
-				record.ErrorNoExit(string(debug.Stack()))
+				record.Error("panic while serving", r.URL.Path, ":", value)
+				record.Error(string(debug.Stack()))
 				http.Error(recorder, "internal server error", http.StatusInternalServerError)
 			}
 
-			if !server.quiet {
+			if !server.Quiet {
 				record.Info(
 					r.Method,
 					r.URL.RequestURI(),
@@ -143,8 +145,17 @@ func (server *Server) serveAsset(name string, contentType string) http.HandlerFu
 	}
 }
 
+func resolveUrlPath(urlPath string) string {
+	fsPath := path.Clean(strings.TrimPrefix(urlPath, "/"))
+	if fsPath == "" {
+		fsPath = "."
+	}
+
+	return fsPath
+}
+
 func (server *Server) listenAndServe() error {
-	address := net.JoinHostPort(server.config.Addr, strconv.Itoa(server.config.Port))
+	address := net.JoinHostPort(server.Config.Addr, strconv.Itoa(server.Config.Port))
 
 	httpServer := &http.Server{
 		Addr:              address,
@@ -160,8 +171,8 @@ func (server *Server) listenAndServe() error {
 	errChan := make(chan error, 1)
 
 	go func() {
-		if server.config.TLS.Enable {
-			errChan <- httpServer.ListenAndServeTLS(server.config.TLS.Cert, server.config.TLS.Key)
+		if server.Config.TLS.Enable {
+			errChan <- httpServer.ListenAndServeTLS(server.Config.TLS.Cert, server.Config.TLS.Key)
 			return
 		}
 

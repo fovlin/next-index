@@ -9,7 +9,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 )
@@ -42,13 +41,13 @@ func (server *Server) handleSession(w http.ResponseWriter, r *http.Request) {
 
 	response := sessionResponse{
 		Authenticated: authenticated,
-		Writable:      server.config.writable(),
+		Writable:      server.Config.writable(),
 		Version:       version,
-		MaxUploadMB:   server.config.MaxUploadMB,
+		MaxUploadMB:   server.Config.MaxUploadMB,
 	}
 
 	if authenticated {
-		response.Username = server.config.Username
+		response.Username = server.Config.Username
 	}
 
 	writeJSON(w, http.StatusOK, response)
@@ -60,14 +59,14 @@ func (server *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !server.config.writable() {
+	if !server.Config.writable() {
 		server.apiError(w, http.StatusForbidden, "write access is disabled, run `next-index config -P <password>` on the server")
 		return
 	}
 
 	key := clientIP(r)
 
-	if !server.limiter.allow(key) {
+	if !server.Limiter.allow(key) {
 		w.Header().Set("Retry-After", "300")
 		server.apiError(w, http.StatusTooManyRequests, "too many failed attempts, try again later")
 		return
@@ -84,26 +83,26 @@ func (server *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !server.checkCredentials(request.Username, request.Password) {
-		server.limiter.fail(key)
+		server.Limiter.fail(key)
 		server.apiError(w, http.StatusUnauthorized, "invalid username or password")
 		return
 	}
 
-	token, err := server.sessions.create()
+	token, err := server.Sessions.create()
 	if err != nil {
 		server.apiError(w, http.StatusInternalServerError, "could not create session")
 		return
 	}
 
-	server.limiter.reset(key)
+	server.Limiter.reset(key)
 	server.setSessionCookie(w, r, token)
 
 	writeJSON(w, http.StatusOK, sessionResponse{
 		Authenticated: true,
-		Username:      server.config.Username,
+		Username:      server.Config.Username,
 		Writable:      true,
 		Version:       version,
-		MaxUploadMB:   server.config.MaxUploadMB,
+		MaxUploadMB:   server.Config.MaxUploadMB,
 	})
 }
 
@@ -114,7 +113,7 @@ func (server *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if cookie, err := r.Cookie(sessionCookieName); err == nil {
-		server.sessions.destroy(cookie.Value)
+		server.Sessions.destroy(cookie.Value)
 	}
 
 	http.SetCookie(w, &http.Cookie{
@@ -124,20 +123,16 @@ func (server *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   -1,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
-		Secure:   r.TLS != nil || server.config.TLS.Enable,
+		Secure:   r.TLS != nil || server.Config.TLS.Enable,
 	})
 
 	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
 }
 
 func (server *Server) handleList(w http.ResponseWriter, r *http.Request) {
-	urlPath := queryPath(r)
+	fsPath := resolveUrlPath(r.URL.Query().Get("path"))
 
-	if !strings.HasSuffix(urlPath, "/") {
-		urlPath += "/"
-	}
-
-	list, err := server.buildListing(urlPath)
+	list, err := server.buildListing(fsPath)
 	if err != nil {
 		server.failAPI(w, err)
 		return
@@ -151,14 +146,10 @@ func (server *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dirPath, err := server.targetDir(queryPath(r))
-	if err != nil {
-		server.failAPI(w, err)
-		return
-	}
+	dirPath := resolveUrlPath(r.URL.Query().Get("path"))
 
-	if server.config.MaxUploadMB > 0 {
-		limit := server.config.MaxUploadMB << 20
+	if server.Config.MaxUploadMB > 0 {
+		limit := server.Config.MaxUploadMB << 20
 		r.Body = http.MaxBytesReader(w, r.Body, limit)
 	}
 
@@ -171,7 +162,7 @@ func (server *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 
 		switch true {
 		case errors.As(err, &maxBytesError):
-			server.apiError(w, http.StatusRequestEntityTooLarge, fmt.Sprintf("upload exceeds the %d MB limit", server.config.MaxUploadMB))
+			server.apiError(w, http.StatusRequestEntityTooLarge, fmt.Sprintf("upload exceeds the %d MB limit", server.Config.MaxUploadMB))
 		default:
 			server.apiError(w, http.StatusBadRequest, "invalid upload request")
 		}
@@ -191,8 +182,8 @@ func (server *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 
 	results := make([]uploadResult, 0, len(files))
 
-	server.fsMutex.Lock()
-	defer server.fsMutex.Unlock()
+	server.FsMutex.Lock()
+	defer server.FsMutex.Unlock()
 
 	for _, header := range files {
 		name, err := sanitizeName(header.Filename)
@@ -252,26 +243,14 @@ func (server *Server) handleMkdir(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dirPath, err := server.targetDir(request.Path)
-	if err != nil {
-		server.failAPI(w, err)
-		return
-	}
+	dirPath := resolveUrlPath(request.Path)
 
-	server.fsMutex.Lock()
-	defer server.fsMutex.Unlock()
+	server.FsMutex.Lock()
+	defer server.FsMutex.Unlock()
 
 	target := filepath.Join(dirPath, name)
 
-	if _, err := os.Lstat(target); err == nil {
-		server.apiError(w, http.StatusConflict, "a file or directory with this name already exists")
-		return
-	} else if !os.IsNotExist(err) {
-		server.apiError(w, http.StatusInternalServerError, "could not check the directory")
-		return
-	}
-
-	if err := os.Mkdir(target, 0755); err != nil {
+	if err := server.Root.Mkdir(target, 0755); err != nil {
 		server.apiError(w, http.StatusInternalServerError, "could not create the directory")
 		return
 	}
@@ -291,52 +270,20 @@ func (server *Server) handleRename(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	from, err := validateName(request.From)
-	if err != nil {
-		server.apiError(w, http.StatusBadRequest, "invalid source name")
-		return
-	}
+	from := resolveUrlPath(request.From)
 
-	to, err := validateName(request.To)
-	if err != nil {
-		server.apiError(w, http.StatusBadRequest, "invalid target name")
-		return
-	}
+	to := resolveUrlPath(request.To)
 
 	if from == to {
 		writeJSON(w, http.StatusOK, map[string]string{"name": to})
 		return
 	}
 
-	dirPath, err := server.targetDir(request.Path)
-	if err != nil {
-		server.failAPI(w, err)
-		return
-	}
+	server.FsMutex.Lock()
+	defer server.FsMutex.Unlock()
 
-	server.fsMutex.Lock()
-	defer server.fsMutex.Unlock()
-
-	source := filepath.Join(dirPath, from)
-	target := filepath.Join(dirPath, to)
-
-	if _, err := os.Lstat(source); err != nil {
-		if os.IsNotExist(err) {
-			server.apiError(w, http.StatusNotFound, "the source file does not exist")
-			return
-		}
-
-		server.apiError(w, http.StatusInternalServerError, "could not read the source file")
-		return
-	}
-
-	if _, err := os.Lstat(target); err == nil {
-		server.apiError(w, http.StatusConflict, "a file or directory with this name already exists")
-		return
-	}
-
-	if err := os.Rename(source, target); err != nil {
-		server.apiError(w, http.StatusInternalServerError, "could not rename the file")
+	if err := server.Root.Rename(from, to); err != nil {
+		server.apiError(w, http.StatusInternalServerError, "could not rename the file: "+err.Error())
 		return
 	}
 
@@ -378,21 +325,17 @@ func (server *Server) handleDelete(w http.ResponseWriter, r *http.Request) {
 		names = append(names, name)
 	}
 
-	dirPath, err := server.targetDir(request.Path)
-	if err != nil {
-		server.failAPI(w, err)
-		return
-	}
+	dirPath := resolveUrlPath(request.Path)
 
-	server.fsMutex.Lock()
-	defer server.fsMutex.Unlock()
+	server.FsMutex.Lock()
+	defer server.FsMutex.Unlock()
 
 	deleted := make([]string, 0, len(names))
 
 	for _, name := range names {
 		target := filepath.Join(dirPath, name)
 
-		if err := os.RemoveAll(target); err != nil {
+		if err := server.Root.RemoveAll(target); err != nil {
 			server.apiError(w, http.StatusInternalServerError, fmt.Sprintf("could not delete %v", name))
 			return
 		}
@@ -409,7 +352,7 @@ func (server *Server) checkWrite(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 
-	if !server.config.writable() {
+	if !server.Config.writable() {
 		server.apiError(w, http.StatusForbidden, "write access is disabled, run `next-index config -P <password>` on the server")
 		return false
 	}
@@ -423,7 +366,7 @@ func (server *Server) checkWrite(w http.ResponseWriter, r *http.Request) bool {
 }
 
 func (server *Server) authenticated(r *http.Request) bool {
-	if cookie, err := r.Cookie(sessionCookieName); err == nil && server.sessions.valid(cookie.Value) {
+	if cookie, err := r.Cookie(sessionCookieName); err == nil && server.Sessions.valid(cookie.Value) {
 		return true
 	}
 
@@ -435,12 +378,12 @@ func (server *Server) authenticated(r *http.Request) bool {
 }
 
 func (server *Server) checkCredentials(username string, password string) bool {
-	if !server.config.writable() {
+	if !server.Config.writable() {
 		return false
 	}
 
-	usernameOK := subtle.ConstantTimeCompare([]byte(username), []byte(server.config.Username)) == 1
-	passwordOK := verifyPassword(server.config.Password, password)
+	usernameOK := subtle.ConstantTimeCompare([]byte(username), []byte(server.Config.Username)) == 1
+	passwordOK := verifyPassword(server.Config.Password, password)
 
 	return usernameOK && passwordOK
 }
@@ -453,43 +396,8 @@ func (server *Server) setSessionCookie(w http.ResponseWriter, r *http.Request, t
 		MaxAge:   int(sessionDuration.Seconds()),
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
-		Secure:   r.TLS != nil || server.config.TLS.Enable,
+		Secure:   r.TLS != nil || server.Config.TLS.Enable,
 	})
-}
-
-func (server *Server) targetDir(urlPath string) (string, error) {
-	fsPath, err := server.resolve(urlPath)
-	if err != nil {
-		return "", err
-	}
-
-	if err := server.ensureReal(fsPath); err != nil {
-		return "", err
-	}
-
-	info, err := os.Stat(fsPath)
-	if err != nil {
-		return "", err
-	}
-
-	if !info.IsDir() {
-		return "", errNotDirectory
-	}
-
-	return fsPath, nil
-}
-
-func queryPath(r *http.Request) string {
-	urlPath := r.URL.Query().Get("path")
-	if urlPath == "" {
-		urlPath = "/"
-	}
-
-	if !strings.HasPrefix(urlPath, "/") {
-		urlPath = "/" + urlPath
-	}
-
-	return urlPath
 }
 
 func sameOrigin(r *http.Request) bool {

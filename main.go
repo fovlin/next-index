@@ -22,16 +22,17 @@ var (
 	cmd        string
 	subCmdArgs []string
 
-	addrFlag        string
-	portFlag        string
-	rootFlag        string
-	userFlag        string
-	passwordFlag    string
-	allowOriginFlag string
-	upfileMaxSizeFlag   string
-	quietFlag       bool
+	addrFlag          string
+	portFlag          string
+	rootFlag          string
+	userFlag          string
+	passwordFlag      string
+	allowOriginFlag   string
+	upfileMaxSizeFlag string
+	quietFlag         bool
+	server            *Server
 
-	configChanged  bool
+	configChanged bool
 )
 
 type CmdFunc struct {

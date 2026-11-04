@@ -308,6 +308,7 @@ button {
 }
 
 .btn-primary {
+	margin: 4px 4px;
 	border-color: var(--accent);
 	background: var(--accent);
 	color: #fff;
