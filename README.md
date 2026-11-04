@@ -1,12 +1,11 @@
 # NEXT_INDEX
 
-A small, plain web file server. Point it at a directory and it serves an
-nginx-autoindex style page with the parts worth having: search, sortable
-columns, list and grid views, thumbnails, drag and drop uploads and file
-management.
+A small, plain web file index server.
 
-Browsing and downloads are public. A username and password are only required to
-upload, create folders, rename and delete.
+Browsing is public. The username and password are only required to upload,
+create, rename and delete files.
+
+## Feature
 
 ```bash
 ./next-index ~/Downloads
