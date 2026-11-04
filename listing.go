@@ -174,17 +174,17 @@ func readEntries(fsPath string, urlPath string) ([]Entry, error) {
 	entries := make([]Entry, 0, len(dirEntries))
 
 	if urlPath != "/" {
-		parentDirInfo, err := os.Lstat("../")
+		parentInfo, err := os.Stat(filepath.Dir(filepath.Clean(fsPath)))
 		if err != nil {
 			return nil, fmt.Errorf("stat parent directory: %w", err)
 		}
+
 		entries = append(entries, Entry{
-			Name: parentDirInfo.Name(),
-			Href: parentDirInfo.Name(),
+			Name: "..",
+			Href: parentURL(urlPath),
 			Kind: "dir",
-			Size: parentDirInfo.Size(),
-			Mod:  parentDirInfo.ModTime().Unix(),
-			Ext:  strings.ToLower(strings.TrimPrefix(filepath.Ext(parentDirInfo.Name()), ".")),
+			Size: 0,
+			Mod:  parentInfo.ModTime().Unix(),
 		})
 	}
 
