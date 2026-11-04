@@ -27,13 +27,13 @@ type bootstrapData struct {
 	Title         string  `json:"title"`
 	Site          string  `json:"site"`
 	Path          string  `json:"path"`
-	Parent        string  `json:"parent"`
+	Parent        Entry   `json:"parent"`
 	Crumbs        []Crumb `json:"crumbs"`
 	Entries       []Entry `json:"entries"`
 	Authenticated bool    `json:"authenticated"`
 	Username      string  `json:"username,omitempty"`
 	Writable      bool    `json:"writable"`
-	Root          string  `json:"root,omitempty"`
+	// Root       string  `json:"root,omitempty"`
 	Version       string  `json:"version"`
 	MaxUploadMB   int64   `json:"maxUploadMB"`
 	Now           int64   `json:"now"`
@@ -42,27 +42,27 @@ type bootstrapData struct {
 func (server *Server) renderListing(w http.ResponseWriter, r *http.Request, list *listing) {
 	authenticated := server.authenticated(r)
 
-	title := server.config.Title
+	title := server.Config.Title
 	if list.Path != "/" {
 		title += " · " + strings.Trim(list.Path, "/")
 	}
 
 	data := bootstrapData{
 		Title:         title,
-		Site:          server.config.Title,
+		Site:          server.Config.Title,
 		Path:          list.Path,
+		Parent:        list.Parent,
 		Crumbs:        list.Crumbs,
 		Entries:       list.Entries,
 		Authenticated: authenticated,
-		Writable:      server.config.writable(),
+		Writable:      server.Config.writable(),
 		Version:       version,
-		MaxUploadMB:   server.config.MaxUploadMB,
+		MaxUploadMB:   server.Config.MaxUploadMB,
 		Now:           time.Now().Unix(),
 	}
 
 	if authenticated {
-		data.Username = server.config.Username
-		data.Root = server.root
+		data.Username = server.Config.Username
 	}
 
 	bootstrap, err := json.Marshal(data)
@@ -77,7 +77,7 @@ func (server *Server) renderListing(w http.ResponseWriter, r *http.Request, list
 	}
 
 	var buffer bytes.Buffer
-	if err := server.template.ExecuteTemplate(&buffer, "index.html", page); err != nil {
+	if err := server.Template.ExecuteTemplate(&buffer, "index.html", page); err != nil {
 		server.fail(w, r, http.StatusInternalServerError, "could not render this directory")
 		return
 	}

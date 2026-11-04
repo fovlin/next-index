@@ -16,35 +16,14 @@ func (server *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	urlPath := r.URL.Path
-	if urlPath == "" {
-		urlPath = "/"
-	}
-
-	if strings.HasPrefix(urlPath, "/@next-index/api/") || strings.HasPrefix(urlPath, "/@next-index/assets/") {
+	if strings.HasPrefix(r.URL.Path, "/@next-index/api/") || strings.HasPrefix(r.URL.Path, "/@next-index/assets/") {
 		server.fail(w, r, http.StatusNotFound, "page not found")
 		return
 	}
 
-	fsPath, err := server.resolve(urlPath)
-	if err != nil {
-		server.fail(w, r, http.StatusForbidden, "invalid path")
-		return
-	}
+	fsPath := resolveUrlPath(r.URL.Path)
 
-	if err := server.ensureReal(fsPath); err != nil {
-		switch true {
-		case errors.Is(err, errOutsideRoot):
-			server.fail(w, r, http.StatusForbidden, "path is outside of the root directory")
-		case errors.Is(err, os.ErrNotExist):
-			server.fail(w, r, http.StatusNotFound, "file or directory not found")
-		default:
-			server.fail(w, r, http.StatusInternalServerError, "could not read the path")
-		}
-		return
-	}
-
-	info, err := os.Stat(fsPath)
+	info, err := server.Root.Stat(fsPath)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			server.fail(w, r, http.StatusNotFound, "file or directory not found")
@@ -57,17 +36,7 @@ func (server *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if info.IsDir() {
-		if !strings.HasSuffix(urlPath, "/") {
-			target := r.URL.EscapedPath() + "/"
-			if r.URL.RawQuery != "" {
-				target += "?" + r.URL.RawQuery
-			}
-
-			http.Redirect(w, r, target, http.StatusMovedPermanently)
-			return
-		}
-
-		list, err := server.buildListing(urlPath)
+		list, err := server.buildListing(fsPath)
 		if err != nil {
 			record.Warn("list directory", fsPath, ":", err)
 			server.fail(w, r, http.StatusInternalServerError, "could not read this directory")

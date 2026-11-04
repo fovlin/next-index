@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -12,6 +14,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"acovia.net/record"
 )
 
 var (
@@ -89,60 +93,14 @@ type Crumb struct {
 
 type listing struct {
 	Path    string  `json:"path"`
-	Parent  string  `json:"parent"`
+	Parent  Entry   `json:"parent"`
 	Crumbs  []Crumb `json:"crumbs"`
 	Entries []Entry `json:"entries"`
 }
 
-func (server *Server) resolve(urlPath string) (string, error) {
-	if !strings.HasPrefix(urlPath, "/") {
-		urlPath = "/" + urlPath
-	}
-
-	cleanPath := path.Clean(urlPath)
-	fsPath := filepath.Join(server.root, filepath.FromSlash(cleanPath))
-
-	relative, err := filepath.Rel(server.root, fsPath)
-	if err != nil {
-		return "", errInvalidPath
-	}
-
-	if relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
-		return "", errOutsideRoot
-	}
-
-	return fsPath, nil
-}
-
-func (server *Server) ensureReal(fsPath string) error {
-	realPath, err := filepath.EvalSymlinks(fsPath)
-	if err != nil {
-		return err
-	}
-
-	relative, err := filepath.Rel(server.root, realPath)
-	if err != nil {
-		return errInvalidPath
-	}
-
-	if relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
-		return errOutsideRoot
-	}
-
-	return nil
-}
-
-func (server *Server) buildListing(urlPath string) (*listing, error) {
-	fsPath, err := server.resolve(urlPath)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := server.ensureReal(fsPath); err != nil {
-		return nil, err
-	}
-
-	info, err := os.Stat(fsPath)
+func (server *Server) buildListing(fsPath string) (*listing, error) {
+	info, err := server.Root.Stat(fsPath)
+	record.Debug(fsPath)
 	if err != nil {
 		return nil, err
 	}
@@ -151,42 +109,38 @@ func (server *Server) buildListing(urlPath string) (*listing, error) {
 		return nil, errNotDirectory
 	}
 
-	entries, err := readEntries(fsPath, urlPath)
+	entries, err := readEntries(fsPath)
 	if err != nil {
 		return nil, err
+	}
+
+	var parentPath = "/"
+
+	if fsPath != "." {
+		parentPath = ".."
 	}
 
 	return &listing{
-		Path:    urlPath,
-		Parent:  parentURL(urlPath),
-		Crumbs:  makeCrumbs(urlPath),
+		Path:    formatUrlPath(fsPath, true),
+		Crumbs:  makeCrumbs(fsPath),
 		Entries: entries,
+		Parent: Entry{
+			Kind: "parent",
+			Href: "../",
+			Name: parentPath,
+			Size: info.Size(),
+			Mod:  info.ModTime().Unix(),
+		},
 	}, nil
 }
 
-func readEntries(fsPath string, urlPath string) ([]Entry, error) {
-	dirEntries, err := os.ReadDir(fsPath)
+func readEntries(fsPath string) ([]Entry, error) {
+	dirEntries, err := os.ReadDir(path.Join(server.Root.Name(), fsPath))
 	if err != nil {
 		return nil, err
 	}
 
-
 	entries := make([]Entry, 0, len(dirEntries))
-
-	if urlPath != "/" {
-		parentDirInfo, err := os.Lstat("../")
-		if err != nil {
-			return nil, fmt.Errorf("stat parent directory: %w", err)
-		}
-		entries = append(entries, Entry{
-			Name: parentDirInfo.Name(),
-			Href: parentDirInfo.Name(),
-			Kind: "dir",
-			Size: parentDirInfo.Size(),
-			Mod:  parentDirInfo.ModTime().Unix(),
-			Ext:  strings.ToLower(strings.TrimPrefix(filepath.Ext(parentDirInfo.Name()), ".")),
-		})
-	}
 
 	for _, dirEntry := range dirEntries {
 		info, err := dirEntry.Info()
@@ -208,25 +162,17 @@ func readEntries(fsPath string, urlPath string) ([]Entry, error) {
 			Ext:  strings.ToLower(strings.TrimPrefix(filepath.Ext(name), ".")),
 		}
 
-		if info.IsDir() {
+		switch true {
+		case info.IsDir():
+			entry.Href = formatUrlPath(path.Join(fsPath, name), true)
 			entry.Kind = "dir"
 			entry.Size = 0
+
+		case !info.IsDir():
+			entry.Href = formatUrlPath(path.Join(fsPath, name), false)
+
 		}
 
-		if dirEntry.Type()&os.ModeSymlink != 0 {
-			entry.Link = true
-
-			if target, err := os.Readlink(filepath.Join(fsPath, name)); err == nil {
-				entry.Target = target
-			}
-
-			if stat, err := os.Stat(filepath.Join(fsPath, name)); err == nil && stat.IsDir() {
-				entry.Kind = "dir"
-				entry.Size = 0
-			}
-		}
-
-		entry.Href = hrefFor(urlPath, name, entry.Kind == "dir")
 		entry.Thumb = entry.Kind == "file" && thumbnailExtensions[entry.Ext]
 
 		entries = append(entries, entry)
@@ -246,28 +192,16 @@ func readEntries(fsPath string, urlPath string) ([]Entry, error) {
 	return entries, nil
 }
 
-func hrefFor(basePath string, name string, isDir bool) string {
-	joined := path.Join(basePath, name)
-	if isDir {
-		joined += "/"
+func formatUrlPath(fsPath string, isDir bool) string {
+	fsPath = path.Clean(fsPath)
+	if !strings.HasPrefix(fsPath, "/") {
+		fsPath = "/" + fsPath
+	}
+	if isDir && !strings.HasSuffix(fsPath, "/") {
+		fsPath = fsPath + "/"
 	}
 
-	escaped := (&url.URL{Path: joined}).EscapedPath()
-
-	return escaped
-}
-
-func parentURL(urlPath string) string {
-	if urlPath == "" || urlPath == "/" {
-		return ""
-	}
-
-	parent := path.Dir(strings.TrimSuffix(urlPath, "/"))
-	if parent == "/" {
-		return "/"
-	}
-
-	return (&url.URL{Path: parent + "/"}).EscapedPath()
+	return fsPath
 }
 
 func makeCrumbs(urlPath string) []Crumb {
@@ -292,7 +226,7 @@ func makeCrumbs(urlPath string) []Crumb {
 }
 
 func (server *Server) serveFile(w http.ResponseWriter, r *http.Request, fsPath string, info os.FileInfo) {
-	file, err := os.Open(fsPath)
+	file, err := server.Root.Open(fsPath)
 	if err != nil {
 		server.fail(w, r, http.StatusNotFound, "file not found")
 		return
@@ -438,7 +372,7 @@ func copyUpload(dir string, source io.Reader, overwrite bool, name string) (stri
 	target := filepath.Join(dir, name)
 
 	if overwrite {
-		if info, err := os.Lstat(target); err == nil && info.IsDir() {
+		if info, err := server.Root.Stat(target); err == nil && info.IsDir() {
 			return "", 0, fmt.Errorf("%v is a directory", name)
 		}
 	} else {
@@ -449,16 +383,26 @@ func copyUpload(dir string, source io.Reader, overwrite bool, name string) (stri
 		}
 	}
 
-	temp, err := os.CreateTemp(dir, ".next_index-upload-*")
+	var tempName string
+	for {
+		var token = make([]byte, 8)
+		io.ReadFull(rand.Reader, token)
+		subfix := hex.EncodeToString(token)
+		tempName = name + "-" + subfix
+		_, err := server.Root.Stat(tempName)
+		if os.IsNotExist(err) {
+			break
+		}
+	}
+
+	temp, err := server.Root.Create(tempName)
 	if err != nil {
 		return "", 0, fmt.Errorf("create upload file: %w", err)
 	}
 
-	tempPath := temp.Name()
-
 	cleanup := func() {
 		temp.Close()
-		os.Remove(tempPath)
+		server.Root.Remove(tempName)
 	}
 
 	size, err := io.Copy(temp, source)
@@ -473,20 +417,18 @@ func copyUpload(dir string, source io.Reader, overwrite bool, name string) (stri
 	}
 
 	if err := temp.Close(); err != nil {
-		os.Remove(tempPath)
+		server.Root.Remove(tempName)
 		return "", 0, fmt.Errorf("close upload file: %w", err)
 	}
 
-	if err := os.Rename(tempPath, target); err != nil {
-		// On systems where rename cannot replace an existing file, remove the
-		// old file and try once more. On unix the rename above is atomic.
-		if !overwrite || os.Remove(target) != nil {
-			os.Remove(tempPath)
+	if err := server.Root.Rename(tempName, target); err != nil {
+		if !overwrite || server.Root.Remove(target) != nil {
+			server.Root.Remove(tempName)
 			return "", 0, fmt.Errorf("store upload file: %w", err)
 		}
 
-		if err := os.Rename(tempPath, target); err != nil {
-			os.Remove(tempPath)
+		if err := server.Root.Rename(tempName, target); err != nil {
+			server.Root.Remove(tempName)
 			return "", 0, fmt.Errorf("replace existing file: %w", err)
 		}
 	}

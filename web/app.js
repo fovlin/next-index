@@ -32,6 +32,7 @@
 	document.documentElement.dataset.theme = state.theme;
 
 	var ICONS = {
+		parent: '<path d="M2 19V6.5A2.5 2.5 0 0 1 4.5 4H8a2 2 0 0 1 1.7.9L11 6.5h8.5A2.5 2.5 0 0 1 22 9v10a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 19Z"/><path d="M17.8 14H7.6"/><path d="m10.1 11.5-2.5 2.5 2.5 2.5"/>',
 		layers: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/>',
 		search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/>',
 		refresh: '<path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/>',
@@ -39,9 +40,9 @@
 		sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
 		upload: '<path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
 		// download: '<path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/>',
-		folder: '<path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h4l2 2.5h9A1.5 1.5 0 0 1 21 11v7.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5v-10Z"/>',
-		folderOpen: '<path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h4l2 2.5h9A1.5 1.5 0 0 1 21 11v7.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5v-10Z"/><path d="M8 14h8"/>',
-		folderPlus: '<path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h4l2 2.5h9A1.5 1.5 0 0 1 21 11v7.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5v-10Z"/><path d="M12 12.5v5M9.5 15h5"/>',
+		folder: '<path d="M2 19V6.5A2.5 2.5 0 0 1 4.5 4H8a2 2 0 0 1 1.7.9L11 6.5h8.5A2.5 2.5 0 0 1 22 9v10a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 19Z"/>',
+		folderOpen: '<path d="M2 19V6.5A2.5 2.5 0 0 1 4.5 4H8a2 2 0 0 1 1.7.9L11 6.5h8.5A2.5 2.5 0 0 1 22 9v10a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 19Z"/><path d="M8 14h8"/>',
+		folderPlus: '<path d="M2 19V6.5A2.5 2.5 0 0 1 4.5 4H8a2 2 0 0 1 1.7.9L11 6.5h8.5A2.5 2.5 0 0 1 22 9v10a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 19Z"/><path d="M12 11.2v5.6"/><path d="M9.2 14h5.6"/>',
 		file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/>',
 		image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15-4.5-4.5L7 20"/>',
 		video: '<rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 10 4-2v8l-4-2"/>',
@@ -88,6 +89,7 @@
 	};
 
 	var TYPE_ICONS = {
+		parent: ["parent", "icon-dir"],
 		dir: ["folder", "icon-dir"],
 		image: ["image", "icon-image"],
 		video: ["video", "icon-video"],
@@ -146,8 +148,8 @@
 	}
 
 	function groupOf(entry) {
-		if (entry.kind === "dir") {
-			return "dir";
+		if (entry.kind === "dir" || entry.kind === "parent") {
+			return entry.kind;
 		}
 
 		var extension = (entry.ext || "").toLowerCase();
@@ -363,12 +365,14 @@
 				'<div class="empty"><div class="empty-icon">' + icon("folderOpen") + "</div>" +
 				"<h2>This folder is empty</h2>" +
 				"<p>Nothing here yet. Upload a file to get started.</p>" +
+				'<div>' +
+				'<button class="btn btn-ghost" data-action="back">' + icon("parent") + "<span>Back</span></button>" +
 				(state.authenticated
 					? '<button class="btn btn-primary" data-action="upload">' + icon("upload") + "<span>Upload files</span></button>"
 					: state.writable
 						? '<button class="btn btn-primary" data-action="login">' + icon("login") + "<span>Sign in to upload</span></button>"
 						: "") +
-				"</div>";
+				"</div></div>";
 			return;
 		}
 
@@ -429,7 +433,9 @@
 			);
 		}
 
-		var rows = entries.map(rowMarkup).join("");
+		var lastPage = state.parent.name === "/" ? lastPage = "" : rowMarkup(state.parent)
+
+		var rows = lastPage + entries.map(rowMarkup).join("");
 
 		return (
 			"<table class=\"table\">" +
@@ -444,9 +450,16 @@
 		);
 	}
 
+	function gridMarkup(entries) {
+		var lastPage = state.parent.name === "/" ? lastPage = "" : itemMarkup(state.parent)
+		return (
+			'<div class="grid">' + lastPage + entries.map(itemMarkup).join("") + "</div>"
+		);
+	}
+
 	function rowMarkup(entry) {
 		var type = typeOf(entry);
-		var size = entry.kind === "dir" ? "—" : formatSize(entry.size);
+		var size = entry.kind === "dir" || "lastDir" ? "—" : formatSize(entry.size);
 
 		return (
 			'<tr data-name="' + esc(entry.name) + '" data-href="' + esc(entry.href) + '">' +
@@ -462,6 +475,26 @@
 			'<td class="col-time time" title="' + esc(formatFull(entry.mod)) + '">' + esc(formatDate(entry.mod)) + '<small>' + esc(formatTime(entry.mod)) + '</small></td>' +
 			'<td class="col-actions"><div class="row-actions">' + actionsMarkup(entry) + "</div></td>" +
 			"</tr>"
+		);
+	}
+
+	function itemMarkup(entry) {
+		var type = typeOf(entry);
+		var meta = entry.kind === "dir" || "lastDir" ? "folder" : formatSize(entry.size);
+		var thumb =
+			entry.thumb && entry.kind === "file"
+				? '<div class="thumb"><img src="' + esc(entry.href) + '" alt="" loading="lazy" decoding="async"></div>'
+				: '<div class="thumb"><span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span></div>";
+
+		return (
+			'<div class="tile" data-name="' + esc(entry.name) + '">' +
+			'<a class="tile-main" href="' + esc(entry.href) + '">' +
+			thumb +
+			'<span class="tile-name" title="' + esc(entry.name) + '">' + esc(entry.name) + "</span>" +
+			'<span class="tile-meta"><span>' + meta + "</span><span>" + formatDate(entry.mod) + "</span></span>" +
+			"</a>" +
+			'<div class="tile-actions row-actions">' + actionsMarkup(entry) + "</div>" +
+			"</div>"
 		);
 	}
 
@@ -482,7 +515,7 @@
 	}
 
 	function actionsMarkup(entry) {
-		if (!state.authenticated) {
+		if (!state.authenticated || entry.kind === "parent") {
 			return "";
 		}
 
@@ -494,40 +527,12 @@
 		return parts.join("");
 	}
 
-	function gridMarkup(entries) {
-		return (
-			'<div class="grid">' +
-			entries
-				.map(function (entry) {
-					var type = typeOf(entry);
-					var meta = entry.kind === "dir" ? "folder" : formatSize(entry.size);
-					var thumb =
-						entry.thumb && entry.kind === "file"
-							? '<div class="thumb"><img src="' + esc(entry.href) + '" alt="" loading="lazy" decoding="async"></div>'
-							: '<div class="thumb"><span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span></div>";
-
-					return (
-						'<div class="tile" data-name="' + esc(entry.name) + '">' +
-						'<a class="tile-main" href="' + esc(entry.href) + '">' +
-						thumb +
-						'<span class="tile-name" title="' + esc(entry.name) + '">' + esc(entry.name) + "</span>" +
-						'<span class="tile-meta"><span>' + meta + "</span><span>" + formatDate(entry.mod) + "</span></span>" +
-						"</a>" +
-						'<div class="tile-actions row-actions">' + actionsMarkup(entry) + "</div>" +
-						"</div>"
-					);
-				})
-				.join("") +
-			"</div>"
-		);
-	}
-
 	function renderFooter() {
 		var status = state.authenticated ? '<span class="status-dot" title="Signed in"></span>' : '<span class="status-dot locked" title="Read only"></span>';
 		var location;
 
-		if (state.root) {
-			location = esc(state.root);
+		if (state.authenticated) {
+			location = esc(state.username);
 		} else if (state.writable) {
 			location = "browsing is public · sign in to manage files";
 		} else {
@@ -640,6 +645,11 @@
 
 		if (action === "login") {
 			openLogin();
+			return;
+		}
+
+		if (action === "back") {
+			window.location.href='../';
 			return;
 		}
 
@@ -776,17 +786,17 @@
 
 		openModal(
 			'<form id="login-form" novalidate>' +
-				'<div class="dialog-head"><div><h2>Sign in</h2></div>' +
-				'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
-				'<p class="sub">' + (message ? esc(message) : "Browsing is public. Sign in to upload, rename, create and delete files.") + "</p>" +
-				'<div class="field"><label for="login-user">Username</label>' +
-				'<input class="input" id="login-user" name="username" autocomplete="username" spellcheck="false"></div>' +
-				'<div class="field"><label for="login-password">Password</label>' +
-				'<input class="input" id="login-password" name="password" type="password" autocomplete="current-password"></div>' +
-				'<div class="form-error" id="login-error"></div>' +
-				'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
-				'<button type="submit" class="btn btn-primary" id="login-submit">Sign in</button></div>' +
-				"</form>"
+			'<div class="dialog-head"><div><h2>Sign in</h2></div>' +
+			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+			'<p class="sub">' + (message ? esc(message) : "Browsing is public. Sign in to upload, rename, create and delete files.") + "</p>" +
+			'<div class="field"><label for="login-user">Username</label>' +
+			'<input class="input" id="login-user" name="username" autocomplete="username" spellcheck="false"></div>' +
+			'<div class="field"><label for="login-password">Password</label>' +
+			'<input class="input" id="login-password" name="password" type="password" autocomplete="current-password"></div>' +
+			'<div class="form-error" id="login-error"></div>' +
+			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
+			'<button type="submit" class="btn btn-primary" id="login-submit">Sign in</button></div>' +
+			"</form>"
 		);
 
 		var form = document.getElementById("login-form");
@@ -893,15 +903,15 @@
 
 		openModal(
 			'<form id="mkdir-form" novalidate>' +
-				'<div class="dialog-head"><h2>New folder</h2>' +
-				'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
-				'<p class="sub">Create a folder inside <b>' + esc(state.path) + "</b></p>" +
-				'<div class="field"><label for="mkdir-name">Folder name</label>' +
-				'<input class="input" id="mkdir-name" autocomplete="off" spellcheck="false" placeholder="untitled folder"></div>' +
-				'<div class="form-error" id="mkdir-error"></div>' +
-				'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
-				'<button type="submit" class="btn btn-primary" id="mkdir-submit">Create</button></div>' +
-				"</form>"
+			'<div class="dialog-head"><h2>New folder</h2>' +
+			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+			'<p class="sub">Create a folder inside <b>' + esc(state.path) + "</b></p>" +
+			'<div class="field"><label for="mkdir-name">Folder name</label>' +
+			'<input class="input" id="mkdir-name" autocomplete="off" spellcheck="false" placeholder="untitled folder"></div>' +
+			'<div class="form-error" id="mkdir-error"></div>' +
+			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
+			'<button type="submit" class="btn btn-primary" id="mkdir-submit">Create</button></div>' +
+			"</form>"
 		);
 
 		var form = document.getElementById("mkdir-form");
@@ -948,34 +958,23 @@
 
 		openModal(
 			'<form id="rename-form" novalidate>' +
-				'<div class="dialog-head"><h2>Rename</h2>' +
-				'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
-				'<p class="sub">Rename <b>' + esc(entry.name) + "</b></p>" +
-				'<div class="field"><label for="rename-name">New name</label>' +
-				'<input class="input" id="rename-name" autocomplete="off" spellcheck="false"></div>' +
-				'<div class="form-error" id="rename-error"></div>' +
-				'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
-				'<button type="submit" class="btn btn-primary">Rename</button></div>' +
-				"</form>"
+			'<div class="dialog-head"><h2>Rename</h2>' +
+			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+			'<p class="sub">Rename <b>' + state.path + esc(entry.name) + "</b></p>" +
+			'<div class="field"><label for="rename-name">New name</label>' +
+			'<input class="input" id="rename-name" autocomplete="off" spellcheck="false"></div>' +
+			'<div class="form-error" id="rename-error"></div>' +
+			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
+			'<button type="submit" class="btn btn-primary">Rename</button></div>' +
+			"</form>"
 		);
 
 		var form = document.getElementById("rename-form");
 		var input = document.getElementById("rename-name");
 		var errorElement = document.getElementById("rename-error");
-
-		input.value = entry.name;
+		var fromPath = state.path + entry.name;
+		input.value = fromPath;
 		input.focus();
-
-		if (entry.kind === "file") {
-			var dot = entry.name.lastIndexOf(".");
-			if (dot > 0) {
-				input.setSelectionRange(0, dot);
-			} else {
-				input.select();
-			}
-		} else {
-			input.select();
-		}
 
 		form.addEventListener("submit", function (event) {
 			event.preventDefault();
@@ -996,7 +995,7 @@
 
 			api("/@next-index/api/rename", {
 				method: "POST",
-				body: JSON.stringify({ path: state.path, from: entry.name, to: name })
+				body: JSON.stringify({ from: fromPath, to: name })
 			})
 				.then(function (result) {
 					closeModal();
@@ -1024,11 +1023,11 @@
 
 		openModal(
 			'<div class="dialog-head"><div><h2>Delete ' + (entry.kind === "dir" ? "folder" : "file") + "?</h2></div>" +
-				'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
-				'<p class="sub">This action cannot be undone.</p>' +
-				'<div class="delete-target"><span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span><span>" + esc(entry.name) + "</span></div>" +
-				'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
-				'<button type="button" class="btn btn-danger" id="confirm-delete">Delete</button></div>'
+			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+			'<p class="sub">This action cannot be undone.</p>' +
+			'<div class="delete-target"><span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span><span>" + esc(entry.name) + "</span></div>" +
+			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
+			'<button type="button" class="btn btn-danger" id="confirm-delete">Delete</button></div>'
 		);
 
 		document.getElementById("confirm-delete").addEventListener("click", function () {
@@ -1074,19 +1073,19 @@
 
 		openModal(
 			'<div class="dialog-head"><h2>Upload files</h2>' +
-				'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
-				'<p class="sub">Files go to <b>' + esc(state.path) + "</b></p>" +
-				'<div class="dropzone" id="dropzone">' + icon("upload") +
-				"<div><b>Drop files or folders here</b></div>" +
-				'<span>or <button type="button" class="link-btn" id="pick-files">choose files</button> · <button type="button" class="link-btn" id="pick-folder">choose a folder</button></span>' +
-				"<span>" + (state.maxUploadMB > 0 ? "Up to " + state.maxUploadMB + " MB per upload" : "No upload limit") + "</span></div>" +
-				'<input type="file" id="file-input" multiple hidden>' +
-				'<input type="file" id="folder-input" webkitdirectory hidden>' +
-				'<div class="file-list" id="file-list"></div>' +
-				'<div class="upload-meta"><label class="checkbox"><input type="checkbox" id="overwrite-checkbox"> Replace existing files</label>' +
-				'<span id="upload-summary"></span></div>' +
-				'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
-				'<button type="button" class="btn btn-primary" id="start-upload" disabled>Upload</button></div>',
+			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+			'<p class="sub">Files go to <b>' + esc(state.path) + "</b></p>" +
+			'<div class="dropzone" id="dropzone">' + icon("upload") +
+			"<div><b>Drop files or folders here</b></div>" +
+			'<span>or <button type="button" class="link-btn" id="pick-files">choose files</button> · <button type="button" class="link-btn" id="pick-folder">choose a folder</button></span>' +
+			"<span>" + (state.maxUploadMB > 0 ? "Up to " + state.maxUploadMB + " MB per upload" : "No upload limit") + "</span></div>" +
+			'<input type="file" id="file-input" multiple hidden>' +
+			'<input type="file" id="folder-input" webkitdirectory hidden>' +
+			'<div class="file-list" id="file-list"></div>' +
+			'<div class="upload-meta"><label class="checkbox"><input type="checkbox" id="overwrite-checkbox"> Replace existing files</label>' +
+			'<span id="upload-summary"></span></div>' +
+			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
+			'<button type="button" class="btn btn-primary" id="start-upload" disabled>Upload</button></div>',
 			"wide"
 		);
 
