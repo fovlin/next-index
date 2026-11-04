@@ -21,7 +21,6 @@ const contentSecurityPolicy = "default-src 'self'; img-src 'self' data: blob:; m
 type pageData struct {
 	Title     string
 	Bootstrap template.JS
-	NoScript  template.HTML
 }
 
 type bootstrapData struct {
@@ -52,7 +51,6 @@ func (server *Server) renderListing(w http.ResponseWriter, r *http.Request, list
 		Title:         title,
 		Site:          server.config.Title,
 		Path:          list.Path,
-		Parent:        list.Parent,
 		Crumbs:        list.Crumbs,
 		Entries:       list.Entries,
 		Authenticated: authenticated,
@@ -76,7 +74,6 @@ func (server *Server) renderListing(w http.ResponseWriter, r *http.Request, list
 	page := pageData{
 		Title:     title,
 		Bootstrap: template.JS(bootstrap),
-		NoScript:  template.HTML(buildNoScript(list, title)),
 	}
 
 	var buffer bytes.Buffer
@@ -90,63 +87,6 @@ func (server *Server) renderListing(w http.ResponseWriter, r *http.Request, list
 	w.Header().Set("Content-Security-Policy", contentSecurityPolicy)
 	w.WriteHeader(http.StatusOK)
 	w.Write(buffer.Bytes())
-}
-
-func buildNoScript(list *listing, title string) string {
-	var builder strings.Builder
-
-	builder.WriteString(`<div class="noscript"><p class="noscript-hint">JavaScript is disabled, showing a plain listing.</p><h1>`)
-	builder.WriteString(html.EscapeString(title))
-	builder.WriteString(`</h1><ul>`)
-
-	if list.Parent != "" {
-		builder.WriteString(`<li><a href="`)
-		builder.WriteString(html.EscapeString(list.Parent))
-		builder.WriteString(`">../</a></li>`)
-	}
-
-	for _, entry := range list.Entries {
-		name := entry.Name
-		if entry.Kind == "dir" {
-			name += "/"
-		}
-
-		builder.WriteString(`<li><a href="`)
-		builder.WriteString(html.EscapeString(entry.Href))
-		builder.WriteString(`">`)
-		builder.WriteString(html.EscapeString(name))
-		builder.WriteString(`</a>`)
-
-		if entry.Kind == "file" {
-			builder.WriteString(` <span>`)
-			builder.WriteString(humanSize(entry.Size))
-			builder.WriteString(`</span>`)
-		}
-
-		builder.WriteString(`</li>`)
-	}
-
-	builder.WriteString(`</ul></div>`)
-
-	return builder.String()
-}
-
-func humanSize(size int64) string {
-	const unit = 1024
-
-	if size < unit {
-		return fmt.Sprintf("%d B", size)
-	}
-
-	divisor := int64(unit)
-	exponent := 0
-
-	for value := size / unit; value >= unit; value /= unit {
-		divisor *= unit
-		exponent++
-	}
-
-	return fmt.Sprintf("%.1f %cB", float64(size)/float64(divisor), "KMGTPE"[exponent])
 }
 
 const errorPageTemplate = `<!DOCTYPE html>

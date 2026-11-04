@@ -13,19 +13,15 @@ create, rename and delete files.
 # serving http://localhost:8080
 ```
 
-The first run creates `~/.next_index.json`, generates a password and prints it
-once.
+The first run creates `~/.next_index.json`, generates a password and prints it, if you want to save config, use `next-index config [option]` to save your config.
 
 ## Features
 
-- Breadcrumbs, search, sorting, list and grid views, image thumbnails, light and
-  dark themes, responsive layout and keyboard shortcuts.
+- Breadcrumbs, search, sorting, list and grid views, image thumbnails, light and dark themes, responsive layout and keyboard shortcuts.
 - Public reads; login only for upload, mkdir, rename and delete.
-- Multi-file and whole-folder drag and drop uploads with per-file progress,
-  optional overwrite and automatic `name-1.ext` renaming.
+- Multi-file and whole-folder drag and drop uploads with per-file progress, optional overwrite and automatic `name-1.ext` renaming.
 - Create folder, rename, delete, download.
-- Path traversal and symlink escapes are rejected, active content is served as
-  an attachment, failed logins are rate limited.
+- Path traversal and symlink escapes are rejected, active content is served as an attachment, failed logins are rate limited.
 - A single binary: HTML, CSS, JS and icons are embedded with `go:embed`.
 - Optional TLS and an upload size limit.
 

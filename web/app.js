@@ -736,7 +736,6 @@
 			.then(function (result) {
 				state.entries = Array.isArray(result.entries) ? result.entries : [];
 				state.crumbs = Array.isArray(result.crumbs) ? result.crumbs : state.crumbs;
-				state.parent = result.parent || state.parent;
 				renderSummary();
 				renderListing();
 				renderFooter();
