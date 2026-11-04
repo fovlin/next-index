@@ -1,11 +1,12 @@
 # NEXT_INDEX
 
-A small, plain web file index server.
+A small, plain web file index server. Point it at a directory and browse,
+upload and manage the files in a browser.
 
 Browsing is public. The username and password are only required to upload,
 create, rename and delete files.
 
-## Feature
+## Quick start
 
 ```bash
 ./next-index ~/Downloads
