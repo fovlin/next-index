@@ -570,6 +570,10 @@
 	}
 
 	function menuMarkup(entry) {
+		if (entry.kind === "parent") {
+			return "";
+		}
+
 		return '<button class="row-action" data-menu="' + esc(entry.name) + '" title="More" aria-label="More">' + icon("more") + "</button>";
 	}
 
