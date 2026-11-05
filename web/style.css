@@ -308,7 +308,6 @@ button {
 }
 
 .btn-primary {
-	margin: 4px 4px;
 	border-color: var(--accent);
 	background: var(--accent);
 	color: #fff;
@@ -451,6 +450,7 @@ button {
 	margin-bottom: 8px;
 	flex-wrap: nowrap;
 	min-width: 0;
+	overflow: hidden;
 }
 
 .stats {
@@ -485,17 +485,9 @@ button {
 	white-space: nowrap;
 }
 
-.summary-actions .icon-btn {
-	width: 34px;
-	height: 34px;
-}
-
 .summary.selecting [data-action="mkdir"],
 .summary.selecting .segmented,
-.summary.selecting .select-toggle {
-	display: none;
-}
-
+.summary.selecting .select-toggle,
 .summary.compact [data-action="mkdir"],
 .summary.compact .segmented,
 .summary.compact .select-toggle {
@@ -1147,6 +1139,10 @@ th.sorted.desc .arrow {
 	justify-content: flex-end;
 	gap: 8px;
 	margin-top: 16px;
+}
+
+.dialog-actions .btn {
+	min-width: 96px;
 }
 
 .delete-target {
