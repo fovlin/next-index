@@ -761,7 +761,8 @@ th.sorted.desc .arrow {
 }
 
 .tile:hover .tile-select,
-.tile.selected .tile-select {
+.tile.selected .tile-select,
+.selecting .tile-select {
 	display: block;
 }
 
