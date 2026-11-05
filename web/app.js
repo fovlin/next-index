@@ -513,17 +513,19 @@
 	function rowMarkup(entry) {
 		var type = typeOf(entry);
 		var size = entry.kind === "file" ? formatSize(entry.size) : "—";
+		var tag = state.selecting ? "div" : "a";
+		var hrefAttr = state.selecting ? "" : ' href="' + esc(entry.href) + '"';
 
 		return (
 			'<tr' + (state.selection[entry.name] ? ' class="selected"' : "") + ' data-name="' + esc(entry.name) + '" data-href="' + esc(entry.href) + '">' +
 			(state.selecting ? '<td class="col-select">' + selectMarkup(entry) + "</td>" : "") +
 			'<td class="col-name">' +
-			'<a class="entry" href="' + esc(entry.href) + '">' +
+			'<' + tag + ' class="entry"' + hrefAttr + '>' +
 			'<span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span>" +
 			'<span class="name-wrap"><span class="entry-name">' + nameMarkup(entry) + "</span>" +
 			(entry.link ? '<span class="badge badge-link">link</span>' : "") +
 			"</span>" +
-			"</a>" +
+			"</" + tag + ">" +
 			"</td>" +
 			'<td class="col-size size" title="' + (entry.kind === "file" ? entry.size + " bytes" : "") + '">' + size + "</td>" +
 			'<td class="col-time time" title="' + esc(formatFull(entry.mod)) + '">' + esc(formatDate(entry.mod)) + '<small>' + esc(formatTime(entry.mod)) + '</small></td>' +
@@ -535,6 +537,8 @@
 	function itemMarkup(entry) {
 		var type = typeOf(entry);
 		var meta = entry.kind === "file" ? formatSize(entry.size) : "folder";
+		var tag = state.selecting ? "div" : "a";
+		var hrefAttr = state.selecting ? "" : ' href="' + esc(entry.href) + '"';
 		var thumb =
 			entry.thumb && entry.kind === "file"
 				? '<div class="thumb"><img src="' + esc(entry.href) + '" alt="" loading="lazy" decoding="async"></div>'
@@ -543,11 +547,11 @@
 		return (
 			'<div class="tile' + (state.selection[entry.name] ? " selected" : "") + '" data-name="' + esc(entry.name) + '">' +
 			(state.selecting ? '<span class="tile-select">' + selectMarkup(entry) + "</span>" : "") +
-			'<a class="tile-main" href="' + esc(entry.href) + '">' +
+			'<' + tag + ' class="tile-main"' + hrefAttr + '>' +
 			thumb +
 			'<span class="tile-name" title="' + esc(entry.name) + '">' + esc(entry.name) + "</span>" +
 			'<span class="tile-meta"><span>' + meta + "</span><span>" + formatDate(entry.mod) + "</span></span>" +
-			"</a>" +
+			"</" + tag + ">" +
 			(menuMarkup(entry) ? '<div class="tile-actions row-actions">' + menuMarkup(entry) + "</div>" : "") +
 			"</div>"
 		);
