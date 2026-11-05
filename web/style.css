@@ -751,14 +751,6 @@ th.sorted.desc .arrow {
 	cursor: pointer;
 }
 
-.selecting .tile-main {
-	pointer-events: none;
-}
-
-.selecting tbody .entry {
-	pointer-events: none;
-}
-
 .tile-select {
 	position: absolute;
 	top: 2px;
