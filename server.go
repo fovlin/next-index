@@ -50,11 +50,8 @@ func newServer(cfg Config, root string) (*Server, error) {
 func (server *Server) handler() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /@next-index/assets/style.css", server.serveAsset("style.css", "text/css; charset=utf-8"))
-	mux.HandleFunc("GET /@next-index/assets/app.js", server.serveAsset("app.js", "text/javascript; charset=utf-8"))
-	mux.HandleFunc("GET /@next-index/assets/favicon.svg", server.serveAsset("favicon.svg", "image/svg+xml"))
-	mux.HandleFunc("GET /@next-index/assets/favicon.ico", server.serveAsset("favicon.ico", "image/x-icon"))
-	mux.HandleFunc("GET /favicon.ico", server.serveAsset("favicon.ico", "image/x-icon"))
+	mux.HandleFunc("GET /@next-index/assets/", server.serveAsset)
+	mux.HandleFunc("GET /favicon.ico", server.serveAsset)
 
 	mux.HandleFunc("GET /@next-index/api/session", server.handleSession)
 	mux.HandleFunc("POST /@next-index/api/login", server.handleLogin)
@@ -133,18 +130,47 @@ func (server *Server) wrap(next http.Handler) http.Handler {
 	})
 }
 
-func (server *Server) serveAsset(name string, contentType string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		data, err := webAssets.ReadFile(filepath.Join("web", name))
-		if err != nil {
-			server.fail(w, r, http.StatusNotFound, "asset not found")
-			return
-		}
+var assetTypes = map[string]string{
+	".css": "text/css; charset=utf-8",
+	".js":  "text/javascript; charset=utf-8",
+	".svg": "image/svg+xml",
+	".ico": "image/x-icon",
+}
 
-		w.Header().Set("Content-Type", contentType)
-		w.Header().Set("Cache-Control", "no-cache")
-		w.Write(data)
+// serveAsset answers the asset routes. Everything under /@next-index/assets/
+// maps onto a file inside the embedded web directory, so the front end can be
+// split into as many files as it likes.
+func (server *Server) serveAsset(w http.ResponseWriter, r *http.Request) {
+	name := path.Clean(strings.TrimPrefix(r.URL.Path, "/@next-index/assets/"))
+
+	if r.URL.Path == "/favicon.ico" {
+		name = "favicon.ico"
 	}
+
+	name = strings.TrimPrefix(name, "/")
+
+	if name == "" || name == "." || strings.HasPrefix(name, "..") {
+		server.fail(w, r, http.StatusNotFound, "asset not found")
+		return
+	}
+
+	contentType, known := assetTypes[path.Ext(name)]
+
+	if !known {
+		server.fail(w, r, http.StatusNotFound, "asset not found")
+		return
+	}
+
+	data, err := webAssets.ReadFile(filepath.Join("web", filepath.FromSlash(name)))
+
+	if err != nil {
+		server.fail(w, r, http.StatusNotFound, "asset not found")
+		return
+	}
+
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Write(data)
 }
 
 func (server *Server) resolveUrlPath(urlPath string) (string, error) {
