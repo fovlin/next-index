@@ -823,6 +823,17 @@
 		}
 	}
 
+	function toggleSelect(name) {
+		if (state.selection[name]) {
+			delete state.selection[name];
+		} else {
+			state.selection[name] = true;
+		}
+
+		renderSummary();
+		renderListing();
+	}
+
 	function toggleSelectAll() {
 		var entries = visibleEntries();
 		var all = entries.length > 0 && entries.every(function (entry) {
