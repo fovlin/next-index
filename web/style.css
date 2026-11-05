@@ -485,6 +485,12 @@ button {
 	white-space: nowrap;
 }
 
+.summary.selecting [data-action="mkdir"],
+.summary.selecting .segmented,
+.summary.selecting .select-toggle {
+	display: none;
+}
+
 .summary.compact [data-action="mkdir"],
 .summary.compact .segmented,
 .summary.compact .select-toggle {
