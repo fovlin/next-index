@@ -12,9 +12,18 @@ import (
 )
 
 func run() error {
-	root, err := os.OpenRoot(config.Root)
+	root, err := filepath.Abs(config.Root)
 	if err != nil {
 		return err
+	}
+
+	info, err := os.Stat(root)
+	if err != nil {
+		return err
+	}
+
+	if !info.IsDir() {
+		return fmt.Errorf("root is not a directory: %v", root)
 	}
 
 	if config.TLS.Enable {

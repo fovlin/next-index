@@ -21,9 +21,13 @@ func (server *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fsPath := resolveUrlPath(r.URL.Path)
+	fsPath, err := server.resolveUrlPath(r.URL.Path)
+	if err != nil {
+		server.fail(w, r, http.StatusForbidden, "invalid path")
+		return
+	}
 
-	info, err := server.Root.Stat(fsPath)
+	info, err := os.Stat(fsPath)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			server.fail(w, r, http.StatusNotFound, "file or directory not found")

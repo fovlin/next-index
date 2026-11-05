@@ -27,6 +27,8 @@
 	state.query = "";
 	state.uploads = [];
 	state.uploading = false;
+	state.selection = {};
+	state.selecting = false;
 	var ensuredDirectories = {};
 
 	document.documentElement.dataset.theme = state.theme;
@@ -70,6 +72,10 @@
 		user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
 		lock: '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
 		home: '<path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/>',
+		copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
+		move: '<path d="M3 12h11"/><path d="m10 8 4 4-4 4"/><path d="M17 4h4v16h-4"/>',
+		more: '<circle cx="5" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="2.2" fill="currentColor" stroke="none"/>',
+		select: '<rect x="3" y="3" width="18" height="18" rx="4"/><path d="m8 12 2.5 2.5L16 9"/>',
 		list: '<path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
 		grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'
 	};
@@ -113,6 +119,7 @@
 
 	main.innerHTML = '<div class="summary"><div class="stats" id="stats"></div><div class="summary-actions" id="summary-actions"></div></div><div class="card" id="listing"></div>';
 
+	var summaryRoot = document.querySelector(".summary");
 	var stats = document.getElementById("stats");
 	var summaryActions = document.getElementById("summary-actions");
 	var listing = document.getElementById("listing");
@@ -236,6 +243,38 @@
 		return entries;
 	}
 
+	function selected() {
+		return Object.keys(state.selection).filter(function (name) {
+			return state.selection[name];
+		});
+	}
+
+	function clearSelection() {
+		state.selection = {};
+	state.selecting = false;
+		renderSummary();
+		renderListing();
+	}
+
+	function toggleSelect(name) {
+		if (state.selection[name]) {
+			delete state.selection[name];
+		} else {
+			state.selection[name] = true;
+		}
+
+		renderSummary();
+		renderListing();
+	}
+
+	function selectMarkup(entry) {
+		if (!state.selecting || entry.kind === "parent") {
+			return "";
+		}
+
+		return '<input type="checkbox" class="select-box" data-select="' + esc(entry.name) + '"' + (state.selection[entry.name] ? " checked" : "") + ' aria-label="Select ' + esc(entry.name) + '">';
+	}
+
 	function renderTopbar() {
 		var crumbs = state.crumbs
 			.map(function (crumb, index) {
@@ -321,6 +360,8 @@
 	}
 
 	function renderSummary() {
+		summaryRoot.classList.toggle("selecting", state.selecting);
+
 		var entries = state.entries;
 		var directories = entries.filter(function (entry) {
 			return entry.kind === "dir";
@@ -346,11 +387,34 @@
 		stats.innerHTML = parts.join("");
 
 		var mkdirButton = state.authenticated
-			? '<button class="btn btn-sm" id="mkdir-btn" title="New folder" aria-label="New folder">' + icon("folderPlus") + "<span>New folder</span></button>"
+			? '<button class="btn btn-sm" data-action="mkdir" title="New folder" aria-label="New folder">' + icon("folderPlus") + "<span>New folder</span></button>"
 			: "";
 
+		var names = selected();
+
+		var selectButton = state.authenticated
+			? '<button class="icon-btn select-toggle' + (state.selecting ? " active" : "") + '" data-action="toggle-selection" title="Select files" aria-label="Select files" aria-pressed="' + state.selecting + '">' + icon("select") + "</button>"
+			: "";
+
+		var batch = "";
+
+		if (state.selecting) {
+			batch =
+				'<div class="batch">' +
+				"<span><b>" + names.length + "</b> selected</span>" +
+				(names.length
+					? '<button class="btn btn-sm" data-action="batch-copy">' + icon("copy") + "<span>Copy</span></button>" +
+						'<button class="btn btn-sm" data-action="batch-move">' + icon("move") + "<span>Move</span></button>" +
+						'<button class="btn btn-sm" data-action="batch-delete">' + icon("trash") + "<span>Delete</span></button>"
+					: "") +
+				'<button class="icon-btn" data-action="toggle-selection" title="Done" aria-label="Done">' + icon("x") + "</button>" +
+				"</div>";
+		}
+
 		summaryActions.innerHTML =
+			batch +
 			mkdirButton +
+			selectButton +
 			'<div class="segmented" role="group" aria-label="View mode">' +
 			'<button data-view="list" class="' + (state.view === "list" ? "active" : "") + '" title="List view" aria-label="List view">' + icon("list") + "</button>" +
 			'<button data-view="grid" class="' + (state.view === "grid" ? "active" : "") + '" title="Grid view" aria-label="Grid view">' + icon("grid") + "</button>" +
@@ -359,6 +423,8 @@
 
 	function renderListing() {
 		var entries = visibleEntries();
+
+		listing.classList.toggle("selecting", state.selecting);
 
 		if (state.entries.length === 0) {
 			listing.innerHTML =
@@ -440,6 +506,7 @@
 		return (
 			"<table class=\"table\">" +
 			"<thead><tr>" +
+			(state.selecting ? '<th class="col-select">' + selectAllMarkup(entries) + "</th>" : "") +
 			header("name", "Name", "name") +
 			header("size", "Size", "size") +
 			header("mod", "Modified", "time") +
@@ -448,6 +515,16 @@
 			"<tbody>" + rows + "</tbody>" +
 			"</table>"
 		);
+	}
+
+	function selectAllMarkup(entries) {
+		var checked =
+			entries.length > 0 &&
+			entries.every(function (entry) {
+				return state.selection[entry.name];
+			});
+
+		return '<input type="checkbox" id="select-all" aria-label="Select all"' + (checked ? " checked" : "") + ">";
 	}
 
 	function gridMarkup(entries) {
@@ -459,10 +536,11 @@
 
 	function rowMarkup(entry) {
 		var type = typeOf(entry);
-		var size = entry.kind === "dir" || "lastDir" ? "—" : formatSize(entry.size);
+		var size = entry.kind === "file" ? formatSize(entry.size) : "—";
 
 		return (
-			'<tr data-name="' + esc(entry.name) + '" data-href="' + esc(entry.href) + '">' +
+			'<tr' + (state.selection[entry.name] ? ' class="selected"' : "") + ' data-name="' + esc(entry.name) + '" data-href="' + esc(entry.href) + '">' +
+			(state.selecting ? '<td class="col-select">' + selectMarkup(entry) + "</td>" : "") +
 			'<td class="col-name">' +
 			'<a class="entry" href="' + esc(entry.href) + '">' +
 			'<span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span>" +
@@ -473,27 +551,28 @@
 			"</td>" +
 			'<td class="col-size size" title="' + (entry.kind === "file" ? entry.size + " bytes" : "") + '">' + size + "</td>" +
 			'<td class="col-time time" title="' + esc(formatFull(entry.mod)) + '">' + esc(formatDate(entry.mod)) + '<small>' + esc(formatTime(entry.mod)) + '</small></td>' +
-			'<td class="col-actions"><div class="row-actions">' + actionsMarkup(entry) + "</div></td>" +
+			'<td class="col-actions"><div class="row-actions">' + menuMarkup(entry) + "</div></td>" +
 			"</tr>"
 		);
 	}
 
 	function itemMarkup(entry) {
 		var type = typeOf(entry);
-		var meta = entry.kind === "dir" || "lastDir" ? "folder" : formatSize(entry.size);
+		var meta = entry.kind === "file" ? formatSize(entry.size) : "folder";
 		var thumb =
 			entry.thumb && entry.kind === "file"
 				? '<div class="thumb"><img src="' + esc(entry.href) + '" alt="" loading="lazy" decoding="async"></div>'
 				: '<div class="thumb"><span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span></div>";
 
 		return (
-			'<div class="tile" data-name="' + esc(entry.name) + '">' +
+			'<div class="tile' + (state.selection[entry.name] ? " selected" : "") + '" data-name="' + esc(entry.name) + '">' +
+			(state.selecting ? '<span class="tile-select">' + selectMarkup(entry) + "</span>" : "") +
 			'<a class="tile-main" href="' + esc(entry.href) + '">' +
 			thumb +
 			'<span class="tile-name" title="' + esc(entry.name) + '">' + esc(entry.name) + "</span>" +
 			'<span class="tile-meta"><span>' + meta + "</span><span>" + formatDate(entry.mod) + "</span></span>" +
 			"</a>" +
-			'<div class="tile-actions row-actions">' + actionsMarkup(entry) + "</div>" +
+			(menuMarkup(entry) ? '<div class="tile-actions row-actions">' + menuMarkup(entry) + "</div>" : "") +
 			"</div>"
 		);
 	}
@@ -501,7 +580,7 @@
 	function nameMarkup(entry) {
 		var name = entry.name;
 
-		if (entry.kind === "dir") {
+		if (entry.kind !== "file") {
 			return esc(name);
 		}
 
@@ -514,17 +593,12 @@
 		return esc(name.slice(0, dot)) + '<span class="entry-ext">' + esc(name.slice(dot)) + "</span>";
 	}
 
-	function actionsMarkup(entry) {
-		if (!state.authenticated || entry.kind === "parent") {
+	function menuMarkup(entry) {
+		if (!state.authenticated || state.selecting || entry.kind === "parent") {
 			return "";
 		}
 
-		var parts = [];
-
-		parts.push('<button class="row-action" data-action="rename" data-name="' + esc(entry.name) + '" title="Rename" aria-label="Rename">' + icon("pencil") + "</button>");
-		parts.push('<button class="row-action danger" data-action="delete" data-name="' + esc(entry.name) + '" title="Delete" aria-label="Delete">' + icon("trash") + "</button>");
-
-		return parts.join("");
+		return '<button class="row-action" data-menu="' + esc(entry.name) + '" title="More" aria-label="More">' + icon("more") + "</button>";
 	}
 
 	function renderFooter() {
@@ -557,8 +631,10 @@
 				return;
 			}
 
-			if (event.target.closest("#mkdir-btn")) {
-				openMkdir();
+			var actionButton = event.target.closest("[data-action]");
+
+			if (actionButton) {
+				handleAction(actionButton.dataset.action);
 			}
 		});
 
@@ -567,6 +643,54 @@
 
 			if (sortButton) {
 				toggleSort(sortButton.dataset.sort);
+				return;
+			}
+
+			var checkbox = event.target.closest("[data-select]");
+
+			if (checkbox) {
+				event.stopPropagation();
+				state.selection[checkbox.dataset.select] = checkbox.checked;
+
+				var item = checkbox.closest("tr, .tile");
+
+				if (item) {
+					item.classList.toggle("selected", checkbox.checked);
+				}
+
+				renderSummary();
+				return;
+			}
+
+			if (event.target.closest("#select-all")) {
+				toggleSelectAll();
+				return;
+			}
+
+			if (state.selecting) {
+				var item = event.target.closest("tr[data-name], .tile[data-name]");
+
+				if (item) {
+					event.preventDefault();
+
+					var known = state.entries.some(function (entry) {
+						return entry.name === item.dataset.name;
+					});
+
+					if (known) {
+						toggleSelect(item.dataset.name);
+					}
+
+					return;
+				}
+			}
+
+			var menuButton = event.target.closest("[data-menu]");
+
+			if (menuButton) {
+				event.preventDefault();
+				event.stopPropagation();
+				openMenu(menuButton);
 				return;
 			}
 
@@ -592,6 +716,7 @@
 
 		document.addEventListener("keydown", function (event) {
 			if (event.key === "Escape") {
+				closeMenu();
 				closeModal();
 				hideDropOverlay();
 				return;
@@ -623,6 +748,20 @@
 			}
 		});
 
+		document.addEventListener("click", function (event) {
+			var item = event.target.closest("#row-menu [data-action]");
+
+			if (item) {
+				closeMenu();
+				handleAction(item.dataset.action, item.dataset.name);
+				return;
+			}
+
+			if (!event.target.closest("#row-menu")) {
+				closeMenu();
+			}
+		});
+
 		bindDropEvents();
 	}
 
@@ -638,6 +777,11 @@
 			return;
 		}
 
+		if (action === "mkdir") {
+			openMkdir();
+			return;
+		}
+
 		if (action === "upload") {
 			openUpload();
 			return;
@@ -649,7 +793,34 @@
 		}
 
 		if (action === "back") {
-			window.location.href='../';
+			window.location.href = "../";
+			return;
+		}
+
+		if (action === "toggle-selection") {
+			state.selecting = !state.selecting;
+
+			if (!state.selecting) {
+				state.selection = {};
+			}
+
+			renderSummary();
+			renderListing();
+			return;
+		}
+
+		if (action === "batch-copy") {
+			openTransfer("copy", selected());
+			return;
+		}
+
+		if (action === "batch-move") {
+			openTransfer("move", selected());
+			return;
+		}
+
+		if (action === "batch-delete") {
+			openDelete(selected());
 			return;
 		}
 
@@ -664,7 +835,65 @@
 		if (action === "rename") {
 			openRename(entry);
 		} else if (action === "delete") {
-			openDelete(entry);
+			openDelete([entry.name]);
+		} else if (action === "copy") {
+			openTransfer("copy", [entry.name]);
+		} else if (action === "move") {
+			openTransfer("move", [entry.name]);
+		}
+	}
+
+	function toggleSelectAll() {
+		var entries = visibleEntries();
+		var all = entries.length > 0 && entries.every(function (entry) {
+			return state.selection[entry.name];
+		});
+
+		entries.forEach(function (entry) {
+			if (all) {
+				delete state.selection[entry.name];
+			} else {
+				state.selection[entry.name] = true;
+			}
+		});
+
+		renderSummary();
+		renderListing();
+	}
+
+	function openMenu(button) {
+		closeMenu();
+
+		var name = button.dataset.menu;
+		var menu = document.createElement("div");
+
+		menu.className = "menu";
+		menu.id = "row-menu";
+		menu.innerHTML =
+			'<button type="button" data-action="copy" data-name="' + esc(name) + '">' + icon("copy") + "<span>Copy</span></button>" +
+			'<button type="button" data-action="move" data-name="' + esc(name) + '">' + icon("move") + "<span>Move</span></button>" +
+			'<button type="button" data-action="rename" data-name="' + esc(name) + '">' + icon("pencil") + "<span>Rename</span></button>" +
+			'<button type="button" data-action="delete" data-name="' + esc(name) + '" class="danger">' + icon("trash") + "<span>Delete</span></button>";
+
+		document.body.appendChild(menu);
+
+		var rect = button.getBoundingClientRect();
+		var left = Math.min(rect.right - menu.offsetWidth, window.innerWidth - menu.offsetWidth - 8);
+		var top = rect.bottom + 4;
+
+		if (top + menu.offsetHeight > window.innerHeight - 8) {
+			top = rect.top - menu.offsetHeight - 4;
+		}
+
+		menu.style.left = Math.max(8, left) + "px";
+		menu.style.top = Math.max(8, top) + "px";
+	}
+
+	function closeMenu() {
+		var menu = document.getElementById("row-menu");
+
+		if (menu) {
+			menu.remove();
 		}
 	}
 
@@ -746,6 +975,17 @@
 			.then(function (result) {
 				state.entries = Array.isArray(result.entries) ? result.entries : [];
 				state.crumbs = Array.isArray(result.crumbs) ? result.crumbs : state.crumbs;
+
+				var kept = {};
+
+				state.entries.forEach(function (entry) {
+					if (state.selection[entry.name]) {
+						kept[entry.name] = true;
+					}
+				});
+
+				state.selection = kept;
+
 				renderSummary();
 				renderListing();
 				renderFooter();
@@ -895,58 +1135,73 @@
 		document.body.style.overflow = "";
 	}
 
+	function formDialog(options) {
+		openModal(
+			'<form id="dialog-form" novalidate>' +
+			'<div class="dialog-head"><h2>' + options.title + "</h2>" +
+			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+			'<p class="sub">' + options.sub + "</p>" +
+			'<div class="field"><label for="dialog-input">' + options.label + "</label>" +
+			'<input class="input" id="dialog-input" autocomplete="off" spellcheck="false" value="' + esc(options.value || "") + '" placeholder="' + esc(options.placeholder || "") + '"></div>' +
+			'<div class="form-error" id="dialog-error"></div>' +
+			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
+			'<button type="submit" class="btn btn-primary">' + options.submit + "</button></div>" +
+			"</form>"
+		);
+
+		var form = document.getElementById("dialog-form");
+		var input = document.getElementById("dialog-input");
+		var errorElement = document.getElementById("dialog-error");
+
+		input.focus();
+
+		form.addEventListener("submit", function (event) {
+			event.preventDefault();
+			options.run(input.value.trim(), errorElement);
+		});
+
+		return input;
+	}
+
+	function send(url, body, message, errorElement) {
+		errorElement.textContent = "";
+
+		api(url, { method: "POST", body: JSON.stringify(body) })
+			.then(function (result) {
+				closeModal();
+				toast("success", typeof message === "function" ? message(result) : message);
+				return refresh();
+			})
+			.catch(function (error) {
+				if (error.status === 401) {
+					handleError(error);
+					return;
+				}
+
+				errorElement.textContent = error.message;
+			});
+	}
+
 	function openMkdir() {
 		if (!state.authenticated) {
 			openLogin("Sign in to create folders.");
 			return;
 		}
 
-		openModal(
-			'<form id="mkdir-form" novalidate>' +
-			'<div class="dialog-head"><h2>New folder</h2>' +
-			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
-			'<p class="sub">Create a folder inside <b>' + esc(state.path) + "</b></p>" +
-			'<div class="field"><label for="mkdir-name">Folder name</label>' +
-			'<input class="input" id="mkdir-name" autocomplete="off" spellcheck="false" placeholder="untitled folder"></div>' +
-			'<div class="form-error" id="mkdir-error"></div>' +
-			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
-			'<button type="submit" class="btn btn-primary" id="mkdir-submit">Create</button></div>' +
-			"</form>"
-		);
+		formDialog({
+			title: "New folder",
+			sub: "Create a folder inside <b>" + esc(state.path) + "</b>",
+			label: "Folder name",
+			placeholder: "untitled folder",
+			submit: "Create",
+			run: function (name, error) {
+				if (!name) {
+					error.textContent = "Enter a folder name.";
+					return;
+				}
 
-		var form = document.getElementById("mkdir-form");
-		var input = document.getElementById("mkdir-name");
-		var errorElement = document.getElementById("mkdir-error");
-
-		form.addEventListener("submit", function (event) {
-			event.preventDefault();
-
-			var name = input.value.trim();
-
-			if (!name) {
-				errorElement.textContent = "Enter a folder name.";
-				return;
+				send("/@next-index/api/mkdir", { path: state.path, name: name }, "Created folder \u201c" + name + "\u201d", error);
 			}
-
-			errorElement.textContent = "";
-
-			api("/@next-index/api/mkdir", {
-				method: "POST",
-				body: JSON.stringify({ path: state.path, name: name })
-			})
-				.then(function (result) {
-					closeModal();
-					toast("success", "Created folder “" + result.name + "”");
-					return refresh();
-				})
-				.catch(function (error) {
-					if (error.status === 401) {
-						handleError(error);
-						return;
-					}
-
-					errorElement.textContent = error.message;
-				});
 		});
 	}
 
@@ -956,76 +1211,113 @@
 			return;
 		}
 
-		openModal(
-			'<form id="rename-form" novalidate>' +
-			'<div class="dialog-head"><h2>Rename</h2>' +
-			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
-			'<p class="sub">Rename <b>' + state.path + esc(entry.name) + "</b></p>" +
-			'<div class="field"><label for="rename-name">New name</label>' +
-			'<input class="input" id="rename-name" autocomplete="off" spellcheck="false"></div>' +
-			'<div class="form-error" id="rename-error"></div>' +
-			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
-			'<button type="submit" class="btn btn-primary">Rename</button></div>' +
-			"</form>"
-		);
+		var input = formDialog({
+			title: "Rename",
+			sub: "Rename <b>" + esc(entry.name) + "</b> in this folder.",
+			label: "New name",
+			value: entry.name,
+			submit: "Rename",
+			run: function (name, error) {
+				if (!name) {
+					error.textContent = "Enter a new name.";
+					return;
+				}
 
-		var form = document.getElementById("rename-form");
-		var input = document.getElementById("rename-name");
-		var errorElement = document.getElementById("rename-error");
-		var fromPath = state.path + entry.name;
-		input.value = fromPath;
-		input.focus();
-
-		form.addEventListener("submit", function (event) {
-			event.preventDefault();
-
-			var name = input.value.trim();
-
-			if (!name) {
-				errorElement.textContent = "Enter a new name.";
-				return;
-			}
-
-			if (name === entry.name) {
-				closeModal();
-				return;
-			}
-
-			errorElement.textContent = "";
-
-			api("/@next-index/api/rename", {
-				method: "POST",
-				body: JSON.stringify({ from: fromPath, to: name })
-			})
-				.then(function (result) {
+				if (name === entry.name) {
 					closeModal();
-					toast("success", "Renamed to “" + result.name + "”");
-					return refresh();
-				})
-				.catch(function (error) {
-					if (error.status === 401) {
-						handleError(error);
-						return;
-					}
+					return;
+				}
 
-					errorElement.textContent = error.message;
-				});
+				send("/@next-index/api/rename", { path: state.path, from: entry.name, to: name }, function (result) {
+					return "Renamed to \u201c" + result.name + "\u201d";
+				}, error);
+			}
 		});
+
+		input.select();
+
+		if (entry.kind === "file") {
+			var dot = entry.name.lastIndexOf(".");
+
+			if (dot > 0) {
+				input.setSelectionRange(0, dot);
+			}
+		}
 	}
 
-	function openDelete(entry) {
+	function openTransfer(kind, names) {
+		if (!names.length) {
+			return;
+		}
+
+		if (!state.authenticated) {
+			openLogin("Sign in to " + kind + " files.");
+			return;
+		}
+
+		var copying = kind === "copy";
+		var single = names.length === 1;
+
+		var input = formDialog({
+			title: copying ? "Copy" : "Move",
+			sub: single ? "<b>" + esc(names[0]) + "</b> \u2014 " + (copying ? "the full path to copy it to." : "the folder to move it into.") : "<b>" + names.length + "</b> items \u2014 the destination folder.",
+			label: copying && single ? "Destination path" : "Destination folder",
+			value: copying && single ? state.path + names[0] : state.path,
+			submit: copying ? "Copy" : "Move",
+			run: function (to, error) {
+				if (!to) {
+					error.textContent = "Enter a destination path.";
+					return;
+				}
+
+				if (!copying || !single) {
+					if (to.charAt(to.length - 1) !== "/") {
+						to += "/";
+					}
+				}
+
+				state.selection = {};
+	state.selecting = false;
+
+				send("/@next-index/api/" + kind, { path: state.path, names: names, to: to }, (copying ? "Copied " : "Moved ") + (single ? "\u201c" + names[0] + "\u201d" : names.length + " items"), error);
+			}
+		});
+
+		input.setSelectionRange(input.value.length, input.value.length);
+	}
+
+	function openDelete(names) {
+		if (!names.length) {
+			return;
+		}
+
 		if (!state.authenticated) {
 			openLogin("Sign in to delete files.");
 			return;
 		}
 
-		var type = typeOf(entry);
+		var single = names.length === 1;
+		var entry = single ? state.entries.filter(function (item) {
+			return item.name === names[0];
+		})[0] : null;
+		var type = entry ? typeOf(entry) : null;
+
+		var preview = names
+			.slice(0, 4)
+			.map(function (name) {
+				return "<span>" + esc(name) + "</span>";
+			})
+			.join("");
+
+		if (names.length > 4) {
+			preview += "<span>+" + (names.length - 4) + " more</span>";
+		}
 
 		openModal(
-			'<div class="dialog-head"><div><h2>Delete ' + (entry.kind === "dir" ? "folder" : "file") + "?</h2></div>" +
+			'<div class="dialog-head"><div><h2>Delete ' + (single ? (entry && entry.kind === "dir" ? "folder" : "file") : names.length + " items") + "?</h2></div>" +
 			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
 			'<p class="sub">This action cannot be undone.</p>' +
-			'<div class="delete-target"><span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span><span>" + esc(entry.name) + "</span></div>" +
+			'<div class="delete-target">' + (type ? '<span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span>" : "") + preview + "</div>" +
 			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
 			'<button type="button" class="btn btn-danger" id="confirm-delete">Delete</button></div>'
 		);
@@ -1033,15 +1325,17 @@
 		document.getElementById("confirm-delete").addEventListener("click", function () {
 			var button = this;
 			button.disabled = true;
-			button.textContent = "Deleting…";
+			button.textContent = "Deleting\u2026";
 
 			api("/@next-index/api/delete", {
 				method: "POST",
-				body: JSON.stringify({ path: state.path, names: [entry.name] })
+				body: JSON.stringify({ path: state.path, names: names })
 			})
 				.then(function () {
 					closeModal();
-					toast("success", "Deleted “" + entry.name + "”");
+					state.selection = {};
+	state.selecting = false;
+					toast("success", single ? "Deleted \u201c" + names[0] + "\u201d" : "Deleted " + names.length + " items");
 					return refresh();
 				})
 				.catch(function (error) {

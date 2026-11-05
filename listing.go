@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -14,8 +12,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-
-	"acovia.net/record"
 )
 
 var (
@@ -99,8 +95,7 @@ type listing struct {
 }
 
 func (server *Server) buildListing(fsPath string) (*listing, error) {
-	info, err := server.Root.Stat(fsPath)
-	record.Debug(fsPath)
+	info, err := os.Stat(fsPath)
 	if err != nil {
 		return nil, err
 	}
@@ -109,33 +104,34 @@ func (server *Server) buildListing(fsPath string) (*listing, error) {
 		return nil, errNotDirectory
 	}
 
-	entries, err := readEntries(fsPath)
+	entries, err := server.readEntries(fsPath)
 	if err != nil {
 		return nil, err
 	}
 
-	var parentPath = "/"
+	urlPath := server.urlPath(fsPath, true)
 
-	if fsPath != "." {
-		parentPath = ".."
+	parentName := ".."
+	if fsPath == server.Root {
+		parentName = "/"
 	}
 
 	return &listing{
-		Path:    formatUrlPath(fsPath, true),
-		Crumbs:  makeCrumbs(fsPath),
+		Path:    urlPath,
+		Crumbs:  makeCrumbs(urlPath),
 		Entries: entries,
 		Parent: Entry{
 			Kind: "parent",
 			Href: "../",
-			Name: parentPath,
+			Name: parentName,
 			Size: info.Size(),
 			Mod:  info.ModTime().Unix(),
 		},
 	}, nil
 }
 
-func readEntries(fsPath string) ([]Entry, error) {
-	dirEntries, err := os.ReadDir(path.Join(server.Root.Name(), fsPath))
+func (server *Server) readEntries(fsPath string) ([]Entry, error) {
+	dirEntries, err := os.ReadDir(fsPath)
 	if err != nil {
 		return nil, err
 	}
@@ -143,15 +139,24 @@ func readEntries(fsPath string) ([]Entry, error) {
 	entries := make([]Entry, 0, len(dirEntries))
 
 	for _, dirEntry := range dirEntries {
+		name := dirEntry.Name()
+
+		if strings.HasPrefix(name, ".next_index-") {
+			continue
+		}
+
 		info, err := dirEntry.Info()
 		if err != nil {
 			continue
 		}
 
-		name := dirEntry.Name()
+		fullPath := filepath.Join(fsPath, name)
+		isLink := info.Mode()&os.ModeSymlink != 0
 
-		if strings.HasPrefix(name, ".next_index-upload-") || strings.HasPrefix(name, ".next_index-") {
-			continue
+		if isLink {
+			if stat, err := os.Stat(fullPath); err == nil {
+				info = stat
+			}
 		}
 
 		entry := Entry{
@@ -160,19 +165,19 @@ func readEntries(fsPath string) ([]Entry, error) {
 			Size: info.Size(),
 			Mod:  info.ModTime().Unix(),
 			Ext:  strings.ToLower(strings.TrimPrefix(filepath.Ext(name), ".")),
+			Link: isLink,
 		}
 
-		switch true {
-		case info.IsDir():
-			entry.Href = formatUrlPath(path.Join(fsPath, name), true)
+		if isLink {
+			entry.Target, _ = os.Readlink(fullPath)
+		}
+
+		if info.IsDir() {
 			entry.Kind = "dir"
 			entry.Size = 0
-
-		case !info.IsDir():
-			entry.Href = formatUrlPath(path.Join(fsPath, name), false)
-
 		}
 
+		entry.Href = (&url.URL{Path: server.urlPath(fullPath, entry.Kind == "dir")}).EscapedPath()
 		entry.Thumb = entry.Kind == "file" && thumbnailExtensions[entry.Ext]
 
 		entries = append(entries, entry)
@@ -190,18 +195,6 @@ func readEntries(fsPath string) ([]Entry, error) {
 	})
 
 	return entries, nil
-}
-
-func formatUrlPath(fsPath string, isDir bool) string {
-	fsPath = path.Clean(fsPath)
-	if !strings.HasPrefix(fsPath, "/") {
-		fsPath = "/" + fsPath
-	}
-	if isDir && !strings.HasSuffix(fsPath, "/") {
-		fsPath = fsPath + "/"
-	}
-
-	return fsPath
 }
 
 func makeCrumbs(urlPath string) []Crumb {
@@ -226,7 +219,7 @@ func makeCrumbs(urlPath string) []Crumb {
 }
 
 func (server *Server) serveFile(w http.ResponseWriter, r *http.Request, fsPath string, info os.FileInfo) {
-	file, err := server.Root.Open(fsPath)
+	file, err := os.Open(fsPath)
 	if err != nil {
 		server.fail(w, r, http.StatusNotFound, "file not found")
 		return
@@ -372,37 +365,26 @@ func copyUpload(dir string, source io.Reader, overwrite bool, name string) (stri
 	target := filepath.Join(dir, name)
 
 	if overwrite {
-		if info, err := server.Root.Stat(target); err == nil && info.IsDir() {
+		if info, err := os.Stat(target); err == nil && info.IsDir() {
 			return "", 0, fmt.Errorf("%v is a directory", name)
 		}
 	} else {
 		var err error
-		target, err = uniquePath(dir, name)
-		if err != nil {
+		if target, err = uniquePath(dir, name); err != nil {
 			return "", 0, err
 		}
 	}
 
-	var tempName string
-	for {
-		var token = make([]byte, 8)
-		io.ReadFull(rand.Reader, token)
-		subfix := hex.EncodeToString(token)
-		tempName = name + "-" + subfix
-		_, err := server.Root.Stat(tempName)
-		if os.IsNotExist(err) {
-			break
-		}
-	}
-
-	temp, err := server.Root.Create(tempName)
+	temp, err := os.CreateTemp(dir, ".next_index-upload-*")
 	if err != nil {
 		return "", 0, fmt.Errorf("create upload file: %w", err)
 	}
 
+	tempPath := temp.Name()
+
 	cleanup := func() {
 		temp.Close()
-		server.Root.Remove(tempName)
+		os.Remove(tempPath)
 	}
 
 	size, err := io.Copy(temp, source)
@@ -417,20 +399,13 @@ func copyUpload(dir string, source io.Reader, overwrite bool, name string) (stri
 	}
 
 	if err := temp.Close(); err != nil {
-		server.Root.Remove(tempName)
+		os.Remove(tempPath)
 		return "", 0, fmt.Errorf("close upload file: %w", err)
 	}
 
-	if err := server.Root.Rename(tempName, target); err != nil {
-		if !overwrite || server.Root.Remove(target) != nil {
-			server.Root.Remove(tempName)
-			return "", 0, fmt.Errorf("store upload file: %w", err)
-		}
-
-		if err := server.Root.Rename(tempName, target); err != nil {
-			server.Root.Remove(tempName)
-			return "", 0, fmt.Errorf("replace existing file: %w", err)
-		}
+	if err := os.Rename(tempPath, target); err != nil {
+		os.Remove(tempPath)
+		return "", 0, fmt.Errorf("store upload file: %w", err)
 	}
 
 	return filepath.Base(target), size, nil

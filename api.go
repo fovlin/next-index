@@ -9,6 +9,8 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -130,7 +132,11 @@ func (server *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server *Server) handleList(w http.ResponseWriter, r *http.Request) {
-	fsPath := resolveUrlPath(r.URL.Query().Get("path"))
+	fsPath, err := server.resolveUrlPath(r.URL.Query().Get("path"))
+	if err != nil {
+		server.failAPI(w, err)
+		return
+	}
 
 	list, err := server.buildListing(fsPath)
 	if err != nil {
@@ -146,7 +152,11 @@ func (server *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dirPath := resolveUrlPath(r.URL.Query().Get("path"))
+	dirPath, err := server.resolveUrlPath(r.URL.Query().Get("path"))
+	if err != nil {
+		server.failAPI(w, err)
+		return
+	}
 
 	if server.Config.MaxUploadMB > 0 {
 		limit := server.Config.MaxUploadMB << 20
@@ -243,14 +253,16 @@ func (server *Server) handleMkdir(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dirPath := resolveUrlPath(request.Path)
+	target, err := server.resolveUrlPath(path.Join(request.Path, name))
+	if err != nil {
+		server.failAPI(w, err)
+		return
+	}
 
 	server.FsMutex.Lock()
 	defer server.FsMutex.Unlock()
 
-	target := filepath.Join(dirPath, name)
-
-	if err := server.Root.Mkdir(target, 0755); err != nil {
+	if err := os.Mkdir(target, 0755); err != nil {
 		server.apiError(w, http.StatusInternalServerError, "could not create the directory")
 		return
 	}
@@ -270,19 +282,39 @@ func (server *Server) handleRename(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	from := resolveUrlPath(request.From)
+	from, err := validateName(request.From)
+	if err != nil {
+		server.apiError(w, http.StatusBadRequest, "invalid source name")
+		return
+	}
 
-	to := resolveUrlPath(request.To)
+	to, err := validateName(request.To)
+	if err != nil {
+		server.apiError(w, http.StatusBadRequest, "invalid target name")
+		return
+	}
 
 	if from == to {
 		writeJSON(w, http.StatusOK, map[string]string{"name": to})
 		return
 	}
 
+	fromPath, err := server.resolveUrlPath(path.Join(request.Path, from))
+	if err != nil {
+		server.failAPI(w, err)
+		return
+	}
+
+	toPath, err := server.resolveUrlPath(path.Join(request.Path, to))
+	if err != nil {
+		server.failAPI(w, err)
+		return
+	}
+
 	server.FsMutex.Lock()
 	defer server.FsMutex.Unlock()
 
-	if err := server.Root.Rename(from, to); err != nil {
+	if err := os.Rename(fromPath, toPath); err != nil {
 		server.apiError(w, http.StatusInternalServerError, "could not rename the file: "+err.Error())
 		return
 	}
@@ -307,25 +339,11 @@ func (server *Server) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	names := make([]string, 0, len(request.Names))
-	seen := make(map[string]bool, len(request.Names))
-
-	for _, rawName := range request.Names {
-		name, err := validateName(rawName)
-		if err != nil {
-			server.apiError(w, http.StatusBadRequest, "invalid file name")
-			return
-		}
-
-		if seen[name] {
-			continue
-		}
-
-		seen[name] = true
-		names = append(names, name)
+	names, err := checkedNames(request.Names)
+	if err != nil {
+		server.apiError(w, http.StatusBadRequest, "invalid file name")
+		return
 	}
-
-	dirPath := resolveUrlPath(request.Path)
 
 	server.FsMutex.Lock()
 	defer server.FsMutex.Unlock()
@@ -333,9 +351,13 @@ func (server *Server) handleDelete(w http.ResponseWriter, r *http.Request) {
 	deleted := make([]string, 0, len(names))
 
 	for _, name := range names {
-		target := filepath.Join(dirPath, name)
+		target, err := server.resolveUrlPath(path.Join(request.Path, name))
+		if err != nil {
+			server.failAPI(w, err)
+			return
+		}
 
-		if err := server.Root.RemoveAll(target); err != nil {
+		if err := os.RemoveAll(target); err != nil {
 			server.apiError(w, http.StatusInternalServerError, fmt.Sprintf("could not delete %v", name))
 			return
 		}
@@ -344,6 +366,125 @@ func (server *Server) handleDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{"deleted": deleted})
+}
+
+func (server *Server) handleMove(w http.ResponseWriter, r *http.Request) {
+	server.transfer(w, r, true)
+}
+
+func (server *Server) handleCopy(w http.ResponseWriter, r *http.Request) {
+	server.transfer(w, r, false)
+}
+
+func (server *Server) destination(to string, count int, allowName bool) (string, string, error) {
+	if strings.TrimSpace(to) == "" {
+		return "", "", fmt.Errorf("enter a destination path")
+	}
+
+	if !allowName || strings.HasSuffix(to, "/") || count > 1 {
+		dir, err := server.resolveUrlPath(to)
+		return dir, "", err
+	}
+
+	cleaned := path.Clean(to)
+
+	name, err := validateName(path.Base(cleaned))
+	if err != nil {
+		return "", "", errInvalidName
+	}
+
+	dir, err := server.resolveUrlPath(path.Dir(cleaned))
+
+	return dir, name, err
+}
+
+func checkedNames(values []string) ([]string, error) {
+	if len(values) == 0 {
+		return nil, errInvalidName
+	}
+
+	names := make([]string, 0, len(values))
+	seen := make(map[string]bool, len(values))
+
+	for _, value := range values {
+		name, err := validateName(value)
+		if err != nil {
+			return nil, err
+		}
+
+		if !seen[name] {
+			seen[name] = true
+			names = append(names, name)
+		}
+	}
+
+	return names, nil
+}
+
+func pathInside(parent string, target string) bool {
+	relative, err := filepath.Rel(parent, target)
+	if err != nil {
+		return true
+	}
+
+	return relative != "." && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator))
+}
+
+func copyPath(source string, target string) error {
+	info, err := os.Lstat(source)
+	if err != nil {
+		return err
+	}
+
+	if info.Mode()&os.ModeSymlink != 0 {
+		link, err := os.Readlink(source)
+		if err != nil {
+			return err
+		}
+
+		return os.Symlink(link, target)
+	}
+
+	if !info.IsDir() {
+		return copyFile(source, target, info.Mode().Perm())
+	}
+
+	if err := os.Mkdir(target, info.Mode().Perm()); err != nil {
+		return err
+	}
+
+	entries, err := os.ReadDir(source)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		if err := copyPath(filepath.Join(source, entry.Name()), filepath.Join(target, entry.Name())); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func copyFile(source string, target string, mode os.FileMode) error {
+	input, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+	defer input.Close()
+
+	output, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
+	if err != nil {
+		return err
+	}
+
+	if _, err := io.Copy(output, input); err != nil {
+		output.Close()
+		return err
+	}
+
+	return output.Close()
 }
 
 func (server *Server) checkWrite(w http.ResponseWriter, r *http.Request) bool {
