@@ -23,7 +23,7 @@ import (
 
 type Server struct {
 	Config   Config
-	Root     *os.Root
+	Root     string
 	Sessions *sessionStore
 	Limiter  *loginLimiter
 	Template *template.Template
@@ -31,7 +31,7 @@ type Server struct {
 	Quiet    bool
 }
 
-func newServer(cfg Config, root *os.Root) (*Server, error) {
+func newServer(cfg Config, root string) (*Server, error) {
 	pageTemplate, err := template.ParseFS(webAssets, "web/index.html")
 	if err != nil {
 		return nil, fmt.Errorf("parse page template: %w", err)
@@ -63,6 +63,8 @@ func (server *Server) handler() http.Handler {
 	mux.HandleFunc("POST /@next-index/api/upload", server.handleUpload)
 	mux.HandleFunc("POST /@next-index/api/mkdir", server.handleMkdir)
 	mux.HandleFunc("POST /@next-index/api/rename", server.handleRename)
+	mux.HandleFunc("POST /@next-index/api/move", server.handleMove)
+	mux.HandleFunc("POST /@next-index/api/copy", server.handleCopy)
 	mux.HandleFunc("POST /@next-index/api/delete", server.handleDelete)
 
 	mux.HandleFunc("/@next-index/api/", func(w http.ResponseWriter, r *http.Request) {
@@ -145,13 +147,32 @@ func (server *Server) serveAsset(name string, contentType string) http.HandlerFu
 	}
 }
 
-func resolveUrlPath(urlPath string) string {
-	fsPath := path.Clean(strings.TrimPrefix(urlPath, "/"))
-	if fsPath == "" {
-		fsPath = "."
+func (server *Server) resolveUrlPath(urlPath string) (string, error) {
+	cleaned := path.Clean("/" + strings.TrimPrefix(urlPath, "/"))
+	fsPath := filepath.Join(server.Root, filepath.FromSlash(cleaned))
+
+	relative, err := filepath.Rel(server.Root, fsPath)
+	if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+		return "", errInvalidPath
 	}
 
-	return fsPath
+	record.Debug(fsPath)
+	return fsPath, nil
+}
+
+// urlPath is the inverse of resolveUrlPath. Directories keep a trailing slash.
+func (server *Server) urlPath(fsPath string, isDir bool) string {
+	relative, err := filepath.Rel(server.Root, fsPath)
+	if err != nil || relative == "." {
+		return "/"
+	}
+
+	urlPath := "/" + filepath.ToSlash(relative)
+	if isDir && !strings.HasSuffix(urlPath, "/") {
+		urlPath += "/"
+	}
+
+	return urlPath
 }
 
 func (server *Server) listenAndServe() error {
@@ -206,4 +227,92 @@ func (recorder *statusRecorder) WriteHeader(status int) {
 
 func (recorder *statusRecorder) Unwrap() http.ResponseWriter {
 	return recorder.ResponseWriter
+}
+
+func (server *Server) transfer(w http.ResponseWriter, r *http.Request, move bool) {
+	if !server.checkWrite(w, r) {
+		return
+	}
+
+	var request requestPath
+
+	if err := decodeJSONBody(r, &request); err != nil {
+		server.apiError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	names, err := checkedNames(request.Names)
+	if err != nil {
+		server.apiError(w, http.StatusBadRequest, "invalid file name")
+		return
+	}
+
+	fromDir, err := server.resolveUrlPath(request.Path)
+	if err != nil {
+		server.failAPI(w, err)
+		return
+	}
+
+	toDir, toName, err := server.destination(request.To, len(names), !move)
+	if err != nil {
+		server.apiError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	info, err := os.Stat(toDir)
+	if err != nil {
+		server.failAPI(w, err)
+		return
+	}
+
+	if !info.IsDir() {
+		server.apiError(w, http.StatusBadRequest, "destination is not a folder")
+		return
+	}
+
+	action := "copy"
+	if move {
+		action = "move"
+	}
+
+	server.FsMutex.Lock()
+	defer server.FsMutex.Unlock()
+
+	for _, name := range names {
+		source := filepath.Join(fromDir, name)
+		target := filepath.Join(toDir, name)
+
+		if toName != "" {
+			target = filepath.Join(toDir, toName)
+		}
+
+		info, err := os.Lstat(source)
+		if err != nil {
+			server.failAPI(w, err)
+			return
+		}
+
+		if _, err := os.Lstat(target); err == nil {
+			server.apiError(w, http.StatusConflict, "a file or directory with this name already exists")
+			return
+		}
+
+		if info.IsDir() && pathInside(source, target) {
+			server.apiError(w, http.StatusBadRequest, "cannot "+action+" a folder into itself")
+			return
+		}
+
+		if move {
+			err = os.Rename(source, target)
+		} else {
+			err = copyPath(source, target)
+		}
+
+		if err != nil {
+			server.apiError(w, http.StatusInternalServerError, "could not "+action+" "+name+": "+err.Error())
+			return
+		}
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{"names": names, "to": request.To})
 }
