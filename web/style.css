@@ -449,7 +449,8 @@ button {
 	justify-content: space-between;
 	gap: 14px;
 	margin-bottom: 8px;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
+	min-width: 0;
 }
 
 .stats {
@@ -458,7 +459,8 @@ button {
 	gap: 9px;
 	color: var(--muted);
 	font-size: 12.5px;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
+	white-space: nowrap;
 }
 
 .stats b {
@@ -477,6 +479,24 @@ button {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	min-height: 34px;
+	flex: 0 0 auto;
+	flex-wrap: nowrap;
+	white-space: nowrap;
+}
+
+.summary.compact [data-action="mkdir"],
+.summary.compact .segmented,
+.summary.compact .select-toggle {
+	display: none;
+}
+
+.summary.compact-tight .stats {
+	display: none;
+}
+
+.summary.compact-tight .summary-actions {
+	margin-left: auto;
 }
 
 .segmented {
@@ -816,13 +836,26 @@ th.sorted.desc .arrow {
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	padding: 1px 4px 1px 10px;
+	height: 34px;
+	padding: 0 4px 0 10px;
 	border: 1px solid var(--border);
 	border-radius: 10px;
 	background: var(--surface-2);
 	color: var(--muted);
 	font-size: 12px;
 }
+
+.batch .btn-sm,
+.batch .icon-btn {
+	height: 30px;
+	padding: 0 8px;
+}
+
+.batch .icon-btn {
+	width: 30px;
+	padding: 0;
+}
+
 
 /* grid */
 
@@ -1466,16 +1499,6 @@ th.sorted.desc .arrow {
 		height: 86px;
 	}
 
-	.summary.selecting .stats,
-	.summary.selecting [data-action="mkdir"],
-	.summary.selecting .segmented,
-	.summary.selecting .select-toggle {
-		display: none;
-	}
-
-	.summary.selecting .summary-actions {
-		margin-left: auto;
-	}
 }
 
 @media (max-width: 560px) {
