@@ -395,6 +395,26 @@
 			'<button data-view="list" class="' + (state.view === "list" ? "active" : "") + '" title="List view" aria-label="List view">' + icon("list") + "</button>" +
 			'<button data-view="grid" class="' + (state.view === "grid" ? "active" : "") + '" title="Grid view" aria-label="Grid view">' + icon("grid") + "</button>" +
 			"</div>";
+
+		fitSummary();
+	}
+
+	function fitSummary() {
+		if (!summaryRoot) {
+			return;
+		}
+
+		summaryRoot.classList.remove("compact", "compact-tight");
+
+		if (summaryRoot.scrollWidth <= summaryRoot.clientWidth + 1) {
+			return;
+		}
+
+		summaryRoot.classList.add("compact");
+
+		if (summaryRoot.scrollWidth > summaryRoot.clientWidth + 1) {
+			summaryRoot.classList.add("compact-tight");
+		}
 	}
 
 	function renderListing() {
@@ -603,6 +623,10 @@
 	}
 
 	function bindEvents() {
+		window.addEventListener("resize", function () {
+			fitSummary();
+		});
+
 		summaryActions.addEventListener("click", function (event) {
 			var viewButton = event.target.closest("[data-view]");
 
