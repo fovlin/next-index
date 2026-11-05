@@ -606,7 +606,7 @@
 		var location;
 
 		if (state.authenticated) {
-			location = esc(state.username);
+			location = "signed in as: " + esc(state.username);
 		} else if (state.writable) {
 			location = "browsing is public · sign in to manage files";
 		} else {
