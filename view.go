@@ -34,7 +34,6 @@ type bootstrapData struct {
 	Authenticated bool    `json:"authenticated"`
 	Username      string  `json:"username,omitempty"`
 	Writable      bool    `json:"writable"`
-	// Root       string  `json:"root,omitempty"`
 	Version       string  `json:"version"`
 	MaxUploadMB   int64   `json:"maxUploadMB"`
 	Now           int64   `json:"now"`

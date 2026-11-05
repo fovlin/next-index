@@ -73,42 +73,6 @@ func run() error {
 	return server.listenAndServe()
 }
 
-// func resolveRoot() (string, error) {
-// 	var root string
-
-// 	switch true {
-// 	case len(subCmdArgs) > 0:
-// 		root = subCmdArgs[0]
-// 	case config.Root != "":
-// 		root = config.Root
-// 	default:
-// 		root = "./"
-// 	}
-
-// 	root = expandHome(root)
-
-// 	absolute, err := filepath.Abs(root)
-// 	if err != nil {
-// 		return "", fmt.Errorf("resolve root directory: %w", err)
-// 	}
-
-// 	realPath, err := filepath.EvalSymlinks(absolute)
-// 	if err != nil {
-// 		return "", fmt.Errorf("resolve root directory: %w", err)
-// 	}
-
-// 	info, err := os.Stat(realPath)
-// 	if err != nil {
-// 		return "", fmt.Errorf("stat root directory: %w", err)
-// 	}
-
-// 	if !info.IsDir() {
-// 		return "", fmt.Errorf("root is not a directory: %v", realPath)
-// 	}
-
-// 	return realPath, nil
-// }
-
 func expandHome(value string) string {
 	if value != "~" && !strings.HasPrefix(value, "~/") {
 		return value
