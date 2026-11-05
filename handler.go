@@ -68,7 +68,7 @@ func (server *Server) failAPI(w http.ResponseWriter, err error) {
 	case errors.Is(err, os.ErrNotExist):
 		server.apiError(w, http.StatusNotFound, "path not found")
 
-	case errors.Is(err, errOutsideRoot), errors.Is(err, errInvalidPath), errors.Is(err, os.ErrPermission):
+	case errors.Is(err, errInvalidPath), errors.Is(err, os.ErrPermission):
 		server.apiError(w, http.StatusForbidden, "path is not accessible")
 
 	case errors.Is(err, errNotDirectory):

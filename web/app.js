@@ -41,7 +41,6 @@
 		moon: '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z"/>',
 		sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
 		upload: '<path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
-		// download: '<path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/>',
 		folder: '<path d="M2 19V6.5A2.5 2.5 0 0 1 4.5 4H8a2 2 0 0 1 1.7.9L11 6.5h8.5A2.5 2.5 0 0 1 22 9v10a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 19Z"/>',
 		folderOpen: '<path d="M2 19V6.5A2.5 2.5 0 0 1 4.5 4H8a2 2 0 0 1 1.7.9L11 6.5h8.5A2.5 2.5 0 0 1 22 9v10a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 19Z"/><path d="M8 14h8"/>',
 		folderPlus: '<path d="M2 19V6.5A2.5 2.5 0 0 1 4.5 4H8a2 2 0 0 1 1.7.9L11 6.5h8.5A2.5 2.5 0 0 1 22 9v10a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 19Z"/><path d="M12 11.2v5.6"/><path d="M9.2 14h5.6"/>',
@@ -56,20 +55,15 @@
 		slide: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M12 17v3M8 20h8"/>',
 		font: '<path d="m6 20 6-16 6 16"/><path d="M8.5 14h7"/>',
 		disk: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 3v3"/>',
-		link: '<path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/>',
 		pencil: '<path d="M4 20h4L19 9a2.83 2.83 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/>',
 		trash: '<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v5M14 11v5"/>',
-		plus: '<path d="M12 5v14M5 12h14"/>',
 		x: '<path d="m6 6 12 12M18 6 6 18"/>',
 		chevronRight: '<path d="m9 6 6 6-6 6"/>',
-		chevronDown: '<path d="m6 9 6 6 6-6"/>',
 		arrowUp: '<path d="M12 19V5M6 11l6-6 6 6"/>',
-		arrowDown: '<path d="M12 5v14M6 13l6 6 6-6"/>',
 		check: '<path d="m5 13 4 4L19 7"/>',
 		alert: '<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/>',
 		login: '<path d="M14 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2"/><path d="M9 12h11"/><path d="m17 8 4 4-4 4"/>',
 		logout: '<path d="M10 8V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2v-2"/><path d="M15 12H4"/><path d="m7 8-4 4 4 4"/>',
-		user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
 		lock: '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
 		home: '<path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/>',
 		copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
@@ -247,24 +241,6 @@
 		return Object.keys(state.selection).filter(function (name) {
 			return state.selection[name];
 		});
-	}
-
-	function clearSelection() {
-		state.selection = {};
-	state.selecting = false;
-		renderSummary();
-		renderListing();
-	}
-
-	function toggleSelect(name) {
-		if (state.selection[name]) {
-			delete state.selection[name];
-		} else {
-			state.selection[name] = true;
-		}
-
-		renderSummary();
-		renderListing();
 	}
 
 	function selectMarkup(entry) {

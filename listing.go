@@ -16,7 +16,6 @@ import (
 
 var (
 	errInvalidPath  = errors.New("invalid path")
-	errOutsideRoot  = errors.New("path is outside of the root directory")
 	errNotDirectory = errors.New("not a directory")
 	errInvalidName  = errors.New("invalid file name")
 )

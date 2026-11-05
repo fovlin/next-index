@@ -752,10 +752,6 @@ th.sorted.desc .arrow {
 	cursor: pointer;
 }
 
-.tile {
-	position: relative;
-}
-
 .tile-select {
 	position: absolute;
 	top: 2px;
@@ -1364,54 +1360,6 @@ th.sorted.desc .arrow {
 
 .toast.error {
 	border-color: var(--red);
-}
-
-/* noscript */
-
-.noscript {
-	max-width: 720px;
-	margin: 32px auto;
-	padding: 20px;
-	border: 1px solid var(--border);
-	border-radius: var(--radius);
-	background: var(--surface);
-}
-
-.noscript-hint {
-	margin: 0 0 10px;
-	color: var(--muted);
-	font-size: 12.5px;
-}
-
-.noscript h1 {
-	margin: 0 0 12px;
-	font-size: 17px;
-	font-weight: 500;
-}
-
-.noscript ul {
-	margin: 0;
-	padding-left: 18px;
-}
-
-.noscript li {
-	margin: 4px 0;
-}
-
-.noscript a {
-	color: var(--link);
-	text-decoration: none;
-}
-
-.noscript a:hover {
-	text-decoration: underline;
-}
-
-.noscript span {
-	margin-left: 7px;
-	color: var(--faint);
-	font-family: var(--mono);
-	font-size: 11px;
 }
 
 /* animations */

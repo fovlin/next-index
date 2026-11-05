@@ -39,8 +39,10 @@ type uploadResult struct {
 }
 
 func (server *Server) handleSession(w http.ResponseWriter, r *http.Request) {
-	authenticated := server.authenticated(r)
+	writeJSON(w, http.StatusOK, server.session(server.authenticated(r)))
+}
 
+func (server *Server) session(authenticated bool) sessionResponse {
 	response := sessionResponse{
 		Authenticated: authenticated,
 		Writable:      server.Config.writable(),
@@ -52,7 +54,7 @@ func (server *Server) handleSession(w http.ResponseWriter, r *http.Request) {
 		response.Username = server.Config.Username
 	}
 
-	writeJSON(w, http.StatusOK, response)
+	return response
 }
 
 func (server *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -99,13 +101,7 @@ func (server *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	server.Limiter.reset(key)
 	server.setSessionCookie(w, r, token)
 
-	writeJSON(w, http.StatusOK, sessionResponse{
-		Authenticated: true,
-		Username:      server.Config.Username,
-		Writable:      true,
-		Version:       version,
-		MaxUploadMB:   server.Config.MaxUploadMB,
-	})
+	writeJSON(w, http.StatusOK, server.session(true))
 }
 
 func (server *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
