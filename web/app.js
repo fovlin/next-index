@@ -62,6 +62,7 @@
 		arrowUp: '<path d="M12 19V5M6 11l6-6 6 6"/>',
 		check: '<path d="m5 13 4 4L19 7"/>',
 		alert: '<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/>',
+		info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7.5v.5"/>',
 		login: '<path d="M14 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2"/><path d="M9 12h11"/><path d="m17 8 4 4-4 4"/>',
 		logout: '<path d="M10 8V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2v-2"/><path d="M15 12H4"/><path d="m7 8-4 4 4 4"/>',
 		lock: '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
@@ -556,7 +557,6 @@
 
 	function itemMarkup(entry) {
 		var type = typeOf(entry);
-		var meta = entry.kind === "file" ? formatSize(entry.size) : "folder";
 		var tag = state.selecting ? "div" : "a";
 		var hrefAttr = state.selecting ? "" : ' href="' + esc(entry.href) + '"';
 		var thumb =
@@ -570,7 +570,7 @@
 			'<' + tag + ' class="tile-main"' + hrefAttr + '>' +
 			thumb +
 			'<span class="tile-name" title="' + esc(entry.name) + '">' + esc(entry.name) + "</span>" +
-			'<span class="tile-meta"><span>' + meta + "</span><span>" + formatDate(entry.mod) + "</span></span>" +
+			'<span class="tile-meta"><span>' + formatDate(entry.mod) + "</span><span>" + formatTime(entry.mod) + "</span></span>" +
 			"</" + tag + ">" +
 			(menuMarkup(entry) ? '<div class="tile-actions row-actions">' + menuMarkup(entry) + "</div>" : "") +
 			"</div>"
@@ -836,6 +836,11 @@
 			return;
 		}
 
+		if (action === "details") {
+			openDetails(entry);
+			return;
+		}
+
 		if (action === "rename") {
 			openRename(entry);
 		} else if (action === "delete") {
@@ -885,6 +890,7 @@
 		menu.className = "menu";
 		menu.id = "row-menu";
 		menu.innerHTML =
+			'<button type="button" data-action="details" data-name="' + esc(name) + '">' + icon("info") + "<span>Details</span></button>" +
 			'<button type="button" data-action="rename" data-name="' + esc(name) + '">' + icon("pencil") + "<span>Rename</span></button>" +
 			'<button type="button" data-action="move" data-name="' + esc(name) + '">' + icon("move") + "<span>Move</span></button>" +
 			'<button type="button" data-action="copy" data-name="' + esc(name) + '">' + icon("copy") + "<span>Copy</span></button>" +
@@ -1218,6 +1224,31 @@
 				send("/@next-index/api/mkdir", { path: state.path, name: name }, "Created folder \u201c" + name + "\u201d", error);
 			}
 		});
+	}
+
+	function openDetails(entry) {
+		var rows = [
+			["Name", esc(entry.name)],
+			["Kind", entry.kind === "dir" ? "Folder" : entry.ext ? entry.ext.toUpperCase() + " file" : "File"],
+			["Size", entry.kind === "dir" ? "\u2014" : esc(formatSize(entry.size)) + " <span class=\"muted\">(" + entry.size + " bytes)</span>"],
+			["Modified", esc(formatFull(entry.mod))],
+			["Location", esc(state.path + entry.name)]
+		];
+
+		if (entry.link && entry.target) {
+			rows.push(["Links to", esc(entry.target)]);
+		}
+
+		var body = rows.map(function (row) {
+			return "<div><dt>" + row[0] + "</dt><dd>" + row[1] + "</dd></div>";
+		}).join("");
+
+		openModal(
+			'<div class="dialog-head"><div><h2>' + esc(entry.name) + "</h2></div>" +
+			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+			'<dl class="detail-list">' + body + "</dl>" +
+			'<div class="dialog-actions"><button type="button" class="btn" data-close>Close</button></div>'
+		);
 	}
 
 	function openRename(entry) {
