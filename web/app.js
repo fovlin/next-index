@@ -570,7 +570,7 @@
 	}
 
 	function menuMarkup(entry) {
-		if (entry.kind === "parent") {
+		if (state.selecting || entry.kind === "parent") {
 			return "";
 		}
 
