@@ -485,6 +485,11 @@ button {
 	white-space: nowrap;
 }
 
+.summary-actions .icon-btn {
+	width: 34px;
+	height: 34px;
+}
+
 .summary.selecting [data-action="mkdir"],
 .summary.selecting .segmented,
 .summary.selecting .select-toggle {
