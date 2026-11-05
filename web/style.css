@@ -690,14 +690,6 @@ th.sorted.desc .arrow {
 	display: flex;
 	justify-content: flex-end;
 	gap: 1px;
-	opacity: 0;
-}
-
-.table tbody tr:hover .row-actions,
-.table tbody tr:focus-within .row-actions,
-.tile:hover .row-actions,
-.tile:focus-within .row-actions {
-	opacity: 1;
 }
 
 .row-action {
@@ -710,14 +702,13 @@ th.sorted.desc .arrow {
 	border: 1px solid transparent;
 	border-radius: 4px;
 	background: transparent;
-	color: var(--muted);
+	color: var(--text);
 	cursor: pointer;
 	text-decoration: none;
 }
 
 .row-action:hover {
 	background: var(--surface-3);
-	color: var(--text);
 }
 
 .row-action.danger:hover {
@@ -729,12 +720,20 @@ th.sorted.desc .arrow {
 	height: 15px;
 }
 
-.col-select {
-	width: 40px;
+.table th.col-select,
+.table td.col-select {
+	width: 30px;
+	padding-right: 0;
+}
+
+.table th.col-select + th,
+.table td.col-select + td {
+	padding-left: 6px;
 }
 
 .col-select input,
 .tile-select input {
+	vertical-align: middle;
 	width: 14px;
 	height: 14px;
 	margin: 0;
@@ -824,12 +823,6 @@ th.sorted.desc .arrow {
 	font-size: 12px;
 }
 
-@media (hover: none) {
-	.row-actions {
-		opacity: 1;
-	}
-}
-
 /* grid */
 
 .grid {
@@ -914,10 +907,8 @@ th.sorted.desc .arrow {
 	display: flex;
 	gap: 1px;
 	padding: 1px;
-	border: 1px solid var(--border);
-	border-radius: 4px;
+	border-radius: 6px;
 	background: var(--surface);
-	opacity: 0;
 }
 
 .empty {
