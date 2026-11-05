@@ -1,10 +1,10 @@
 :root {
-	--bg: #121212;
-	--surface: #171717;
-	--surface-2: #1e1e1e;
-	--surface-3: #262626;
-	--border: #2c2c2c;
-	--border-strong: #3a3a3a;
+	--bg: #080808;
+	--surface: #181818;
+	--surface-2: #1f1f1f;
+	--surface-3: #282828;
+	--border: #2f2f2f;
+	--border-strong: #3b3b3b;
 	--text: #e8e8e8;
 	--muted: #a0a0a0;
 	--faint: #707070;
@@ -23,9 +23,9 @@
 }
 
 [data-theme="light"] {
-	--bg: #f6f6f6;
-	--surface: #ffffff;
-	--surface-2: #f1f1f1;
+	--bg: #e8e8e8;
+	--surface: #ebebeb;
+	--surface-2: #efefef;
 	--surface-3: #e8e8e8;
 	--border: #dedede;
 	--border-strong: #c6c6c6;
@@ -177,7 +177,7 @@ button {
 	gap: 5px;
 	max-width: 220px;
 	padding: 4px 6px;
-	border-radius: 4px;
+	border-radius: 12px;
 	color: var(--muted);
 	font-size: 13px;
 	text-decoration: none;
@@ -284,7 +284,8 @@ button {
 	align-items: center;
 	justify-content: center;
 	gap: 6px;
-	padding: 7px 12px;
+	padding: 8px 12px;
+	margin: 0px 4px;
 	border: 1px solid var(--border);
 	border-radius: var(--radius-sm);
 	background: var(--surface);
@@ -519,7 +520,7 @@ button {
 	height: 24px;
 	padding: 0;
 	border: 0;
-	border-radius: 4px;
+	border-radius: 12px;
 	background: transparent;
 	color: var(--faint);
 	cursor: pointer;
@@ -984,10 +985,6 @@ th.sorted.desc .arrow {
 	font-size: 13px;
 }
 
-.empty .btn {
-	margin-top: 2px;
-}
-
 /* footer */
 
 .footer {
@@ -1018,8 +1015,8 @@ th.sorted.desc .arrow {
 }
 
 .status-dot {
-	width: 5px;
-	height: 5px;
+	width: 6px;
+	height: 6px;
 	border-radius: 50%;
 	background: var(--green);
 }
