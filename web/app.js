@@ -400,19 +400,19 @@
 	}
 
 	function fitSummary() {
-		if (!summaryRoot) {
-			return;
-		}
+		var overflowing = function () {
+			return summaryRoot.scrollWidth > summaryRoot.clientWidth + 1;
+		};
 
 		summaryRoot.classList.remove("compact", "compact-tight");
 
-		if (summaryRoot.scrollWidth <= summaryRoot.clientWidth + 1) {
+		if (!overflowing()) {
 			return;
 		}
 
 		summaryRoot.classList.add("compact");
 
-		if (summaryRoot.scrollWidth > summaryRoot.clientWidth + 1) {
+		if (overflowing()) {
 			summaryRoot.classList.add("compact-tight");
 		}
 	}
@@ -672,17 +672,17 @@
 			}
 
 			if (state.selecting) {
-				var item = event.target.closest("tr[data-name], .tile[data-name]");
+				var target = event.target.closest("tr[data-name], .tile[data-name]");
 
-				if (item) {
+				if (target) {
 					event.preventDefault();
 
 					var known = state.entries.some(function (entry) {
-						return entry.name === item.dataset.name;
+						return entry.name === target.dataset.name;
 					});
 
 					if (known) {
-						toggleSelect(item.dataset.name);
+						toggleSelect(target.dataset.name);
 					}
 
 					return;
