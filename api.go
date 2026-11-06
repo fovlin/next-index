@@ -351,7 +351,7 @@ func (server *Server) handleDelete(w http.ResponseWriter, r *http.Request) {
 	deleted := make([]string, 0, len(names))
 
 	type deleteObject struct {
-		name string
+		name   string
 		target string
 	}
 
@@ -364,7 +364,7 @@ func (server *Server) handleDelete(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		deleteList = append(deleteList, deleteObject{
-			name: name,
+			name:   name,
 			target: target,
 		})
 	}

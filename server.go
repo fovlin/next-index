@@ -306,7 +306,7 @@ func (server *Server) transfer(w http.ResponseWriter, r *http.Request, move bool
 			return
 		}
 		transferList = append(transferList, targetObject{
-			name: name,
+			name:   name,
 			source: source,
 			target: target,
 		})
@@ -320,7 +320,7 @@ func (server *Server) transfer(w http.ResponseWriter, r *http.Request, move bool
 		}
 
 		if err != nil {
-			server.apiError(w, http.StatusInternalServerError, "could not "+action+" "+ object.name +": "+err.Error())
+			server.apiError(w, http.StatusInternalServerError, "could not "+action+" "+object.name+": "+err.Error())
 			return
 		}
 	}
