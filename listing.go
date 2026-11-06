@@ -277,8 +277,6 @@ func sanitizeName(name string) (string, error) {
 		extension = ""
 	}
 
-	// A stem that collides with a reserved device name gets an underscore, so
-	// the file stays usable on Windows.
 	stem := strings.TrimSuffix(name, extension)
 	if reservedStem(name) {
 		stem = "_" + stem
@@ -332,13 +330,10 @@ func validateName(name string) (string, error) {
 	return name, nil
 }
 
-// isTempName reports the names the server reserves for its own temporary
-// files, which never show up in a listing either.
 func isTempName(name string) bool {
 	return strings.HasPrefix(name, tempNamePrefix)
 }
 
-// reservedStem reports a base name that Windows refuses to open as a file.
 func reservedStem(name string) bool {
 	return reservedNames[strings.ToLower(strings.TrimSuffix(name, filepath.Ext(name)))]
 }

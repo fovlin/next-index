@@ -45,8 +45,6 @@ func randomPassword(length int) (string, error) {
 	result := make([]byte, 0, length)
 	random := make([]byte, length)
 
-	// Values above the limit would skew the distribution, so they are dropped
-	// instead of wrapped.
 	limit := 256 - 256%len(passwordAlphabet)
 
 	for len(result) < length {

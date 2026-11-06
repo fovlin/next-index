@@ -156,8 +156,6 @@ func saveConfig() error {
 	return writeConfigFile(data)
 }
 
-// writeConfigFile replaces the config file atomically, so a crash never leaves
-// a half written file behind.
 func writeConfigFile(data []byte) error {
 	dir := filepath.Dir(configPath)
 

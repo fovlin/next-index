@@ -157,7 +157,6 @@ func (server *Server) resolveUrlPath(urlPath string) (string, error) {
 	return fsPath, nil
 }
 
-// urlPath is the inverse of resolveUrlPath. Directories keep a trailing slash.
 func (server *Server) urlPath(fsPath string, isDir bool) string {
 	relative, err := filepath.Rel(server.Root, fsPath)
 	if err != nil || relative == "." {
