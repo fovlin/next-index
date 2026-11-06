@@ -272,6 +272,10 @@
 	height: 14px;
 }
 
+.empty .btn{
+	margin: 0px 2px;
+}
+
 .user-chip {
 	display: inline-flex;
 	align-items: center;
