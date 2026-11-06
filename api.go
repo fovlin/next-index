@@ -99,7 +99,7 @@ func (server *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	server.Limiter.reset(key)
-	server.setSessionCookie(w, r, token)
+	server.setSessionCookie(w, token)
 
 	writeJSON(w, http.StatusOK, server.session(true))
 }
@@ -114,15 +114,7 @@ func (server *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		server.Sessions.destroy(cookie.Value)
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     sessionCookieName,
-		Value:    "",
-		Path:     "/",
-		MaxAge:   -1,
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-		Secure:   r.TLS != nil || server.Config.TLS.Enable,
-	})
+	http.SetCookie(w, server.sessionCookie("", -1))
 
 	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
 }
@@ -542,16 +534,27 @@ func (server *Server) checkCredentials(username string, password string) bool {
 	return usernameOK && passwordOK
 }
 
-func (server *Server) setSessionCookie(w http.ResponseWriter, r *http.Request, token string) {
-	http.SetCookie(w, &http.Cookie{
+func (server *Server) setSessionCookie(w http.ResponseWriter, token string) {
+	http.SetCookie(w, server.sessionCookie(token, int(sessionDuration.Seconds())))
+}
+
+func (server *Server) sessionCookie(token string, maxAge int) *http.Cookie {
+	secure := server.Config.TLS.Enable
+	sameSite := http.SameSiteLaxMode
+
+	if secure && server.Config.AllowOrigin != "" {
+		sameSite = http.SameSiteNoneMode
+	}
+
+	return &http.Cookie{
 		Name:     sessionCookieName,
 		Value:    token,
 		Path:     "/",
-		MaxAge:   int(sessionDuration.Seconds()),
+		MaxAge:   maxAge,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-		Secure:   r.TLS != nil || server.Config.TLS.Enable,
-	})
+		SameSite: sameSite,
+		Secure:   secure,
+	}
 }
 
 func sameOrigin(r *http.Request) bool {
