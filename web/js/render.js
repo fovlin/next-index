@@ -120,14 +120,11 @@ export function renderSummary() {
 
 	stats.innerHTML = parts.join("");
 
-	var mkdirButton = state.authenticated
-		? '<button class="icon-btn" data-action="mkdir" title="New folder" aria-label="New folder">' + icon("folderPlus") + "</button>"
-		: "";
-
 	var names = selected();
 
-	var selectButton = state.authenticated
-		? '<button class="icon-btn' + (state.selecting ? " active" : "") + '" data-action="toggle-selection" title="Select files" aria-label="Select files" aria-pressed="' + state.selecting + '">' + icon("select") + "</button>"
+	var tools = state.authenticated
+		? '<button class="icon-btn" data-action="mkdir" title="New folder" aria-label="New folder">' + icon("folderPlus") + "</button>" +
+			'<button class="icon-btn' + (state.selecting ? " active" : "") + '" data-action="toggle-selection" title="Select files" aria-label="Select files" aria-pressed="' + state.selecting + '">' + icon("select") + "</button>"
 		: "";
 
 	var batch = "";
@@ -147,8 +144,7 @@ export function renderSummary() {
 
 	summaryActions.innerHTML =
 		batch +
-		mkdirButton +
-		selectButton +
+		tools +
 		'<div class="segmented" role="group" aria-label="View mode">' +
 		'<button data-view="list" class="' + (state.view === "list" ? "active" : "") + '" title="List view" aria-label="List view">' + icon("list") + "</button>" +
 		'<button data-view="grid" class="' + (state.view === "grid" ? "active" : "") + '" title="Grid view" aria-label="Grid view">' + icon("grid") + "</button>" +

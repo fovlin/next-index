@@ -383,12 +383,8 @@
 	height: 24px;
 }
 
-.summary.selecting .summary-actions > [data-action="mkdir"],
-.summary.selecting .summary-actions > [data-action="toggle-selection"],
-.summary.selecting .segmented,
-.summary.compact .summary-actions > [data-action="mkdir"],
-.summary.compact .summary-actions > [data-action="toggle-selection"],
-.summary.compact .segmented {
+:is(.summary.selecting, .summary.compact) .summary-actions > :is([data-action="mkdir"], [data-action="toggle-selection"]),
+:is(.summary.selecting, .summary.compact) .segmented {
 	display: none;
 }
 
