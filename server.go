@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"mime"
 	"net"
 	"net/http"
 	"os"
@@ -130,45 +131,17 @@ func (server *Server) wrap(next http.Handler) http.Handler {
 	})
 }
 
-var assetTypes = map[string]string{
-	".css": "text/css; charset=utf-8",
-	".js":  "text/javascript; charset=utf-8",
-	".svg": "image/svg+xml",
-	".ico": "image/x-icon",
-}
-
-// serveAsset answers the asset routes. Everything under /@next-index/assets/
-// maps onto a file inside the embedded web directory, so the front end can be
-// split into as many files as it likes.
 func (server *Server) serveAsset(w http.ResponseWriter, r *http.Request) {
-	name := path.Clean(strings.TrimPrefix(r.URL.Path, "/@next-index/assets/"))
+	name := path.Join("web", strings.TrimPrefix(r.URL.Path, "/@next-index/assets/"))
 
-	if r.URL.Path == "/favicon.ico" {
-		name = "favicon.ico"
-	}
-
-	name = strings.TrimPrefix(name, "/")
-
-	if name == "" || name == "." || strings.HasPrefix(name, "..") {
-		server.fail(w, r, http.StatusNotFound, "asset not found")
-		return
-	}
-
-	contentType, known := assetTypes[path.Ext(name)]
-
-	if !known {
-		server.fail(w, r, http.StatusNotFound, "asset not found")
-		return
-	}
-
-	data, err := webAssets.ReadFile(filepath.Join("web", filepath.FromSlash(name)))
+	data, err := webAssets.ReadFile(name)
 
 	if err != nil {
 		server.fail(w, r, http.StatusNotFound, "asset not found")
 		return
 	}
 
-	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Content-Type", mime.TypeByExtension(path.Ext(name)))
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Write(data)
 }
