@@ -80,6 +80,33 @@ a folder, `Esc` closes a dialog, and files dropped on the page are uploaded.
 
 Missing fields are filled with the defaults on load.
 
+## HTTP API
+
+| Method | Path | Auth | Description |
+| --- | --- | --- | --- |
+| `GET` | `/` and `/<path>` | public | directory page or file download |
+| `GET` | `/@next-index/api/list?path=/dir/` | public | directory entries as JSON |
+| `GET` | `/@next-index/api/session` | public | login state |
+| `POST` | `/@next-index/api/login` | public | `{"username":…,"password":…}`, sets the session cookie |
+| `POST` | `/@next-index/api/logout` | session | clears the session |
+| `POST` | `/@next-index/api/upload?path=/dir/` | write | multipart field `file`, optional `overwrite=1` |
+| `POST` | `/@next-index/api/mkdir` | write | `{"path":"/dir/","name":"new folder"}` |
+| `POST` | `/@next-index/api/rename` | write | `{"path":"/dir/","from":"a.txt","to":"b.txt"}` |
+| `POST` | `/@next-index/api/move` | write | `{"path":"/dir/","names":["a.txt"],"to":"/other/"}` |
+| `POST` | `/@next-index/api/copy` | write | same body as `move` |
+| `POST` | `/@next-index/api/delete` | write | `{"path":"/dir/","names":["a.txt","folder"]}` |
+
+Write endpoints accept the `next_index_session` cookie or HTTP Basic auth:
+
+```bash
+curl -u admin:password -F "file=@photo.jpg" \
+  "http://localhost:8080/@next-index/api/upload?path=/photos/"
+```
+
+A request that would overwrite an existing name answers `409`; `403` means the
+path is outside the root or the caller is not signed in, and `400` means the name
+or the body is invalid.
+
 ## Build
 
 ```bash
