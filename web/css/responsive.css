@@ -98,6 +98,10 @@
 		display: none;
 	}
 
+	.topbar-actions #logout-btn span {
+		display: none;
+	}
+
 	.crumb {
 		max-width: 120px;
 	}
@@ -110,6 +114,10 @@
 @media (max-width: 420px) {
 	.table th.col-time,
 	.table td.col-time {
+		display: none;
+	}
+
+	.topbar-actions #upload-btn span {
 		display: none;
 	}
 

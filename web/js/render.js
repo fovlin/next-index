@@ -34,9 +34,10 @@ export function renderTopbar() {
 	if (state.authenticated) {
 		authMarkup =
 			'<span class="user-chip" title="Signed in"><span class="avatar">' + esc((state.username || "?").slice(0, 1)) + '</span><span class="user-name">' + esc(state.username) + "</span></span>" +
-			'<button class="icon-btn" id="logout-btn" title="Sign out" aria-label="Sign out">' + icon("logout") + "</button>";
+			'<button class="btn btn-sm" id="logout-btn" title="Sign out" aria-label="Sign out">' + icon("logout") + "<span>Sign out</span></button>" +
+			'<button class="btn btn-primary" id="upload-btn" title="Upload files" aria-label="Upload files">' + icon("upload") + "<span>Upload</span></button>";
 	} else if (state.writable) {
-		authMarkup = '<button class="btn" id="login-btn" title="Sign in" aria-label="Sign in">' + icon("login") + "<span>Sign in</span></button>";
+		authMarkup = '<button class="btn btn-primary" id="login-btn" title="Sign in" aria-label="Sign in">' + icon("login") + "<span>Sign in</span></button>";
 	} else {
 		authMarkup = '<span class="readonly-chip">' + icon("lock") + "read only</span>";
 	}
@@ -58,7 +59,6 @@ export function renderTopbar() {
 		'<button class="icon-btn" id="refresh-btn" title="Refresh" aria-label="Refresh">' + icon("refresh") + "</button>" +
 		'<button class="icon-btn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">' + (state.theme === "dark" ? icon("sun") : icon("moon")) + "</button>" +
 		authMarkup +
-		(state.writable ? '<button class="btn btn-primary" id="upload-btn" title="Upload files" aria-label="Upload files">' + icon("upload") + "<span>Upload</span></button>" : "") +
 		"</div>" +
 		"</div>";
 
