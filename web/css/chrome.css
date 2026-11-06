@@ -381,6 +381,7 @@
 
 .summary-actions .icon-btn {
 	height: 24px;
+	border-color: var(--border);
 }
 
 :is(.summary.selecting, .summary.compact) .summary-actions > :is([data-action="mkdir"], [data-action="toggle-selection"]),
