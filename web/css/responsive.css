@@ -47,11 +47,6 @@
 		margin-left: auto;
 	}
 
-	.brand-version,
-	.brand-name {
-		display: none;
-	}
-
 	.crumbs {
 		order: 3;
 		flex: 1 0 100%;
@@ -95,7 +90,6 @@
 	.thumb {
 		height: 86px;
 	}
-
 }
 
 @media (max-width: 560px) {

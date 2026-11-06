@@ -1,6 +1,6 @@
 import { openLogin } from "./actions.js";
 import { api, refresh, send } from "./api.js";
-import { ensuredDirectories, esc, formatSize, icon, joinPath, plural, selected, state } from "./core.js";
+import { ensuredDirectories, esc, formatSize, icon, joinPath, plural, resetEnsuredDirectories, selected, state } from "./core.js";
 import { closeModal, openModal, toast } from "./ui.js";
 
 export function openUpload(items) {
@@ -15,7 +15,7 @@ export function openUpload(items) {
 	}
 
 	state.uploads = items ? items.slice() : [];
-	ensuredDirectories = {};
+	resetEnsuredDirectories();
 
 	openModal(
 		'<div class="dialog-head"><h2>Upload files</h2>' +
@@ -112,7 +112,7 @@ export function openUpload(items) {
 		renderUploadFiles();
 	}
 }
-export function filesToItems(files) {
+function filesToItems(files) {
 	return Array.prototype.map.call(files || [], function (file) {
 		var relative = file.webkitRelativePath || "";
 		var slash = relative.lastIndexOf("/");
@@ -123,7 +123,7 @@ export function filesToItems(files) {
 		};
 	});
 }
-export function itemsFromDataTransfer(dataTransfer) {
+function itemsFromDataTransfer(dataTransfer) {
 	if (!dataTransfer) {
 		return Promise.resolve([]);
 	}
@@ -199,7 +199,7 @@ export function itemsFromDataTransfer(dataTransfer) {
 		);
 	}
 }
-export async function ensureDirectory(relativeDirectory) {
+async function ensureDirectory(relativeDirectory) {
 	if (!relativeDirectory) {
 		return state.path;
 	}
@@ -232,7 +232,7 @@ export async function ensureDirectory(relativeDirectory) {
 
 	return current;
 }
-export function renderUploadFiles() {
+function renderUploadFiles() {
 	var fileList = document.getElementById("file-list");
 	var startButton = document.getElementById("start-upload");
 	var summary = document.getElementById("upload-summary");
@@ -264,7 +264,7 @@ export function renderUploadFiles() {
 	startButton.disabled = state.uploads.length === 0 || state.uploading;
 	startButton.textContent = state.uploading ? "Uploading…" : "Upload";
 }
-export function startUpload() {
+function startUpload() {
 	if (state.uploading || state.uploads.length === 0) {
 		return;
 	}
@@ -344,7 +344,7 @@ export function startUpload() {
 			}
 		});
 }
-export function uploadFile(file, targetPath, overwrite, onProgress) {
+function uploadFile(file, targetPath, overwrite, onProgress) {
 	return new Promise(function (resolve, reject) {
 		var request = new XMLHttpRequest();
 		var query = "?path=" + encodeURIComponent(targetPath) + (overwrite ? "&overwrite=1" : "");
@@ -386,8 +386,8 @@ export function uploadFile(file, targetPath, overwrite, onProgress) {
 		request.send(form);
 	});
 }
-export var dragDepth = 0;
-export var dropOverlay = null;
+var dragDepth = 0;
+var dropOverlay = null;
 export function bindDropEvents() {
 	window.addEventListener("dragenter", function (event) {
 		if (!hasFiles(event)) {
@@ -437,10 +437,10 @@ export function bindDropEvents() {
 		});
 	});
 }
-export function hasFiles(event) {
+function hasFiles(event) {
 	return !!event.dataTransfer && Array.prototype.indexOf.call(event.dataTransfer.types, "Files") !== -1;
 }
-export function showDropOverlay() {
+function showDropOverlay() {
 	if (dropOverlay) {
 		return;
 	}

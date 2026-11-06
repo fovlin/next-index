@@ -3,6 +3,32 @@
 All notable changes to NEXT_INDEX are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Changed
+
+- Split the front end into ES modules (`core`, `render`, `ui`, `api`,
+  `actions`, `upload`) instead of one inline script.
+- Each row and tile now carries its own action button: the row menu opens
+  under the button and stays inside the page.
+- Row and tile actions only light up the button, not the whole row, when the
+  pointer is over them.
+
+### Fixed
+
+- Opening the upload dialog threw before it could render, because the module
+  assigned to an imported binding.
+- The search box lost the casing you typed as soon as the list re-rendered.
+- `Ctrl`/`Cmd`/`Alt` shortcuts no longer trigger the upload, new folder and
+  view shortcuts.
+- Absolute date and time strings use one locale everywhere.
+
+### Internal
+
+- Removed dead CSS rules and unused element hooks, and moved the toast and
+  scroll-lock states from inline styles to classes.
+- Helpers are only exported by the module that owns them.
+
 ## 0.0.2-alpha - 2026-11-03
 
 ### Added

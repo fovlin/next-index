@@ -12,9 +12,15 @@ function readState() {
 
 export var state = readState();
 
-export var parameters = new URLSearchParams(window.location.search);
+var parameters = new URLSearchParams(window.location.search);
+
+var LOCALE = "en-US";
 
 export var ensuredDirectories = {};
+
+export function resetEnsuredDirectories() {
+	ensuredDirectories = {};
+}
 
 if (state) {
 	state.entries = Array.isArray(state.entries) ? state.entries : [];
@@ -40,17 +46,19 @@ if (state) {
 	document.documentElement.dataset.theme = state.theme;
 }
 
-export var ICONS = {
-	parent: '<path d="M3.55 7.65 A2.4 2.4 0 0 1 5.95 5.25 h3.3 a2.1 2.1 0 0 1 1.68 .84 l.9 1.26 H17.95 a2.5 2.5 0 0 1 2.5 2.5 v6.9 A2.5 2.5 0 0 1 17.95 18.75 H5.95 a2.4 2.4 0 0 1 -2.4 -2.4 V7.65 Z"/><path d="M14.8 13H9.2" stroke-width="1.5"/><path d="m11.8 10.6-2.6 2.4 2.6 2.4" stroke-width="1.5"/>',
+var FOLDER = '<path d="M3.55 7.65 A2.4 2.4 0 0 1 5.95 5.25 h3.3 a2.1 2.1 0 0 1 1.68 .84 l.9 1.26 H17.95 a2.5 2.5 0 0 1 2.5 2.5 v6.9 A2.5 2.5 0 0 1 17.95 18.75 H5.95 a2.4 2.4 0 0 1 -2.4 -2.4 V7.65 Z"/>';
+
+var ICONS = {
+	parent: FOLDER + '<path d="M14.8 13H9.2" stroke-width="1.5"/><path d="m11.8 10.6-2.6 2.4 2.6 2.4" stroke-width="1.5"/>',
 	layers: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/>',
 	search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/>',
 	refresh: '<path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/>',
 	moon: '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z"/>',
 	sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
 	upload: '<path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
-	folder: '<path d="M3.55 7.65 A2.4 2.4 0 0 1 5.95 5.25 h3.3 a2.1 2.1 0 0 1 1.68 .84 l.9 1.26 H17.95 a2.5 2.5 0 0 1 2.5 2.5 v6.9 A2.5 2.5 0 0 1 17.95 18.75 H5.95 a2.4 2.4 0 0 1 -2.4 -2.4 V7.65 Z"/>',
+	folder: FOLDER,
 	folderOpen: '<path d="M5.42 19.5 h11.9 a2 2 0 0 0 1.94 -1.5 l1.2 -5 A1.6 1.6 0 0 0 18.92 10.9 H7.92 a2 2 0 0 0 -1.94 1.5 L4.72 17.6 M5.42 19.5 a2 2 0 0 1 -2 -2 V6.1 a1.6 1.6 0 0 1 1.6 -1.6 h5.1 a2 2 0 0 1 1.6 .8 l1.2 1.6 h5.5 a1.6 1.6 0 0 1 1.6 1.6 v2.4"/>',
-	folderPlus: '<path d="M3.55 7.65 A2.4 2.4 0 0 1 5.95 5.25 h3.3 a2.1 2.1 0 0 1 1.68 .84 l.9 1.26 H17.95 a2.5 2.5 0 0 1 2.5 2.5 v6.9 A2.5 2.5 0 0 1 17.95 18.75 H5.95 a2.4 2.4 0 0 1 -2.4 -2.4 V7.65 Z"/><path d="M12 10.5v5"/><path d="M9.5 13h5"/>',
+	folderPlus: FOLDER + '<path d="M12 10.5v5"/><path d="M9.5 13h5"/>',
 	file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/>',
 	image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15-4.5-4.5L7 20"/>',
 	video: '<rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 10 4-2v8l-4-2"/>',
@@ -81,7 +89,7 @@ export var ICONS = {
 	list: '<path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
 	grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'
 };
-export var GROUPS = {
+var GROUPS = {
 	image: ["png", "jpg", "jpeg", "gif", "webp", "avif", "bmp", "ico", "svg", "tif", "tiff", "heic"],
 	video: ["mp4", "webm", "mkv", "mov", "avi", "m4v", "ogv", "flv", "wmv"],
 	audio: ["mp3", "wav", "flac", "ogg", "m4a", "aac", "opus", "wma", "mid"],
@@ -94,7 +102,7 @@ export var GROUPS = {
 	font: ["ttf", "otf", "woff", "woff2", "eot"],
 	disk: ["iso", "img", "dmg", "vhd", "vhdx", "qcow2", "vmdk"]
 };
-export var TYPE_ICONS = {
+var TYPE_ICONS = {
 	parent: ["parent", "icon-dir"],
 	dir: ["folder", "icon-dir"],
 	image: ["image", "icon-image"],
@@ -120,7 +128,7 @@ export var summaryRoot = document.querySelector(".summary");
 export var stats = document.getElementById("stats");
 export var summaryActions = document.getElementById("summary-actions");
 export var listing = document.getElementById("listing");
-export function readSort() {
+function readSort() {
 	try {
 		var parsed = JSON.parse(localStorage.getItem("next-index-sort"));
 
@@ -141,7 +149,7 @@ export function esc(value) {
 export function icon(name, className) {
 	return '<svg class="' + (className || "") + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || ICONS.file) + "</svg>";
 }
-export function groupOf(entry) {
+function groupOf(entry) {
 	if (entry.kind === "dir" || entry.kind === "parent") {
 		return entry.kind;
 	}
@@ -177,19 +185,27 @@ export function formatSize(bytes) {
 	return (index === 0 ? String(value) : value.toFixed(1)) + " " + units[index];
 }
 export function formatDate(unix) {
-	return new Date(unix * 1000).toLocaleDateString('en-US', {
+	return new Date(unix * 1000).toLocaleDateString(LOCALE, {
 		year: "numeric",
 		month: "2-digit",
-		day: "2-digit",
+		day: "2-digit"
 	});
 }
 export function formatTime(unix) {
-	return new Date(unix * 1000).toLocaleTimeString('en-US', {
-		hour12: false,
+	return new Date(unix * 1000).toLocaleTimeString(LOCALE, {
+		hour12: false
 	});
 }
 export function formatFull(unix) {
-	return new Date(unix * 1000).toLocaleString();
+	return new Date(unix * 1000).toLocaleString(LOCALE, {
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+		hour: "2-digit",
+		minute: "2-digit",
+		second: "2-digit",
+		hour12: false
+	});
 }
 export function visibleEntries() {
 	var entries = state.entries.slice();
@@ -216,8 +232,10 @@ export function visibleEntries() {
 	});
 
 	if (state.query) {
+		var needle = state.query.toLowerCase();
+
 		entries = entries.filter(function (entry) {
-			return entry.name.toLowerCase().indexOf(state.query) !== -1;
+			return entry.name.toLowerCase().indexOf(needle) !== -1;
 		});
 	}
 

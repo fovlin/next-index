@@ -242,7 +242,7 @@ export function openMkdir() {
 		}
 	});
 }
-export function openDetails(entry) {
+function openDetails(entry) {
 	var rows = [
 		["Name", esc(entry.name)],
 		["Kind", entry.kind === "dir" ? "Folder" : entry.ext ? entry.ext.toUpperCase() + " file" : "File"],
@@ -266,7 +266,7 @@ export function openDetails(entry) {
 		'<div class="dialog-actions"><button type="button" class="btn" data-close>Close</button></div>'
 	);
 }
-export function openRename(entry) {
+function openRename(entry) {
 	if (!state.authenticated) {
 		openLogin("Sign in to rename files.");
 		return;
@@ -305,7 +305,7 @@ export function openRename(entry) {
 		}
 	}
 }
-export function openTransfer(kind, names) {
+function openTransfer(kind, names) {
 	if (!names.length) {
 		return;
 	}
@@ -337,7 +337,7 @@ export function openTransfer(kind, names) {
 			}
 
 			state.selection = {};
-state.selecting = false;
+			state.selecting = false;
 
 			send("/@next-index/api/" + kind, { path: state.path, names: names, to: to }, (copying ? "Copied " : "Moved ") + (single ? "\u201c" + names[0] + "\u201d" : names.length + " items"), error);
 		}
@@ -345,7 +345,7 @@ state.selecting = false;
 
 	input.setSelectionRange(input.value.length, input.value.length);
 }
-export function openDelete(names) {
+function openDelete(names) {
 	if (!names.length) {
 		return;
 	}
@@ -393,7 +393,7 @@ export function openDelete(names) {
 			.then(function () {
 				closeModal();
 				state.selection = {};
-state.selecting = false;
+				state.selecting = false;
 				toast("success", single ? "Deleted \u201c" + names[0] + "\u201d" : "Deleted " + names.length + " items");
 				return refresh();
 			})

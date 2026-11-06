@@ -48,9 +48,7 @@ export function toast(type, message) {
 	toastRoot.appendChild(element);
 
 	setTimeout(function () {
-		element.style.transition = "opacity .2s ease, transform .2s ease";
-		element.style.opacity = "0";
-		element.style.transform = "translateY(8px)";
+		element.classList.add("leaving");
 		setTimeout(function () {
 			element.remove();
 		}, 220);
@@ -62,7 +60,7 @@ export function openModal(html, className) {
 	modalRoot.innerHTML =
 		'<div class="overlay" data-overlay><div class="dialog ' + (className || "") + '" role="dialog" aria-modal="true">' + html + "</div></div>";
 
-	document.body.style.overflow = "hidden";
+	document.body.classList.add("modal-open");
 
 	var overlay = modalRoot.querySelector("[data-overlay]");
 
@@ -86,7 +84,7 @@ export function openModal(html, className) {
 }
 export function closeModal() {
 	modalRoot.innerHTML = "";
-	document.body.style.overflow = "";
+	document.body.classList.remove("modal-open");
 }
 export function formDialog(options) {
 	openModal(

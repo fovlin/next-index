@@ -60,12 +60,17 @@ body {
 	line-height: 1.5;
 	-webkit-font-smoothing: antialiased;
 	text-rendering: optimizeLegibility;
+	-webkit-tap-highlight-color: transparent;
 }
 
 .app {
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
+}
+
+body.modal-open {
+	overflow: hidden;
 }
 
 a {

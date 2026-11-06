@@ -3,12 +3,12 @@ import { refresh } from "./api.js";
 import { esc, footer, formatDate, formatFull, formatSize, formatTime, icon, listing, main, plural, selected, state, stats, summaryActions, summaryRoot, topbar, typeOf, visibleEntries } from "./core.js";
 import { openUpload } from "./upload.js";
 
-export function selectMarkup(entry) {
+function selectMarkup(entry) {
 	if (!state.selecting || entry.kind === "parent") {
 		return "";
 	}
 
-	return '<input type="checkbox" class="select-box" data-select="' + esc(entry.name) + '"' + (state.selection[entry.name] ? " checked" : "") + ' aria-label="Select ' + esc(entry.name) + '">';
+	return '<input type="checkbox" data-select="' + esc(entry.name) + '"' + (state.selection[entry.name] ? " checked" : "") + ' aria-label="Select ' + esc(entry.name) + '">';
 }
 export function renderTopbar() {
 	var crumbs = state.crumbs
@@ -66,7 +66,7 @@ export function renderTopbar() {
 	searchInput.value = state.query;
 
 	searchInput.addEventListener("input", function () {
-		state.query = searchInput.value.trim().toLowerCase();
+		state.query = searchInput.value.trim();
 		renderSummary();
 		renderListing();
 	});
@@ -208,7 +208,7 @@ export function renderListing() {
 
 	bindThumbnails();
 }
-export function bindThumbnails() {
+function bindThumbnails() {
 	listing.querySelectorAll(".thumb img").forEach(function (image) {
 		image.addEventListener(
 			"error",
@@ -220,9 +220,9 @@ export function bindThumbnails() {
 					return;
 				}
 
-				var entry = state.entries.filter(function (item) {
+				var entry = state.entries.find(function (item) {
 					return item.name === tile.dataset.name;
-				})[0];
+				});
 
 				if (!entry) {
 					return;
@@ -235,7 +235,7 @@ export function bindThumbnails() {
 		);
 	});
 }
-export function tableMarkup(entries) {
+function tableMarkup(entries) {
 	var sorted = state.sort;
 
 	function header(key, label, className) {
@@ -249,8 +249,7 @@ export function tableMarkup(entries) {
 		);
 	}
 
-	var lastPage = state.parent.name === "/" ? lastPage = "" : rowMarkup(state.parent)
-
+	var lastPage = state.parent.name === "/" ? "" : rowMarkup(state.parent);
 	var rows = lastPage + entries.map(rowMarkup).join("");
 
 	return (
@@ -266,7 +265,7 @@ export function tableMarkup(entries) {
 		"</table>"
 	);
 }
-export function selectAllMarkup(entries) {
+function selectAllMarkup(entries) {
 	var checked =
 		entries.length > 0 &&
 		entries.every(function (entry) {
@@ -275,13 +274,14 @@ export function selectAllMarkup(entries) {
 
 	return '<input type="checkbox" id="select-all" aria-label="Select all"' + (checked ? " checked" : "") + ">";
 }
-export function gridMarkup(entries) {
-	var lastPage = state.parent.name === "/" ? lastPage = "" : itemMarkup(state.parent)
+function gridMarkup(entries) {
+	var lastPage = state.parent.name === "/" ? "" : itemMarkup(state.parent);
+
 	return (
 		'<div class="grid">' + lastPage + entries.map(itemMarkup).join("") + "</div>"
 	);
 }
-export function rowMarkup(entry) {
+function rowMarkup(entry) {
 	var type = typeOf(entry);
 	var size = entry.kind === "file" ? formatSize(entry.size) : "—";
 	var tag = state.selecting ? "div" : "a";
@@ -290,11 +290,11 @@ export function rowMarkup(entry) {
 	return (
 		'<tr' + (state.selection[entry.name] ? ' class="selected"' : "") + ' data-name="' + esc(entry.name) + '" data-href="' + esc(entry.href) + '">' +
 		(state.selecting ? '<td class="col-select">' + selectMarkup(entry) + "</td>" : "") +
-		'<td class="col-name">' +
+		"<td>" +
 		'<' + tag + ' class="entry"' + hrefAttr + '>' +
 		'<span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span>" +
 		'<span class="name-wrap"><span class="entry-name">' + nameMarkup(entry) + "</span>" +
-		(entry.link ? '<span class="badge badge-link">link</span>' : "") +
+		(entry.link ? '<span class="badge">link</span>' : "") +
 		"</span>" +
 		"</" + tag + ">" +
 		"</td>" +
@@ -304,10 +304,11 @@ export function rowMarkup(entry) {
 		"</tr>"
 	);
 }
-export function itemMarkup(entry) {
+function itemMarkup(entry) {
 	var type = typeOf(entry);
 	var tag = state.selecting ? "div" : "a";
 	var hrefAttr = state.selecting ? "" : ' href="' + esc(entry.href) + '"';
+	var menu = menuMarkup(entry);
 	var thumb =
 		entry.thumb && entry.kind === "file"
 			? '<div class="thumb"><img src="' + esc(entry.href) + '" alt="" loading="lazy" decoding="async"></div>'
@@ -321,11 +322,11 @@ export function itemMarkup(entry) {
 		'<span class="tile-name" title="' + esc(entry.name) + '">' + esc(entry.name) + "</span>" +
 		'<span class="tile-meta"><span>' + formatDate(entry.mod) + "</span><span>" + formatTime(entry.mod) + "</span></span>" +
 		"</" + tag + ">" +
-		(menuMarkup(entry) ? '<div class="tile-actions row-actions">' + menuMarkup(entry) + "</div>" : "") +
+		(menu ? '<div class="tile-actions row-actions">' + menu + "</div>" : "") +
 		"</div>"
 	);
 }
-export function nameMarkup(entry) {
+function nameMarkup(entry) {
 	var name = entry.name;
 
 	if (entry.kind !== "file") {
@@ -340,7 +341,7 @@ export function nameMarkup(entry) {
 
 	return esc(name.slice(0, dot)) + '<span class="entry-ext">' + esc(name.slice(dot)) + "</span>";
 }
-export function menuMarkup(entry) {
+function menuMarkup(entry) {
 	if (state.selecting || entry.kind === "parent") {
 		return "";
 	}

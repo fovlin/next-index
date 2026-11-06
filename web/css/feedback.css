@@ -20,6 +20,12 @@
 	border-radius: var(--radius-sm);
 	background: var(--surface);
 	font-size: 12.5px;
+	transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast.leaving {
+	opacity: 0;
+	transform: translateY(8px);
 }
 
 .toast svg {

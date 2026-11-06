@@ -11,7 +11,7 @@ if (state) {
 	renderListing();
 	renderFooter();
 }
-export function bindEvents() {
+function bindEvents() {
 	window.addEventListener("resize", function () {
 		fitSummary();
 	});
@@ -112,6 +112,10 @@ export function bindEvents() {
 			closeMenu();
 			closeModal();
 			hideDropOverlay();
+			return;
+		}
+
+		if (event.ctrlKey || event.metaKey || event.altKey) {
 			return;
 		}
 

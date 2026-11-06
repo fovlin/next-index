@@ -49,16 +49,6 @@
 	font-weight: 500;
 }
 
-.dialog .sub code {
-	padding: 0 4px;
-	border: 1px solid var(--border);
-	border-radius: 3px;
-	background: var(--surface-2);
-	color: var(--text);
-	font-family: var(--mono);
-	font-size: 11px;
-}
-
 .field {
 	display: flex;
 	flex-direction: column;
