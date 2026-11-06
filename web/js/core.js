@@ -46,7 +46,7 @@ if (state) {
 	document.documentElement.dataset.theme = state.theme;
 }
 
-var FOLDER = '<path d="M3.55 7.65 A2.4 2.4 0 0 1 5.95 5.25 h3.3 a2.1 2.1 0 0 1 1.68 .84 l.9 1.26 H17.95 a2.5 2.5 0 0 1 2.5 2.5 v6.9 A2.5 2.5 0 0 1 17.95 18.75 H5.95 a2.4 2.4 0 0 1 -2.4 -2.4 V7.65 Z"/>';
+var FOLDER = '<path d="M5.5 4.75h4.3c.6 0 1.15.25 1.55.7l.9 1.05H18.5A2.5 2.5 0 0 1 21 9v7.75a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.75V7.25a2.5 2.5 0 0 1 2.5-2.5Z"/>';
 
 var ICONS = {
 	parent: FOLDER + '<path d="M14.8 13H9.2" stroke-width="1.5"/><path d="m11.8 10.6-2.6 2.4 2.6 2.4" stroke-width="1.5"/>',
@@ -58,7 +58,7 @@ var ICONS = {
 	upload: '<path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
 	folder: FOLDER,
 	folderOpen: '<path d="M5.42 19.5 h11.9 a2 2 0 0 0 1.94 -1.5 l1.2 -5 A1.6 1.6 0 0 0 18.92 10.9 H7.92 a2 2 0 0 0 -1.94 1.5 L4.72 17.6 M5.42 19.5 a2 2 0 0 1 -2 -2 V6.1 a1.6 1.6 0 0 1 1.6 -1.6 h5.1 a2 2 0 0 1 1.6 .8 l1.2 1.6 h5.5 a1.6 1.6 0 0 1 1.6 1.6 v2.4"/>',
-	folderPlus: FOLDER + '<path d="M12 10.5v5"/><path d="M9.5 13h5"/>',
+	folderPlus: FOLDER + '<path d="M12 10.4v5"/><path d="M9.5 12.9h5"/>',
 	file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/>',
 	image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15-4.5-4.5L7 20"/>',
 	video: '<rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 10 4-2v8l-4-2"/>',
