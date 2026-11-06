@@ -94,7 +94,7 @@ const errorPageTemplate = `<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{status}} · NEXT_INDEX</title>
-<link rel="icon" href="/@next-index/assets/favicon.ico?v=13">
+<link rel="icon" href="/@next-index/assets/favicon.ico?v=14">
 <style>
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;display:grid;place-items:center;background:#121212;color:#e8e8e8;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI","Noto Sans SC",sans-serif;padding:24px}

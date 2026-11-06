@@ -193,8 +193,7 @@ th.sorted.desc .arrow {
 	text-decoration: none;
 }
 
-.row-action:hover,
-.row-action:active {
+.row-action:hover {
 	border-color: var(--border-strong);
 	background: var(--surface-3);
 }
