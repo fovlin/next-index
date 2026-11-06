@@ -2,7 +2,7 @@
 
 > The front-end page of this project is maintained by AI, and the back-end is maintained by myself.
 
-A small, plain web file index server with browsing is public.
+A small, plain, public web file index server.
 
 ## Quick start
 
