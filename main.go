@@ -98,7 +98,7 @@ func initProgram() error {
 	opt.BoolSwitch(&record.EnableTimestamp, "t", "time")
 
 	opt.BoolFunc("h", "help", func() {
-		printHelp()
+		record.Print(helpText)
 		os.Exit(0)
 	})
 
@@ -147,7 +147,6 @@ func looksLikePath(value string) bool {
 }
 
 func parseFlag() error {
-
 	if addrFlag != "" {
 		config.Addr = addrFlag
 		configChanged = true
@@ -288,7 +287,9 @@ func unsetConfig() error {
 		return fmt.Errorf("marshal json data:, %w", err)
 	}
 
-	os.WriteFile(configPath, data, 0600)
+	if err := writeConfigFile(data); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -306,12 +307,9 @@ func about() error {
 }
 
 func help() error {
-	printHelp()
-	return nil
-}
-
-func printHelp() {
 	record.Print(helpText)
+
+	return nil
 }
 
 const helpText = `NEXT_INDEX — a small, plain web file server
@@ -331,7 +329,7 @@ options:
   -r, --root <dir>       root directory for run/config
   -u, --user <name>      username for run/config
   -P, --password <pass>  password for run/config (hashed; leaks into shell history)
-  -x, --max-size         max size for up file
+  -x, --max-size <mb>    max upload size in megabytes (0 for no limit)
   -q, --quiet            do not log every request
   -o, --cross-origin <origin>  exact Origin allowed to call the API (experimental)
   -c, --color            colored log output
@@ -351,8 +349,7 @@ examples:
 config:
   ~/.next_index.json stores the root, address, port, credentials and limits.
   The password is stored as a SHA-256 hash.
-  config without flags prints a complete file; missing fields are saved silently.
-  with flags it saves them silently.
+  config without flags prints the file; with flags it saves them.
   config and run create the file on first use; later run flags are not saved.
 
 browsing is public; the username and password are only required to upload

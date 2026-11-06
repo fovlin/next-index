@@ -14,6 +14,11 @@ import (
 	"strings"
 )
 
+const (
+	maxNameLength  = 200
+	tempNamePrefix = ".next_index-"
+)
+
 var (
 	errInvalidPath  = errors.New("invalid path")
 	errNotDirectory = errors.New("not a directory")
@@ -140,7 +145,7 @@ func (server *Server) readEntries(fsPath string) ([]Entry, error) {
 	for _, dirEntry := range dirEntries {
 		name := dirEntry.Name()
 
-		if strings.HasPrefix(name, ".next_index-") {
+		if isTempName(name) {
 			continue
 		}
 
@@ -263,38 +268,31 @@ func sanitizeName(name string) (string, error) {
 		return "", errInvalidName
 	}
 
-	if strings.HasPrefix(name, ".next_index-") {
+	if isTempName(name) {
 		return "", errInvalidName
 	}
 
-	base := name
-	extension := filepath.Ext(base)
+	extension := filepath.Ext(name)
 	if len(extension) > 32 {
 		extension = ""
-		base = name
 	}
 
-	stem := strings.TrimSuffix(base, extension)
-
-	if reservedNames[strings.ToLower(stem)] {
-		name = "_" + name
+	// A stem that collides with a reserved device name gets an underscore, so
+	// the file stays usable on Windows.
+	stem := strings.TrimSuffix(name, extension)
+	if reservedStem(name) {
 		stem = "_" + stem
+		name = "_" + name
 	}
 
-	if len(name) > 200 {
-		suffix := extension
-		if len(suffix) > 32 {
-			suffix = ""
-		}
-
-		const limit = 200
+	if len(name) > maxNameLength {
 		runes := []rune(stem)
 
-		for len(runes) > 0 && len(string(runes))+len(suffix) > limit {
+		for len(runes) > 0 && len(string(runes))+len(extension) > maxNameLength {
 			runes = runes[:len(runes)-1]
 		}
 
-		name = string(runes) + suffix
+		name = string(runes) + extension
 	}
 
 	return name, nil
@@ -319,20 +317,30 @@ func validateName(name string) (string, error) {
 		}
 	}
 
-	if len(name) > 200 {
+	if len(name) > maxNameLength {
 		return "", errInvalidName
 	}
 
-	if strings.HasPrefix(name, ".next_index-") {
+	if isTempName(name) {
 		return "", errInvalidName
 	}
 
-	stem := strings.TrimSuffix(name, filepath.Ext(name))
-	if reservedNames[strings.ToLower(stem)] {
+	if reservedStem(name) {
 		return "", errInvalidName
 	}
 
 	return name, nil
+}
+
+// isTempName reports the names the server reserves for its own temporary
+// files, which never show up in a listing either.
+func isTempName(name string) bool {
+	return strings.HasPrefix(name, tempNamePrefix)
+}
+
+// reservedStem reports a base name that Windows refuses to open as a file.
+func reservedStem(name string) bool {
+	return reservedNames[strings.ToLower(strings.TrimSuffix(name, filepath.Ext(name)))]
 }
 
 func uniquePath(dir string, name string) (string, error) {
@@ -374,7 +382,7 @@ func copyUpload(dir string, source io.Reader, overwrite bool, name string) (stri
 		}
 	}
 
-	temp, err := os.CreateTemp(dir, ".next_index-upload-*")
+	temp, err := os.CreateTemp(dir, tempNamePrefix+"upload-*")
 	if err != nil {
 		return "", 0, fmt.Errorf("create upload file: %w", err)
 	}

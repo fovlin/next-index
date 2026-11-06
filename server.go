@@ -97,7 +97,6 @@ func (server *Server) wrap(next http.Handler) http.Handler {
 				return
 			}
 
-			w.Header().Set("SameSite", "None")
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 			w.Header().Set("Access-Control-Max-Age", "600")
@@ -155,7 +154,6 @@ func (server *Server) resolveUrlPath(urlPath string) (string, error) {
 		return "", errInvalidPath
 	}
 
-	record.Debug(fsPath)
 	return fsPath, nil
 }
 
@@ -285,7 +283,7 @@ func (server *Server) transfer(w http.ResponseWriter, r *http.Request, move bool
 			target = filepath.Join(toDir, toName)
 		}
 
-		info, err := os.Lstat(source)
+		sourceInfo, err := os.Lstat(source)
 		if err != nil {
 			server.failAPI(w, err)
 			return
@@ -296,7 +294,7 @@ func (server *Server) transfer(w http.ResponseWriter, r *http.Request, move bool
 			return
 		}
 
-		if info.IsDir() && pathInside(source, target) {
+		if sourceInfo.IsDir() && pathInside(source, target) {
 			server.apiError(w, http.StatusBadRequest, "cannot "+action+" a folder into itself")
 			return
 		}

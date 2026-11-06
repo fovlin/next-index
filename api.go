@@ -166,10 +166,9 @@ func (server *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 
 		var maxBytesError *http.MaxBytesError
 
-		switch true {
-		case errors.As(err, &maxBytesError):
+		if errors.As(err, &maxBytesError) {
 			server.apiError(w, http.StatusRequestEntityTooLarge, fmt.Sprintf("upload exceeds the %d MB limit", server.Config.MaxUploadMB))
-		default:
+		} else {
 			server.apiError(w, http.StatusBadRequest, "invalid upload request")
 		}
 

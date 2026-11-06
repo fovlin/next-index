@@ -22,12 +22,19 @@ All notable changes to NEXT_INDEX are documented here. The project follows
 - `Ctrl`/`Cmd`/`Alt` shortcuts no longer trigger the upload, new folder and
   view shortcuts.
 - Absolute date and time strings use one locale everywhere.
+- `help` tells you that `-x` takes megabytes, and `0` means no limit.
 
 ### Internal
 
 - Removed dead CSS rules and unused element hooks, and moved the toast and
   scroll-lock states from inline styles to classes.
 - Helpers are only exported by the module that owns them.
+- `config` and `unset` share one atomic config write, and `unset` no longer
+  ignores a failed write.
+- The reserved device names and the temporary file prefix live in one place
+  instead of being repeated by the sanitizing and validating helpers.
+- Dropped a leftover debug log line and a `SameSite` header that had no effect
+  on a response.
 
 ## 0.0.2-alpha - 2026-11-03
 

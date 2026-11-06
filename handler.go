@@ -64,7 +64,7 @@ func (server *Server) fail(w http.ResponseWriter, r *http.Request, status int, m
 }
 
 func (server *Server) failAPI(w http.ResponseWriter, err error) {
-	switch true {
+	switch {
 	case errors.Is(err, os.ErrNotExist):
 		server.apiError(w, http.StatusNotFound, "path not found")
 

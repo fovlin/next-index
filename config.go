@@ -153,6 +153,12 @@ func saveConfig() error {
 
 	data = append(data, '\n')
 
+	return writeConfigFile(data)
+}
+
+// writeConfigFile replaces the config file atomically, so a crash never leaves
+// a half written file behind.
+func writeConfigFile(data []byte) error {
 	dir := filepath.Dir(configPath)
 
 	temp, err := os.CreateTemp(dir, ".next_index-*.tmp")

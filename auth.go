@@ -42,24 +42,26 @@ func verifyPassword(encoded string, password string) bool {
 }
 
 func randomPassword(length int) (string, error) {
-	result := make([]byte, length)
+	result := make([]byte, 0, length)
 	random := make([]byte, length)
 
-	for index := 0; index < length; {
+	// Values above the limit would skew the distribution, so they are dropped
+	// instead of wrapped.
+	limit := 256 - 256%len(passwordAlphabet)
+
+	for len(result) < length {
 		if _, err := rand.Read(random); err != nil {
 			return "", fmt.Errorf("create random password: %w", err)
 		}
 
 		for _, value := range random {
-			limit := 256 - 256%len(passwordAlphabet)
 			if int(value) >= limit {
 				continue
 			}
 
-			result[index] = passwordAlphabet[int(value)%len(passwordAlphabet)]
-			index++
+			result = append(result, passwordAlphabet[int(value)%len(passwordAlphabet)])
 
-			if index == length {
+			if len(result) == length {
 				break
 			}
 		}
