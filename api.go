@@ -306,9 +306,9 @@ func (server *Server) handleRename(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := os.Stat(toPath)
-	if err != os.IsNotExist(err) {
-		server.failAPI(w, fmt.Errorf("%v: file or floder exists", toPath))
+	if _, err := os.Stat(toPath); err == nil {
+		server.apiError(w, http.StatusConflict, "file or folder with this name already exists")
+		return
 	}
 
 	server.FsMutex.Lock()
