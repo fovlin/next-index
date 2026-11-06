@@ -350,19 +350,32 @@ func (server *Server) handleDelete(w http.ResponseWriter, r *http.Request) {
 
 	deleted := make([]string, 0, len(names))
 
+	type deleteObject struct {
+		name string
+		target string
+	}
+
+	var deleteList []deleteObject
+
 	for _, name := range names {
 		target, err := server.resolveUrlPath(path.Join(request.Path, name))
 		if err != nil {
 			server.failAPI(w, err)
 			return
 		}
+		deleteList = append(deleteList, deleteObject{
+			name: name,
+			target: target,
+		})
+	}
 
-		if err := os.RemoveAll(target); err != nil {
-			server.apiError(w, http.StatusInternalServerError, fmt.Sprintf("could not delete %v", name))
+	for _, object := range deleteList {
+		if err := os.RemoveAll(object.target); err != nil {
+			server.apiError(w, http.StatusInternalServerError, fmt.Sprintf("could not delete %v", object.name))
 			return
 		}
 
-		deleted = append(deleted, name)
+		deleted = append(deleted, object.name)
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{"deleted": deleted})

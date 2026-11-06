@@ -36,7 +36,7 @@ export function renderTopbar() {
 			'<span class="user-chip" title="Signed in"><span class="avatar">' + esc((state.username || "?").slice(0, 1)) + '</span><span class="user-name">' + esc(state.username) + "</span></span>" +
 			'<button class="icon-btn" id="logout-btn" title="Sign out" aria-label="Sign out">' + icon("logout") + "</button>";
 	} else if (state.writable) {
-		authMarkup = '<button class="btn btn-ghost" id="login-btn" title="Sign in" aria-label="Sign in">' + icon("login") + "<span>Sign in</span></button>";
+		authMarkup = '<button class="btn" id="login-btn" title="Sign in" aria-label="Sign in">' + icon("login") + "<span>Sign in</span></button>";
 	} else {
 		authMarkup = '<span class="readonly-chip">' + icon("lock") + "read only</span>";
 	}

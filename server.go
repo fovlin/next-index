@@ -274,6 +274,14 @@ func (server *Server) transfer(w http.ResponseWriter, r *http.Request, move bool
 	server.FsMutex.Lock()
 	defer server.FsMutex.Unlock()
 
+	type targetObject struct {
+		name   string
+		source string
+		target string
+	}
+
+	var transferList []targetObject
+
 	for _, name := range names {
 		source := filepath.Join(fromDir, name)
 		target := filepath.Join(toDir, name)
@@ -297,15 +305,22 @@ func (server *Server) transfer(w http.ResponseWriter, r *http.Request, move bool
 			server.apiError(w, http.StatusBadRequest, "cannot "+action+" a folder into itself")
 			return
 		}
+		transferList = append(transferList, targetObject{
+			name: name,
+			source: source,
+			target: target,
+		})
+	}
 
+	for _, object := range transferList {
 		if move {
-			err = os.Rename(source, target)
+			err = os.Rename(object.source, object.target)
 		} else {
-			err = copyPath(source, target)
+			err = copyPath(object.source, object.target)
 		}
 
 		if err != nil {
-			server.apiError(w, http.StatusInternalServerError, "could not "+action+" "+name+": "+err.Error())
+			server.apiError(w, http.StatusInternalServerError, "could not "+action+" "+ object.name +": "+err.Error())
 			return
 		}
 	}
