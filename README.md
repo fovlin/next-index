@@ -1,10 +1,8 @@
 # NEXT_INDEX
 
-A small, plain web file index server. Point it at a directory and browse,
-upload and manage the files in a browser.
+> The front-end page of this project is maintained by AI, and the back-end is maintained by myself.
 
-Browsing is public. The username and password are only required to upload,
-create, rename and delete files.
+A small, plain web file index server with browsing is public.
 
 ## Quick start
 
