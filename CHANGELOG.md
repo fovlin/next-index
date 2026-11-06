@@ -3,7 +3,7 @@
 All notable changes to NEXT_INDEX are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
-## Unreleased
+## 0.0.6-beta - 2026-11-06
 
 ### Added
 
@@ -20,6 +20,9 @@ All notable changes to NEXT_INDEX are documented here. The project follows
   escapes are refused" promise, which the README now warns about.
 - The topbar buttons share one size and drop their labels to icons on narrow
   screens; upload is only offered once you are signed in.
+- The session cookie becomes `SameSite=None` only when the server terminates
+  TLS and a cross-origin client is configured; otherwise it stays `Lax`. Login
+  and logout now build it the same way.
 - Split the front end into ES modules (`core`, `render`, `ui`, `api`,
   `actions`, `upload`) instead of one inline script.
 - Each row and tile now carries its own action button: the row menu opens
