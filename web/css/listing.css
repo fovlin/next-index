@@ -83,6 +83,10 @@ th.sorted.desc .arrow {
 	background: var(--surface-2);
 }
 
+.table tbody tr:has(.row-action:hover) {
+	background: transparent;
+}
+
 .table tbody tr[data-href] {
 	cursor: pointer;
 }
@@ -181,8 +185,8 @@ th.sorted.desc .arrow {
 	width: 26px;
 	height: 26px;
 	padding: 0;
-	border: 1px solid transparent;
-	border-radius: 4px;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
 	background: transparent;
 	color: var(--text);
 	cursor: pointer;
@@ -190,6 +194,7 @@ th.sorted.desc .arrow {
 }
 
 .row-action:hover {
+	border-color: var(--border-strong);
 	background: var(--surface-3);
 }
 
@@ -235,7 +240,7 @@ th.sorted.desc .arrow {
 
 .tile-select {
 	position: absolute;
-	top: 2px;
+	top: 0;
 	left: 8px;
 	z-index: 2;
 	height: 14PX;
@@ -254,7 +259,7 @@ th.sorted.desc .arrow {
 }
 
 .menu {
-	position: fixed;
+	position: absolute;
 	z-index: 60;
 	display: flex;
 	flex-direction: column;
@@ -308,7 +313,6 @@ th.sorted.desc .arrow {
 }
 
 .batch .btn-sm {
-	height: 30px;
 	padding: 0 8px;
 }
 
@@ -342,6 +346,11 @@ th.sorted.desc .arrow {
 .tile:hover {
 	border-color: var(--border-strong);
 	background: var(--surface-2);
+}
+
+.tile:has(.tile-actions:hover) {
+	border-color: var(--border);
+	background: var(--surface);
 }
 
 .tile-main {
@@ -402,8 +411,7 @@ th.sorted.desc .arrow {
 	right: 6px;
 	display: flex;
 	gap: 1px;
-	padding: 1px;
-	border-radius: 6px;
+	border-radius: var(--radius-sm);
 	background: var(--surface);
 }
 

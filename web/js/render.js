@@ -121,7 +121,7 @@ export function renderSummary() {
 	stats.innerHTML = parts.join("");
 
 	var mkdirButton = state.authenticated
-		? '<button class="btn btn-sm" data-action="mkdir" title="New folder" aria-label="New folder">' + icon("folderPlus") + "<span>New folder</span></button>"
+		? '<div class="segmented" role="group" aria-label="New folder"><button data-action="mkdir" title="New folder" aria-label="New folder">' + icon("folderPlus") + "</button></div>"
 		: "";
 
 	var names = selected();
@@ -184,7 +184,7 @@ export function renderListing() {
 			"<h2>This folder is empty</h2>" +
 			"<p>Nothing here yet. Upload a file to get started.</p>" +
 			'<div>' +
-			'<button class="btn btn-ghost" data-action="back">' + icon("parent") + "<span>Back</span></button>" +
+			'<button class="btn" data-action="back">' + icon("parent") + "<span>Back</span></button>" +
 			(state.authenticated
 				? '<button class="btn btn-primary" data-action="upload">' + icon("upload") + "<span>Upload files</span></button>"
 				: state.writable

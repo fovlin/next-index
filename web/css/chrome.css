@@ -180,7 +180,8 @@
 	align-items: center;
 	justify-content: center;
 	gap: 6px;
-	padding: 8px 12px;
+	height: 36px;
+	padding: 0 12px;
 	margin: 0px 4px;
 	border: 1px solid var(--border);
 	border-radius: var(--radius-sm);
@@ -244,7 +245,8 @@
 }
 
 .btn-sm {
-	padding: 8px 9px;
+	height: 36px;
+	padding: 0 9px;
 	font-size: 12px;
 }
 

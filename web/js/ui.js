@@ -18,15 +18,21 @@ export function openMenu(button) {
 	document.body.appendChild(menu);
 
 	var rect = button.getBoundingClientRect();
-	var left = Math.min(rect.right - menu.offsetWidth, window.innerWidth - menu.offsetWidth - 8);
-	var top = rect.bottom + 4;
+	var scrollX = window.scrollX;
+	var scrollY = window.scrollY;
+	var minLeft = scrollX + 8;
+	var minTop = scrollY + 8;
+	var maxLeft = scrollX + window.innerWidth - menu.offsetWidth - 8;
+	var maxTop = scrollY + window.innerHeight - menu.offsetHeight - 8;
+	var left = Math.min(rect.left + scrollX, maxLeft);
+	var top = rect.bottom + scrollY + 4;
 
-	if (top + menu.offsetHeight > window.innerHeight - 8) {
-		top = rect.top - menu.offsetHeight - 4;
+	if (top > maxTop) {
+		top = rect.top + scrollY - menu.offsetHeight - 4;
 	}
 
-	menu.style.left = Math.max(8, left) + "px";
-	menu.style.top = Math.max(8, top) + "px";
+	menu.style.left = Math.max(minLeft, left) + "px";
+	menu.style.top = Math.max(minTop, top) + "px";
 }
 export function closeMenu() {
 	var menu = document.getElementById("row-menu");
