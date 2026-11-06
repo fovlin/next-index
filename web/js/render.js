@@ -121,7 +121,7 @@ export function renderSummary() {
 	stats.innerHTML = parts.join("");
 
 	var mkdirButton = state.authenticated
-		? '<div class="segmented" role="group" aria-label="New folder"><button data-action="mkdir" title="New folder" aria-label="New folder">' + icon("folderPlus") + "</button></div>"
+		? '<button class="icon-btn" data-action="mkdir" title="New folder" aria-label="New folder">' + icon("folderPlus") + "</button>"
 		: "";
 
 	var names = selected();
