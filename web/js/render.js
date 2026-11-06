@@ -127,7 +127,7 @@ export function renderSummary() {
 	var names = selected();
 
 	var selectButton = state.authenticated
-		? '<button class="icon-btn select-toggle' + (state.selecting ? " active" : "") + '" data-action="toggle-selection" title="Select files" aria-label="Select files" aria-pressed="' + state.selecting + '">' + icon("select") + "</button>"
+		? '<button class="icon-btn' + (state.selecting ? " active" : "") + '" data-action="toggle-selection" title="Select files" aria-label="Select files" aria-pressed="' + state.selecting + '">' + icon("select") + "</button>"
 		: "";
 
 	var batch = "";

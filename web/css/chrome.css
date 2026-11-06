@@ -383,12 +383,12 @@
 	height: 24px;
 }
 
-.summary.selecting [data-action="mkdir"],
+.summary.selecting .summary-actions > [data-action="mkdir"],
+.summary.selecting .summary-actions > [data-action="toggle-selection"],
 .summary.selecting .segmented,
-.summary.selecting .select-toggle,
-.summary.compact [data-action="mkdir"],
-.summary.compact .segmented,
-.summary.compact .select-toggle {
+.summary.compact .summary-actions > [data-action="mkdir"],
+.summary.compact .summary-actions > [data-action="toggle-selection"],
+.summary.compact .segmented {
 	display: none;
 }
 
