@@ -306,6 +306,11 @@ func (server *Server) handleRename(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, err := os.Stat(toPath)
+	if err != os.IsNotExist(err) {
+		server.failAPI(w, fmt.Errorf("%v: file or floder exists", toPath))
+	}
+
 	server.FsMutex.Lock()
 	defer server.FsMutex.Unlock()
 
