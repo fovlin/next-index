@@ -1,6 +1,6 @@
 import { logout, openLogin, toggleTheme } from "./actions.js";
 import { refresh } from "./api.js";
-import { esc, footer, formatDate, formatFull, formatSize, formatTime, icon, listing, main, plural, selected, state, stats, summaryActions, summaryRoot, topbar, typeOf, visibleEntries } from "./core.js";
+import { currentTheme, esc, footer, formatDate, formatFull, formatSize, formatTime, icon, listing, main, plural, selected, state, stats, summaryActions, summaryRoot, topbar, typeOf, visibleEntries } from "./core.js";
 import { openUpload } from "./upload.js";
 
 function selectMarkup(entry) {
@@ -57,7 +57,7 @@ export function renderTopbar() {
 		"</div>" +
 		'<div class="topbar-actions">' +
 		'<button class="icon-btn" id="refresh-btn" title="Refresh" aria-label="Refresh">' + icon("refresh") + "</button>" +
-		'<button class="icon-btn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">' + (state.theme === "dark" ? icon("sun") : icon("moon")) + "</button>" +
+		'<button class="icon-btn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">' + (currentTheme() === "dark" ? icon("sun") : icon("moon")) + "</button>" +
 		authMarkup +
 		"</div>" +
 		"</div>";

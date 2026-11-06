@@ -26,7 +26,8 @@ if (state) {
 	state.entries = Array.isArray(state.entries) ? state.entries : [];
 	state.crumbs = Array.isArray(state.crumbs) ? state.crumbs : [];
 	state.view = localStorage.getItem("next-index-view") === "grid" ? "grid" : "list";
-	state.theme = localStorage.getItem("next-index-theme") === "light" ? "light" : "dark";
+	var storedTheme = localStorage.getItem("next-index-theme");
+	state.theme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "";
 
 	if (parameters.get("view") === "grid" || parameters.get("view") === "list") {
 		state.view = parameters.get("view");
@@ -43,7 +44,23 @@ if (state) {
 	state.selection = {};
 	state.selecting = false;
 
-	document.documentElement.dataset.theme = state.theme;
+	if (state.theme) {
+		document.documentElement.dataset.theme = state.theme;
+	}
+}
+
+// Until the visitor picks a theme the page follows the system preference, which
+// is what the light-dark() tokens resolve to.
+export function currentTheme() {
+	if (state.theme) {
+		return state.theme;
+	}
+
+	if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+		return "light";
+	}
+
+	return "dark";
 }
 
 var FOLDER = '<path d="M5.5 4.75h4.3c.6 0 1.15.25 1.55.7l.9 1.05H18.5A2.5 2.5 0 0 1 21 9v7.75a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.75V7.25a2.5 2.5 0 0 1 2.5-2.5Z"/>';

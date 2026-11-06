@@ -1,5 +1,5 @@
 import { api, handleError, refresh, send } from "./api.js";
-import { esc, formatFull, formatSize, icon, selected, state, typeOf, visibleEntries } from "./core.js";
+import { currentTheme, esc, formatFull, formatSize, icon, selected, state, typeOf, visibleEntries } from "./core.js";
 import { renderFooter, renderListing, renderSummary, renderTopbar } from "./render.js";
 import { closeModal, formDialog, openModal, toast } from "./ui.js";
 import { openUpload } from "./upload.js";
@@ -130,7 +130,7 @@ export function setView(view) {
 	renderListing();
 }
 export function toggleTheme() {
-	state.theme = state.theme === "dark" ? "light" : "dark";
+	state.theme = currentTheme() === "dark" ? "light" : "dark";
 	document.documentElement.dataset.theme = state.theme;
 	localStorage.setItem("next-index-theme", state.theme);
 	renderTopbar();
