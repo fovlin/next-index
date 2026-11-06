@@ -5,8 +5,21 @@ All notable changes to NEXT_INDEX are documented here. The project follows
 
 ## Unreleased
 
+### Added
+
+- Copy and batch move: `POST /@next-index/api/copy` and
+  `POST /@next-index/api/move`, plus multi-select in the listing and a per-row
+  action menu (copy, move, rename, delete).
+- The summary bar switches into a selection mode, so the checkboxes stay out of
+  the way until you ask for them.
+
 ### Changed
 
+- Symlinks inside the root are now followed, including links that point outside
+  it, and path traversal is still refused. This reverses the old "symlink
+  escapes are refused" promise, which the README now warns about.
+- The topbar buttons share one size and drop their labels to icons on narrow
+  screens; upload is only offered once you are signed in.
 - Split the front end into ES modules (`core`, `render`, `ui`, `api`,
   `actions`, `upload`) instead of one inline script.
 - Each row and tile now carries its own action button: the row menu opens

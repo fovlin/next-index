@@ -27,8 +27,9 @@ once. Use `next-index config <option>` to change what is stored there.
   and dark themes, on a phone or on a desktop.
 - Multi-file and whole-folder uploads with per-file progress, optional overwrite
   and automatic `name-1.ext` renaming.
-- Path traversal and symlink escapes are refused, and active content is served
-  as an attachment instead of running in the page.
+- Path traversal is refused, and active content is served as an attachment
+  instead of running in the page. Symlinks are followed as-is: a link inside the
+  root may point outside it, so only share a tree you control.
 - Optional TLS and an upload size limit.
 
 ## Options

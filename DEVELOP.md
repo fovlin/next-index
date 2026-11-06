@@ -85,16 +85,21 @@ It also handles CORS. When the request `Origin` exactly matches
 returns `204` with `GET, POST, OPTIONS` and `Content-Type, Authorization`.
 Preflights from other origins get `403`.
 
-`handleRoot` resolves the URL path, checks that the real path is still inside
-the root, then either renders a listing (directories, with a redirect to add the
+`handleRoot` resolves the URL path, checks that it is still inside the root,
+then either renders a listing (directories, with a redirect to add the
 trailing slash) or streams the file with `http.ServeContent`, which gives range
 requests and conditional requests for free.
 
 ## Path safety
 
-`resolve` joins the cleaned URL path onto the root and verifies with
-`filepath.Rel` that the result is inside it. `ensureReal` then resolves symlinks
-and repeats the check, so a symlink in the root cannot expose a file outside it.
+`resolveUrlPath` joins the cleaned URL path onto the root and verifies with
+`filepath.Rel` that the result stays inside it, which refuses `..` traversal.
+
+Symlinks are intentionally not resolved: a link inside the root is followed
+wherever it points, including outside the root. That keeps the served tree
+"what you see is what you get" and lets people link shared storage into it, but
+it also means a link to `~/.ssh` would be readable by anyone who can read the
+listing. Only serve a directory whose contents you control.
 
 Write handlers resolve their target directory the same way. File names from
 uploads go through `sanitizeName` (base name, control characters removed,
@@ -188,7 +193,7 @@ a scratch root for manual checks:
 
 - fresh `config` / `run`, generated password, second `run` with `-p`;
 - login, upload, mkdir, rename and delete;
-- path traversal and symlink-escape attempts;
+- path traversal attempts;
 - CORS: allowed Origin preflight/login, denied Origin `403`.
 
 ## Release
