@@ -379,6 +379,10 @@
 	white-space: nowrap;
 }
 
+.summary-actions .icon-btn {
+	height: 24px;
+}
+
 .summary.selecting [data-action="mkdir"],
 .summary.selecting .segmented,
 .summary.selecting .select-toggle,
