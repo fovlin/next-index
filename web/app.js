@@ -1179,7 +1179,7 @@
 	}
 
 
-	function openUpload(items) {
+	function openUpload() {
 		if (!state.writable) {
 			toast("error", "Write access is disabled. Run `next-index config -P` on the server to enable it.");
 			return;
@@ -1190,7 +1190,7 @@
 			return;
 		}
 
-		state.uploads = items ? items.slice() : [];
+		state.uploads = [];
 		resetEnsuredDirectories();
 
 		openModal(
@@ -1198,7 +1198,7 @@
 			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
 			'<p class="sub">Files go to <b>' + esc(state.path) + "</b></p>" +
 			'<div class="dropzone" id="dropzone">' + icon("upload") +
-			"<div><b>Drop files or folders here</b></div>" +
+			"<div><b>Drop files here</b></div>" +
 			'<span>or <button type="button" class="link-btn" id="pick-files">choose files</button> · <button type="button" class="link-btn" id="pick-folder">choose a folder</button></span>' +
 			"<span>" + (state.maxUploadMB > 0 ? "Up to " + state.maxUploadMB + " MB per upload" : "No upload limit") + "</span></div>" +
 			'<input type="file" id="file-input" multiple hidden>' +
@@ -1245,9 +1245,7 @@
 			event.stopPropagation();
 			dropzone.classList.remove("dragging");
 
-			itemsFromDataTransfer(event.dataTransfer).then(function (items) {
-				addUploads(items);
-			});
+			addUploads(filesToItems(event.dataTransfer.files));
 		});
 
 		fileInput.addEventListener("change", function () {
@@ -1298,115 +1296,6 @@
 				dir: slash > 0 ? relative.slice(0, slash) : ""
 			};
 		});
-	}
-	function itemsFromDataTransfer(dataTransfer) {
-		if (!dataTransfer) {
-			return Promise.resolve([]);
-		}
-
-		var items = dataTransfer.items ? Array.prototype.slice.call(dataTransfer.items) : [];
-		var entries = [];
-
-		items.forEach(function (item) {
-			if (item.kind !== "file" || !item.webkitGetAsEntry) {
-				return;
-			}
-
-			var entry = item.webkitGetAsEntry();
-
-			if (entry) {
-				entries.push(entry);
-			}
-		});
-
-		if (entries.length === 0) {
-			return Promise.resolve(filesToItems(dataTransfer.files));
-		}
-
-		var collected = [];
-
-		return walkEntries(entries, "").then(function () {
-			return collected;
-		});
-
-		function walkEntries(entryList, baseDirectory) {
-			return Promise.all(
-				entryList.map(function (entry) {
-					return new Promise(function (resolve) {
-						if (entry.isFile) {
-							entry.file(
-								function (file) {
-									collected.push({ file: file, dir: baseDirectory });
-									resolve();
-								},
-								function () {
-									resolve();
-								}
-							);
-							return;
-						}
-
-						if (entry.isDirectory) {
-							var reader = entry.createReader();
-							var directory = baseDirectory ? baseDirectory + "/" + entry.name : entry.name;
-							var readNext = function () {
-								reader.readEntries(
-									function (children) {
-										if (children.length === 0) {
-											resolve();
-											return;
-										}
-
-										walkEntries(children, directory).then(readNext);
-									},
-									function () {
-										resolve();
-									}
-								);
-							};
-
-							readNext();
-							return;
-						}
-
-						resolve();
-					});
-				})
-			);
-		}
-	}
-	async function ensureDirectory(relativeDirectory) {
-		if (!relativeDirectory) {
-			return state.path;
-		}
-
-		var segments = relativeDirectory.split("/").filter(Boolean);
-		var current = state.path;
-		var relative = "";
-
-		for (var index = 0; index < segments.length; index++) {
-			var segment = segments[index];
-			relative += (relative ? "/" : "") + segment;
-
-			if (!ensuredDirectories[relative]) {
-				try {
-					await api("/@next-index/api/mkdir", {
-						method: "POST",
-						body: JSON.stringify({ path: current, name: segment })
-					});
-				} catch (error) {
-					if (error.status !== 409) {
-						throw error;
-					}
-				}
-
-				ensuredDirectories[relative] = true;
-			}
-
-			current = joinPath(current, segment);
-		}
-
-		return current;
 	}
 	function renderUploadFiles() {
 		var fileList = document.getElementById("file-list");
@@ -1562,79 +1451,6 @@
 			request.send(form);
 		});
 	}
-	var dragDepth = 0;
-	var dropOverlay = null;
-	function bindDropEvents() {
-		window.addEventListener("dragenter", function (event) {
-			if (!hasFiles(event)) {
-				return;
-			}
-
-			event.preventDefault();
-			dragDepth++;
-
-			if (state.writable && state.authenticated) {
-				showDropOverlay();
-			}
-		});
-
-		window.addEventListener("dragover", function (event) {
-			if (hasFiles(event)) {
-				event.preventDefault();
-			}
-		});
-
-		window.addEventListener("dragleave", function () {
-			dragDepth = Math.max(0, dragDepth - 1);
-
-			if (dragDepth === 0) {
-				hideDropOverlay();
-			}
-		});
-
-		window.addEventListener("drop", function (event) {
-			if (!hasFiles(event)) {
-				return;
-			}
-
-			event.preventDefault();
-			dragDepth = 0;
-			hideDropOverlay();
-
-			if (!state.writable || !state.authenticated) {
-				openLogin("Sign in to upload files.");
-				return;
-			}
-
-			itemsFromDataTransfer(event.dataTransfer).then(function (items) {
-				if (items.length > 0) {
-					openUpload(items);
-				}
-			});
-		});
-	}
-	function hasFiles(event) {
-		return !!event.dataTransfer && Array.prototype.indexOf.call(event.dataTransfer.types, "Files") !== -1;
-	}
-	function showDropOverlay() {
-		if (dropOverlay) {
-			return;
-		}
-
-		dropOverlay = document.createElement("div");
-		dropOverlay.className = "drop-overlay";
-		dropOverlay.innerHTML =
-			'<div class="drop-overlay-inner">' + icon("upload") + "<strong>Drop files or folders to upload</strong><span>They will be added to this folder</span></div>";
-		document.body.appendChild(dropOverlay);
-	}
-	function hideDropOverlay() {
-		if (dropOverlay) {
-			dropOverlay.remove();
-			dropOverlay = null;
-		}
-	}
-
-
 	if (state) {
 		bindEvents();
 		renderTopbar();
@@ -1743,7 +1559,6 @@
 			if (event.key === "Escape") {
 				closeMenu();
 				closeModal();
-				hideDropOverlay();
 				return;
 			}
 
@@ -1781,7 +1596,6 @@
 			}
 		});
 
-		bindDropEvents();
 	}
 
 })();

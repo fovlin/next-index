@@ -63,7 +63,7 @@ next-index [command] [options] [root]
 saving with `config` when you want them to persist.
 
 Keys to press: `g` toggles list and grid, `u` uploads, `n` creates a folder,
-`Esc` closes a dialog, and files dropped on the page are uploaded.
+`Esc` closes a dialog.
 
 ## Config
 

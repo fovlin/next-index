@@ -1244,47 +1244,6 @@ th.sorted.desc .arrow {
 	color: var(--accent-hover);
 }
 
-/* drag overlay */
-
-.drop-overlay {
-	position: fixed;
-	inset: 0;
-	z-index: 70;
-	display: grid;
-	place-items: center;
-	background: rgba(0, 0, 0, 0.5);
-	pointer-events: none;
-}
-
-.drop-overlay-inner {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 8px;
-	margin: 24px;
-	padding: 36px 48px;
-	border: 1px dashed var(--accent);
-	border-radius: var(--radius);
-	background: var(--surface);
-	color: var(--text);
-	text-align: center;
-}
-
-.drop-overlay-inner svg {
-	width: 28px;
-	height: 28px;
-	color: var(--accent);
-}
-
-.drop-overlay-inner strong {
-	font-size: 15px;
-	font-weight: 500;
-}
-
-.drop-overlay-inner span {
-	color: var(--muted);
-	font-size: 12.5px;
-}
 /* toasts */
 
 .toast-root {
