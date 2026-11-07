@@ -351,12 +351,11 @@ export function renderFooter() {
 	if (state.authenticated) {
 		location = "signed in as: " + esc(state.username);
 	} else if (state.writable) {
-		location = "browsing is public · sign in to manage files";
+		location = "sign in to manage files";
 	} else {
 		location = "read only · uploads are disabled on this server";
 	}
 
 	footer.innerHTML =
-		'<div class="footer-side">' + status + '<span class="mono">' + location + "</span></div>" +
-		'<div class="footer-side"><span>' + esc(state.site || "NEXT_INDEX") + ' v' + esc(state.version) + '</span><span class="stat-dot"></span><span>' + state.entries.length + ' items</span><span class="stat-dot"></span><span>press <kbd>/</kbd> to search</span></div>';
+		'<div class="footer-side">' + status + '<span class="mono">' + location + "</span></div>";
 }

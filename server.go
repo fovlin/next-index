@@ -76,7 +76,6 @@ func (server *Server) handler() http.Handler {
 
 func (server *Server) wrap(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
 
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "DENY")
@@ -104,29 +103,15 @@ func (server *Server) wrap(next http.Handler) http.Handler {
 			return
 		}
 
-		recorder := &statusRecorder{
-			ResponseWriter: w,
-			status:         http.StatusOK,
-		}
-
 		defer func() {
 			if value := recover(); value != nil {
 				record.Error("panic while serving", r.URL.Path, ":", value)
 				record.Error(string(debug.Stack()))
-				http.Error(recorder, "internal server error", http.StatusInternalServerError)
-			}
-
-			if !server.Quiet {
-				record.Info(
-					r.Method,
-					r.URL.RequestURI(),
-					recorder.status,
-					time.Since(start).Round(time.Microsecond),
-				)
+				http.Error(w, "internal server error", http.StatusInternalServerError)
 			}
 		}()
 
-		next.ServeHTTP(recorder, r)
+		next.ServeHTTP(w, r)
 	})
 }
 
@@ -209,20 +194,6 @@ func (server *Server) listenAndServe() error {
 		defer cancel()
 		return httpServer.Shutdown(shutdownContext)
 	}
-}
-
-type statusRecorder struct {
-	http.ResponseWriter
-	status int
-}
-
-func (recorder *statusRecorder) WriteHeader(status int) {
-	recorder.status = status
-	recorder.ResponseWriter.WriteHeader(status)
-}
-
-func (recorder *statusRecorder) Unwrap() http.ResponseWriter {
-	return recorder.ResponseWriter
 }
 
 func (server *Server) transfer(w http.ResponseWriter, r *http.Request, move bool) {
