@@ -7,7 +7,9 @@
 <title>{{.Title}}</title>
 <link rel="icon" href="/@next-index/assets/favicon.ico" sizes="any">
 <link rel="icon" href="/@next-index/assets/favicon.svg" type="image/svg+xml">
-<script src="/@next-index/assets/theme.js"></script>
+<script>
+	var theme=localStorage.getItem("next-index-theme");if(theme==="light"||theme==="dark"){document.documentElement.dataset.theme=theme;};
+</script>
 <link rel="stylesheet" href="/@next-index/assets/main.css">
 </head>
 <body>
