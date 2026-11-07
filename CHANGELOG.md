@@ -3,6 +3,26 @@
 All notable changes to NEXT_INDEX are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## 0.0.7-beta - 2026-11-07
+
+### Removed
+
+- The search box, its `/` shortcut and the filtering behind it. Breadcrumbs and
+  sorting cover the same ground with less to keep working.
+- Image previews in the grid: every tile shows a type icon again, and the server
+  no longer sends a `thumb` flag, so a folder of photos does not pull megabytes
+  of originals just to draw the tiles.
+
+### Changed
+
+- The breadcrumbs moved out of the topbar into the content area and gained a
+  border, so the topbar is a single row of icons.
+- The topbar scrolls away with the page instead of staying pinned.
+- The footer keeps only the status line.
+- Only page views are logged; API errors log as warnings, so a 4xx from a client
+  no longer looks like a fault of the server.
+- The body has a 240px floor, so narrow screens keep their layout.
+
 ## 0.0.6-beta - 2026-11-06
 
 ### Added
