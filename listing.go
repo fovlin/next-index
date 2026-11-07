@@ -25,18 +25,6 @@ var (
 	errInvalidName  = errors.New("invalid file name")
 )
 
-var thumbnailExtensions = map[string]bool{
-	"avif": true,
-	"bmp":  true,
-	"gif":  true,
-	"ico":  true,
-	"jpeg": true,
-	"jpg":  true,
-	"png":  true,
-	"svg":  true,
-	"webp": true,
-}
-
 var attachmentExtensions = map[string]bool{
 	"htm":   true,
 	"html":  true,
@@ -83,7 +71,6 @@ type Entry struct {
 	Href   string `json:"href"`
 	Link   bool   `json:"link,omitempty"`
 	Target string `json:"target,omitempty"`
-	Thumb  bool   `json:"thumb,omitempty"`
 }
 
 type Crumb struct {
@@ -182,7 +169,6 @@ func (server *Server) readEntries(fsPath string) ([]Entry, error) {
 		}
 
 		entry.Href = (&url.URL{Path: server.urlPath(fullPath, entry.Kind == "dir")}).EscapedPath()
-		entry.Thumb = entry.Kind == "file" && thumbnailExtensions[entry.Ext]
 
 		entries = append(entries, entry)
 	}

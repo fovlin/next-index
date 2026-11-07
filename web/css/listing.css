@@ -317,7 +317,6 @@ th.sorted.desc .arrow {
 	padding: 0;
 }
 
-
 /* grid */
 
 .grid {
@@ -365,13 +364,6 @@ th.sorted.desc .arrow {
 	border: 1px solid var(--border);
 	border-radius: 4px;
 	background: var(--surface-2);
-}
-
-.thumb img {
-	display: block;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
 }
 
 .thumb .entry-icon {

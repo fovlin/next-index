@@ -7,8 +7,8 @@ it in a browser.
 
 Two ways to use it:
 
-- **Public browsing**: anyone who opens the address can walk the folders,
-  preview the thumbnails and download files.
+- **Public browsing**: anyone who opens the address can walk the folders and
+  download files.
 - **Sign in to manage**: upload, create a folder, rename, move, copy and delete
   need the username and password.
 
@@ -23,8 +23,8 @@ once. Use `next-index config <option>` to change what is stored there.
 
 ## Features
 
-- Breadcrumbs, search, sorting, list and grid views, image thumbnails and light
-  and dark themes, on a phone or on a desktop.
+- Breadcrumbs, sorting, list and grid views, and a light and dark theme that
+  follows the system until you pick one.
 - Multi-file and whole-folder uploads with per-file progress, optional overwrite
   and automatic `name-1.ext` renaming.
 - Path traversal is refused, and active content is served as an attachment
@@ -62,8 +62,8 @@ next-index [command] [options] [root]
 `run` applies the flags to that process only. Credentials and the root are worth
 saving with `config` when you want them to persist.
 
-Keys to press: `/` searches, `g` toggles list and grid, `u` uploads, `n` creates
-a folder, `Esc` closes a dialog, and files dropped on the page are uploaded.
+Keys to press: `g` toggles list and grid, `u` uploads, `n` creates a folder,
+`Esc` closes a dialog, and files dropped on the page are uploaded.
 
 ## Config
 

@@ -126,16 +126,6 @@ function bindEvents() {
 			return;
 		}
 
-		if (event.key === "/") {
-			event.preventDefault();
-			var searchInput = document.getElementById("search-input");
-			if (searchInput) {
-				searchInput.focus();
-				searchInput.select();
-			}
-			return;
-		}
-
 		if (event.key === "u" || event.key === "U") {
 			openUpload();
 		} else if (event.key === "n" || event.key === "N") {

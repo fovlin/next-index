@@ -5,10 +5,6 @@
 		display: none;
 	}
 
-	.search {
-		flex-basis: 180px;
-	}
-
 	.crumb {
 		max-width: 150px;
 	}
@@ -26,14 +22,6 @@
 	.topbar-actions #login-btn {
 		padding: 7px;
 	}
-
-	.search kbd {
-		display: none;
-	}
-
-	.search input {
-		padding-right: 10px;
-	}
 }
 
 @media (max-width: 720px) {
@@ -44,52 +32,12 @@
 	}
 
 	.topbar-actions {
-		position: relative;
 		margin-left: auto;
 	}
 
 	.crumbs {
 		order: 3;
 		flex: 1 0 100%;
-	}
-
-	.search {
-		flex: 0 0 auto;
-		min-width: 0;
-		width: 30px;
-		height: 30px;
-	}
-
-	.search-icon {
-		left: 50%;
-		transform: translate(-50%, -50%);
-	}
-
-	.search input {
-		position: absolute;
-		width: 1px;
-		opacity: 0;
-		pointer-events: none;
-	}
-
-	.search.open {
-		position: absolute;
-		top: 0;
-		right: 0;
-		z-index: 60;
-		width: min(280px, calc(100vw - 28px));
-	}
-
-	.search.open .search-icon {
-		left: 9px;
-		transform: translateY(-50%);
-	}
-
-	.search.open input {
-		position: static;
-		width: 100%;
-		opacity: 1;
-		pointer-events: auto;
 	}
 
 	.main {

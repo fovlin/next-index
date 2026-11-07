@@ -38,7 +38,6 @@ if (state) {
 	}
 
 	state.sort = readSort();
-	state.query = "";
 	state.uploads = [];
 	state.uploading = false;
 	state.selection = {};
@@ -68,7 +67,6 @@ var FOLDER = '<path d="M5.5 4.75h4.3c.6 0 1.15.25 1.55.7l.9 1.05H18.5A2.5 2.5 0 
 var ICONS = {
 	parent: FOLDER + '<path d="M14.8 13H9.2" stroke-width="1.5"/><path d="m11.8 10.6-2.6 2.4 2.6 2.4" stroke-width="1.5"/>',
 	layers: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/>',
-	search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/>',
 	refresh: '<path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/>',
 	moon: '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z"/>',
 	sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
@@ -248,13 +246,6 @@ export function visibleEntries() {
 		return result * state.sort.dir;
 	});
 
-	if (state.query) {
-		var needle = state.query.toLowerCase();
-
-		entries = entries.filter(function (entry) {
-			return entry.name.toLowerCase().indexOf(needle) !== -1;
-		});
-	}
 
 	return entries;
 }

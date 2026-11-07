@@ -5,17 +5,6 @@ import { closeModal, formDialog, openModal, toast } from "./ui.js";
 import { openUpload } from "./upload.js";
 
 export function handleAction(action, name) {
-	if (action === "clear-search") {
-		state.query = "";
-		var searchInput = document.getElementById("search-input");
-		if (searchInput) {
-			searchInput.value = "";
-		}
-		renderSummary();
-		renderListing();
-		return;
-	}
-
 	if (action === "mkdir") {
 		openMkdir();
 		return;

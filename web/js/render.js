@@ -51,42 +51,11 @@ export function renderTopbar() {
 		"</a>" +
 		'<nav class="crumbs" aria-label="Breadcrumb">' + crumbs + "</nav>" +
 		'<div class="topbar-actions">' +
-		'<div class="search">' +
-		icon("search", "search-icon") +
-		'<input id="search-input" type="search" placeholder="Search this folder" autocomplete="off" spellcheck="false" aria-label="Search this folder">' +
-		"<kbd>/</kbd>" +
-		"</div>" +
 		'<button class="icon-btn" id="refresh-btn" title="Refresh" aria-label="Refresh">' + icon("refresh") + "</button>" +
 		'<button class="icon-btn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">' + (currentTheme() === "dark" ? icon("sun") : icon("moon")) + "</button>" +
 		authMarkup +
 		"</div>" +
 		"</div>";
-
-	var searchInput = document.getElementById("search-input");
-	searchInput.value = state.query;
-
-	searchInput.addEventListener("input", function () {
-		state.query = searchInput.value.trim();
-		renderSummary();
-		renderListing();
-	});
-
-	// On a narrow screen the box is only an icon until it is opened.
-	var searchBox = document.querySelector(".search");
-
-	searchBox.addEventListener("click", function () {
-		searchInput.focus();
-	});
-
-	searchInput.addEventListener("focus", function () {
-		searchBox.classList.add("open");
-	});
-
-	searchInput.addEventListener("blur", function () {
-		if (searchInput.value.trim() === "") {
-			searchBox.classList.remove("open");
-		}
-	});
 
 	document.getElementById("refresh-btn").addEventListener("click", refresh);
 	document.getElementById("theme-btn").addEventListener("click", toggleTheme);
@@ -129,11 +98,6 @@ export function renderSummary() {
 		'<span class="stat-dot"></span>',
 		"<span><b>" + formatSize(totalSize) + "</b> total</span>"
 	];
-
-	if (state.query) {
-		parts.push('<span class="stat-dot"></span>');
-		parts.push("<span><b>" + visibleEntries().length + "</b> matches</span>");
-	}
 
 	stats.innerHTML = parts.join("");
 
@@ -209,44 +173,15 @@ export function renderListing() {
 
 	if (entries.length === 0) {
 		listing.innerHTML =
-			'<div class="empty"><div class="empty-icon">' + icon("search") + "</div>" +
-			"<h2>No matches</h2>" +
-			"<p>Nothing here matches “" + esc(state.query) + "”.</p>" +
-			'<button class="btn btn-sm" data-action="clear-search">Clear search</button>' +
+			'<div class="empty"><div class="empty-icon">' + icon("folder") + "</div>" +
+			"<h2>Empty folder</h2>" +
+			"<p>Nothing has been uploaded here yet.</p>" +
 			"</div>";
 		return;
 	}
 
 	listing.innerHTML = state.view === "grid" ? gridMarkup(entries) : tableMarkup(entries);
 
-	bindThumbnails();
-}
-function bindThumbnails() {
-	listing.querySelectorAll(".thumb img").forEach(function (image) {
-		image.addEventListener(
-			"error",
-			function () {
-				var thumb = image.closest(".thumb");
-				var tile = image.closest(".tile");
-
-				if (!thumb || !tile) {
-					return;
-				}
-
-				var entry = state.entries.find(function (item) {
-					return item.name === tile.dataset.name;
-				});
-
-				if (!entry) {
-					return;
-				}
-
-				var type = typeOf(entry);
-				thumb.innerHTML = '<span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span>";
-			},
-			{ once: true }
-		);
-	});
 }
 function tableMarkup(entries) {
 	var sorted = state.sort;
@@ -322,10 +257,7 @@ function itemMarkup(entry) {
 	var tag = state.selecting ? "div" : "a";
 	var hrefAttr = state.selecting ? "" : ' href="' + esc(entry.href) + '"';
 	var menu = menuMarkup(entry);
-	var thumb =
-		entry.thumb && entry.kind === "file"
-			? '<div class="thumb"><img src="' + esc(entry.href) + '" alt="" loading="lazy" decoding="async"></div>'
-			: '<div class="thumb"><span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span></div>";
+	var thumb = '<div class="thumb"><span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span></div>";
 
 	return (
 		'<div class="tile' + (state.selection[entry.name] ? " selected" : "") + '" data-name="' + esc(entry.name) + '">' +
