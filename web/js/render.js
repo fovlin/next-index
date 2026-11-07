@@ -50,12 +50,12 @@ export function renderTopbar() {
 		'<span class="brand-version">v' + esc(state.version) + "</span>" +
 		"</a>" +
 		'<nav class="crumbs" aria-label="Breadcrumb">' + crumbs + "</nav>" +
+		'<div class="topbar-actions">' +
 		'<div class="search">' +
 		icon("search", "search-icon") +
 		'<input id="search-input" type="search" placeholder="Search this folder" autocomplete="off" spellcheck="false" aria-label="Search this folder">' +
 		"<kbd>/</kbd>" +
 		"</div>" +
-		'<div class="topbar-actions">' +
 		'<button class="icon-btn" id="refresh-btn" title="Refresh" aria-label="Refresh">' + icon("refresh") + "</button>" +
 		'<button class="icon-btn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">' + (currentTheme() === "dark" ? icon("sun") : icon("moon")) + "</button>" +
 		authMarkup +
@@ -69,6 +69,23 @@ export function renderTopbar() {
 		state.query = searchInput.value.trim();
 		renderSummary();
 		renderListing();
+	});
+
+	// On a narrow screen the box is only an icon until it is opened.
+	var searchBox = document.querySelector(".search");
+
+	searchBox.addEventListener("click", function () {
+		searchInput.focus();
+	});
+
+	searchInput.addEventListener("focus", function () {
+		searchBox.classList.add("open");
+	});
+
+	searchInput.addEventListener("blur", function () {
+		if (searchInput.value.trim() === "") {
+			searchBox.classList.remove("open");
+		}
 	});
 
 	document.getElementById("refresh-btn").addEventListener("click", refresh);
