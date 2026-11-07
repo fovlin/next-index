@@ -477,12 +477,3 @@ th.sorted.desc .arrow {
 .status-dot.locked {
 	background: var(--amber);
 }
-
-.footer kbd {
-	padding: 0 3px;
-	border: 1px solid var(--border);
-	border-radius: 3px;
-	background: var(--surface);
-	font-family: var(--mono);
-	font-size: 9.5px;
-}
