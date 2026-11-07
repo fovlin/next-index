@@ -3,6 +3,28 @@
 All notable changes to NEXT_INDEX are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## 0.0.8-beta - 2026-11-07
+
+### Added
+
+- Static assets are gzipped once at startup and served from memory when the
+  client accepts it. Only assets are compressed; file downloads keep their
+  range support and are sent as they are.
+
+### Changed
+
+- The front end is two hand-written files, `app.js` and `main.css`. The module
+  split and the bundler detour between them are gone.
+- The theme bootstrap is a small blocking `init.js` in the head, so there is no
+  inline script and no CSP hash to keep in sync.
+- The upload dialog still accepts dropped files; only the page-wide drop
+  overlay and the folder recursion behind it were removed.
+
+### Removed
+
+- Dragging a folder onto the page. A folder can still be picked with "choose a
+  folder", and files can still be dropped on the upload dialog.
+
 ## 0.0.7-beta - 2026-11-07
 
 ### Removed
