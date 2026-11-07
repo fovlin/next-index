@@ -9,3 +9,5 @@
 /.refs/
 /.recovered-akaya*
 /.tests-backup*
+/web/node_modules/
+/web/package-lock.json

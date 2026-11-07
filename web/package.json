@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "webpack": "^5.112.2"
+  },
+  "scripts": {
+    "build": "webpack && cat css/base.css css/chrome.css css/listing.css css/dialog.css css/feedback.css css/responsive.css > main.css"
+  },
+  "devDependencies": {
+    "webpack-cli": "^7.3.1"
+  }
+}
