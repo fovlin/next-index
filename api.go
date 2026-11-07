@@ -13,6 +13,8 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	"acovia.net/record"
 )
 
 type sessionResponse struct {
@@ -602,5 +604,7 @@ func writeJSON(w http.ResponseWriter, status int, value any) {
 }
 
 func (server *Server) apiError(w http.ResponseWriter, status int, message string) {
+	record.Warn("api", status, message)
+
 	writeJSON(w, status, map[string]string{"error": message})
 }
