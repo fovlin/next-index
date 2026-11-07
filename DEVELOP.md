@@ -16,7 +16,7 @@ next-index
 ├── listing.go         path containment, directory entries, upload saving, names
 ├── api.go             JSON API, sessions, credentials, write checks
 ├── view.go            page template, bootstrap JSON, embedded assets, error page
-├── web/               index.html, favicon.svg, css/ and js/ modules
+├── web/               index.html, favicon.svg, app.js, main.css
 ├── opt/               vendored option parser, module acovia.net/opt
 ├── record/            vendored logging helpers, module acovia.net/record
 ├── build.sh           cross-compile the release targets
@@ -150,40 +150,28 @@ place, so a failed upload never leaves a partial file.
 
 ## Frontend
 
-`web/js` and `web/css` hold the sources; `web/app.js` and `web/main.css` are
-build output committed to the tree because `//go:embed web` takes whatever is
-there at compile time. Run `web/build.sh` after changing a source file: it
-wraps the modules in one IIFE in dependency order, drops the `import`/`export`
-keywords, and concatenates the stylesheets in cascade order. The output is
-plain readable JavaScript, not a minified bundle.
+`web/app.js` and `web/main.css` are the front end. They are written and read
+directly: there is no build step and no bundler, and `//go:embed web` takes
+them as they are at compile time.
 
 `web/index.html` is a `html/template` with two slots: the title and a JSON
 bootstrap document. It loads three assets:
 
 ```text
-/assets/js/theme.js   blocking, in the head, applies the stored theme before
-                      the first paint (an inline script would violate the CSP)
-/assets/main.css      one bundled stylesheet
-/assets/app.js        one bundled script, loaded at the end of the body
+/assets/theme.js    blocking, in the head, applies the stored theme before the
+                    first paint (an inline script would violate the CSP)
+/assets/main.css    tokens, top bar, listing, dialogs, toasts, media queries
+/assets/app.js      one IIFE, loaded at the end of the body
 ```
 
-The sources are split by responsibility:
+`app.js` runs inside a single IIFE, so the helpers and the `state` object share
+one scope. It is laid out in the order it needs to run: state and helpers
+first, then markup, then actions, upload, and finally the boot block that
+wires the events.
 
-```text
-web/js/core.js      state, icon set, formatting and DOM references
-web/js/render.js    topbar, summary, table/grid and footer markup
-web/js/ui.js        toast, menus and dialog plumbing
-web/js/api.js       fetch wrapper, refresh and error handling
-web/js/actions.js   toolbar and row actions, selection, auth dialogs
-web/js/upload.js    upload and drag-and-drop pipeline
-web/js/main.js      event wiring and boot
-web/css/base.css    tokens and reset
-web/css/chrome.css  top bar, buttons, summary
-web/css/listing.css table, grid, footer
-web/css/dialog.css  dialogs, upload
-web/css/feedback.css toasts, animations
-web/css/responsive.css media queries
-```
+`main.css` is one file in cascade order: tokens and reset, top bar, listing,
+dialogs, toasts, media queries. Keep that order when adding a section, since
+later rules still rely on it.
 
 All files are embedded with `//go:embed web`, so editing them requires a
 rebuild. They are served with `Cache-Control: no-cache` and the pages use a
