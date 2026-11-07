@@ -1,6 +1,6 @@
 import { logout, openLogin, toggleTheme } from "./actions.js";
 import { refresh } from "./api.js";
-import { currentTheme, esc, footer, formatDate, formatFull, formatSize, formatTime, icon, listing, main, plural, selected, state, stats, summaryActions, summaryRoot, topbar, typeOf, visibleEntries } from "./core.js";
+import { crumbsRoot, currentTheme, esc, footer, formatDate, formatFull, formatSize, formatTime, icon, listing, main, plural, selected, state, stats, summaryActions, summaryRoot, topbar, typeOf, visibleEntries } from "./core.js";
 import { openUpload } from "./upload.js";
 
 function selectMarkup(entry) {
@@ -10,7 +10,7 @@ function selectMarkup(entry) {
 
 	return '<input type="checkbox" data-select="' + esc(entry.name) + '"' + (state.selection[entry.name] ? " checked" : "") + ' aria-label="Select ' + esc(entry.name) + '">';
 }
-export function renderTopbar() {
+export function renderCrumbs() {
 	var crumbs = state.crumbs
 		.map(function (crumb, index) {
 			var isLast = index === state.crumbs.length - 1;
@@ -29,6 +29,9 @@ export function renderTopbar() {
 		crumbs = '<span class="crumb current">' + icon("home") + "root</span>";
 	}
 
+	crumbsRoot.innerHTML = crumbs;
+}
+export function renderTopbar() {
 	var authMarkup = "";
 
 	if (state.authenticated) {
@@ -49,7 +52,6 @@ export function renderTopbar() {
 		'<span class="brand-name">' + esc(state.site || "NEXT_INDEX") + "</span>" +
 		'<span class="brand-version">v' + esc(state.version) + "</span>" +
 		"</a>" +
-		'<nav class="crumbs" aria-label="Breadcrumb">' + crumbs + "</nav>" +
 		'<div class="topbar-actions">' +
 		'<button class="icon-btn" id="refresh-btn" title="Refresh" aria-label="Refresh">' + icon("refresh") + "</button>" +
 		'<button class="icon-btn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">' + (currentTheme() === "dark" ? icon("sun") : icon("moon")) + "</button>" +

@@ -1,12 +1,13 @@
 import { handleAction, openMkdir, setView, toggleSelect, toggleSelectAll, toggleSort } from "./actions.js";
 import { listing, selected, state, summaryActions } from "./core.js";
-import { fitSummary, renderFooter, renderListing, renderSummary, renderTopbar } from "./render.js";
+import { fitSummary, renderCrumbs, renderFooter, renderListing, renderSummary, renderTopbar } from "./render.js";
 import { closeMenu, closeModal, openMenu } from "./ui.js";
 import { bindDropEvents, hideDropOverlay, openUpload } from "./upload.js";
 
 if (state) {
 	bindEvents();
 	renderTopbar();
+	renderCrumbs();
 	renderSummary();
 	renderListing();
 	renderFooter();
