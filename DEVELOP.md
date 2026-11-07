@@ -155,12 +155,11 @@ directly: there is no build step and no bundler, and `//go:embed web` takes
 them as they are at compile time.
 
 `web/index.html` is a `html/template` with two slots: the title and a JSON
-bootstrap document. A small inline script in the head applies the stored theme
-before the first paint; the `Content-Security-Policy` allows exactly that script
-by its sha256 hash, so editing it means updating the hash in `view.go`. It loads
-two assets:
+bootstrap document. A blocking `init.js` in the head applies the stored theme
+before the first paint. It loads three assets:
 
 ```text
+/assets/init.js     reads the stored theme and sets data-theme, before paint
 /assets/main.css    tokens, top bar, listing, dialogs, toasts, media queries
 /assets/app.js      one IIFE, loaded at the end of the body
 ```
@@ -177,8 +176,8 @@ later rules still rely on it.
 All files are embedded with `//go:embed web`, so editing them requires a
 rebuild. They are served with `Cache-Control: no-cache` and gzipped from the
 bytes cached at startup, and the pages use a restrictive
-`Content-Security-Policy` (`script-src 'self'` plus the hash above; the bootstrap
-JSON is a `type="application/json"` data block).
+`Content-Security-Policy` (`script-src 'self'`, so no inline scripts; the
+bootstrap JSON is a `type="application/json"` data block).
 
 Sort order, view mode and theme are stored in `localStorage`. The `?view=` and
 `?theme=` query parameters override them once, which keeps screenshots and
