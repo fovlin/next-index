@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"mime"
 	"net"
 	"net/http"
@@ -22,9 +25,16 @@ import (
 	"acovia.net/record"
 )
 
+type asset struct {
+	body        []byte
+	gzipped     []byte
+	contentType string
+}
+
 type Server struct {
 	Config   Config
 	Root     string
+	Assets   map[string]asset
 	Sessions *sessionStore
 	Limiter  *loginLimiter
 	Template *template.Template
@@ -38,8 +48,14 @@ func newServer(cfg Config, root string) (*Server, error) {
 		return nil, fmt.Errorf("parse page template: %w", err)
 	}
 
+	assets, err := loadAssets()
+	if err != nil {
+		return nil, fmt.Errorf("load assets: %w", err)
+	}
+
 	return &Server{
 		Config:   cfg,
+		Assets:   assets,
 		Root:     root,
 		Sessions: newSessionStore(sessionDuration),
 		Limiter:  newLoginLimiter(5, 5*time.Minute),
@@ -116,18 +132,96 @@ func (server *Server) wrap(next http.Handler) http.Handler {
 }
 
 func (server *Server) serveAsset(w http.ResponseWriter, r *http.Request) {
-	name := path.Join("web", strings.TrimPrefix(r.URL.Path, "/@next-index/assets/"))
+	name := strings.TrimPrefix(strings.TrimPrefix(r.URL.Path, "/@next-index/assets/"), "/")
 
-	data, err := webAssets.ReadFile(name)
+	item, ok := server.Assets[name]
 
-	if err != nil {
+	if !ok {
 		server.fail(w, r, http.StatusNotFound, "asset not found")
 		return
 	}
 
-	w.Header().Set("Content-Type", mime.TypeByExtension(path.Ext(name)))
+	w.Header().Set("Content-Type", item.contentType)
 	w.Header().Set("Cache-Control", "no-cache")
-	w.Write(data)
+	w.Header().Add("Vary", "Accept-Encoding")
+
+	if item.gzipped == nil || !acceptsGzip(r.Header.Get("Accept-Encoding")) {
+		w.Write(item.body)
+		return
+	}
+
+	w.Header().Set("Content-Encoding", "gzip")
+	w.Write(item.gzipped)
+}
+
+func loadAssets() (map[string]asset, error) {
+	items := make(map[string]asset)
+
+	err := fs.WalkDir(webAssets, "web", func(name string, entry fs.DirEntry, err error) error {
+		if err != nil || entry.IsDir() {
+			return err
+		}
+
+		body, err := webAssets.ReadFile(name)
+		if err != nil {
+			return err
+		}
+
+		item := asset{
+			body:        body,
+			contentType: mime.TypeByExtension(path.Ext(name)),
+		}
+
+		if compressible(path.Ext(name)) {
+			var buffer bytes.Buffer
+			writer := gzip.NewWriter(&buffer)
+
+			if _, err := writer.Write(body); err != nil {
+				return err
+			}
+
+			if err := writer.Close(); err != nil {
+				return err
+			}
+
+			item.gzipped = buffer.Bytes()
+		}
+
+		items[strings.TrimPrefix(name, "web/")] = item
+
+		return nil
+	})
+
+	return items, err
+}
+
+func compressible(extension string) bool {
+	switch strings.ToLower(extension) {
+	case ".css", ".html", ".js", ".json", ".svg", ".txt":
+		return true
+	}
+
+	return false
+}
+
+func acceptsGzip(header string) bool {
+	for _, value := range strings.Split(header, ",") {
+		fields := strings.Split(strings.TrimSpace(value), ";")
+
+		if strings.TrimSpace(fields[0]) != "gzip" {
+			continue
+		}
+
+		for _, parameter := range fields[1:] {
+			if strings.TrimSpace(parameter) == "q=0" {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	return false
 }
 
 func (server *Server) resolveUrlPath(urlPath string) (string, error) {
