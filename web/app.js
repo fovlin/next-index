@@ -1,1 +1,1787 @@
-(()=>{"use strict";function e(){var e=document.getElementById("row-menu");e&&e.remove()}function t(e,t){var n=document.createElement("div");n.className="toast "+e,n.innerHTML=S("success"===e?"check":"alert")+"<span>"+L(t)+"</span>",b.appendChild(n),setTimeout(function(){n.classList.add("leaving"),setTimeout(function(){n.remove()},220)},3600)}function n(e,t){a(),y.innerHTML='<div class="overlay" data-overlay><div class="dialog '+(t||"")+'" role="dialog" aria-modal="true">'+e+"</div></div>",document.body.classList.add("modal-open");var n=y.querySelector("[data-overlay]");n.addEventListener("mousedown",function(e){e.target===n&&a()}),y.querySelectorAll("[data-close]").forEach(function(e){e.addEventListener("click",a)});var i=y.querySelector("input:not([type=hidden]), textarea, button.btn-primary");i&&setTimeout(function(){i.focus()},30)}function a(){y.innerHTML="",document.body.classList.remove("modal-open")}function i(e){n('<form id="dialog-form" novalidate><div class="dialog-head"><h2>'+e.title+'</h2><button type="button" class="icon-btn sm" data-close aria-label="Close">'+S("x")+'</button></div><p class="sub">'+e.sub+'</p><div class="field"><label for="dialog-input">'+e.label+'</label><input class="input" id="dialog-input" autocomplete="off" spellcheck="false" value="'+L(e.value||"")+'" placeholder="'+L(e.placeholder||"")+'"></div><div class="form-error" id="dialog-error"></div><div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn btn-primary">'+e.submit+"</button></div></form>");var t=document.getElementById("dialog-form"),a=document.getElementById("dialog-input"),i=document.getElementById("dialog-error");return a.focus(),t.addEventListener("submit",function(t){t.preventDefault(),e.run(a.value.trim(),i)}),a}var o=function(){try{return JSON.parse(document.getElementById("next-index-bootstrap").textContent)}catch(e){return null}}(),s=new URLSearchParams(window.location.search),r="en-US",l={};if(o){o.entries=Array.isArray(o.entries)?o.entries:[],o.crumbs=Array.isArray(o.crumbs)?o.crumbs:[],o.view="grid"===localStorage.getItem("next-index-view")?"grid":"list";var d=localStorage.getItem("next-index-theme");o.theme="light"===d||"dark"===d?d:"","grid"!==s.get("view")&&"list"!==s.get("view")||(o.view=s.get("view")),"light"!==s.get("theme")&&"dark"!==s.get("theme")||(o.theme=s.get("theme")),o.sort=function(){try{var e=JSON.parse(localStorage.getItem("next-index-sort"));if(e&&-1!==["name","size","mod"].indexOf(e.key)&&(1===e.dir||-1===e.dir))return e}catch(e){}return{key:"name",dir:1}}(),o.uploads=[],o.uploading=!1,o.selection={},o.selecting=!1,o.theme&&(document.documentElement.dataset.theme=o.theme)}function c(){return o.theme?o.theme:window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}var u='<path d="M5.5 4.75h4.3c.6 0 1.15.25 1.55.7l.9 1.05H18.5A2.5 2.5 0 0 1 21 9v7.75a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.75V7.25a2.5 2.5 0 0 1 2.5-2.5Z"/>',p={parent:u+'<path d="M14.8 13H9.2" stroke-width="1.5"/><path d="m11.8 10.6-2.6 2.4 2.6 2.4" stroke-width="1.5"/>',layers:'<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/>',refresh:'<path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/>',moon:'<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',upload:'<path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',folder:u,folderOpen:'<path d="M5.42 19.5 h11.9 a2 2 0 0 0 1.94 -1.5 l1.2 -5 A1.6 1.6 0 0 0 18.92 10.9 H7.92 a2 2 0 0 0 -1.94 1.5 L4.72 17.6 M5.42 19.5 a2 2 0 0 1 -2 -2 V6.1 a1.6 1.6 0 0 1 1.6 -1.6 h5.1 a2 2 0 0 1 1.6 .8 l1.2 1.6 h5.5 a1.6 1.6 0 0 1 1.6 1.6 v2.4"/>',folderPlus:u+'<path d="M12 10.4v5"/><path d="M9.5 12.9h5"/>',file:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/>',image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15-4.5-4.5L7 20"/>',video:'<rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 10 4-2v8l-4-2"/>',audio:'<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',archive:'<path d="M4 7h16v13H4z"/><path d="M2 4h20v3H2z"/><path d="M10 11h4"/>',code:'<path d="m9 8-5 4 5 4"/><path d="m15 8 5 4-5 4"/>',doc:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M9 13h6M9 17h4"/>',sheet:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16M15 4v16"/>',slide:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M12 17v3M8 20h8"/>',font:'<path d="m6 20 6-16 6 16"/><path d="M8.5 14h7"/>',disk:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 3v3"/>',pencil:'<path d="M4 20h4L19 9a2.83 2.83 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/>',trash:'<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v5M14 11v5"/>',x:'<path d="m6 6 12 12M18 6 6 18"/>',chevronRight:'<path d="m9 6 6 6-6 6"/>',arrowUp:'<path d="M12 19V5M6 11l6-6 6 6"/>',check:'<path d="m5 13 4 4L19 7"/>',alert:'<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7.5v.5"/>',login:'<path d="M14 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2"/><path d="M9 12h11"/><path d="m17 8 4 4-4 4"/>',logout:'<path d="M10 8V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2v-2"/><path d="M15 12H4"/><path d="m7 8-4 4 4 4"/>',lock:'<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',home:'<path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/>',copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',move:'<path d="M3 12h11"/><path d="m10 8 4 4-4 4"/><path d="M17 4h4v16h-4"/>',more:'<circle cx="5" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="2.2" fill="currentColor" stroke="none"/>',select:'<rect x="3" y="3" width="18" height="18" rx="4"/><path d="m8 12 2.5 2.5L16 9"/>',list:'<path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'},m={image:["png","jpg","jpeg","gif","webp","avif","bmp","ico","svg","tif","tiff","heic"],video:["mp4","webm","mkv","mov","avi","m4v","ogv","flv","wmv"],audio:["mp3","wav","flac","ogg","m4a","aac","opus","wma","mid"],archive:["zip","tar","gz","bz2","xz","7z","rar","zst","tgz","tbz2","lz4"],code:["js","mjs","cjs","ts","jsx","tsx","go","py","rb","rs","c","h","cc","cpp","hpp","cs","java","kt","swift","php","lua","sh","bash","zsh","fish","ps1","bat","cmd","sql","toml","yaml","yml","json","jsonc","xml","html","htm","css","scss","sass","less","vue","svelte","proto","graphql","ini","conf","env","dockerfile","makefile"],pdf:["pdf"],doc:["md","markdown","txt","text","rst","log","doc","docx","odt","rtf","epub","pages","tex"],sheet:["xls","xlsx","csv","tsv","ods","numbers"],slide:["ppt","pptx","odp","key"],font:["ttf","otf","woff","woff2","eot"],disk:["iso","img","dmg","vhd","vhdx","qcow2","vmdk"]},h={parent:["parent","icon-dir"],dir:["folder","icon-dir"],image:["image","icon-image"],video:["video","icon-video"],audio:["audio","icon-audio"],archive:["archive","icon-archive"],code:["code","icon-code"],pdf:["doc","icon-pdf"],doc:["doc","icon-doc"],sheet:["sheet","icon-sheet"],slide:["slide","icon-slide"],font:["font","icon-font"],disk:["disk","icon-disk"],file:["file","icon-doc"]},f=document.getElementById("topbar"),v=document.getElementById("main"),g=document.getElementById("footer"),b=document.getElementById("toast-root"),y=document.getElementById("modal-root");v.innerHTML='<nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav><div class="summary"><div class="stats" id="stats"></div><div class="summary-actions" id="summary-actions"></div></div><div class="card" id="listing"></div>';var w=document.getElementById("crumbs"),x=document.querySelector(".summary"),k=document.getElementById("stats"),E=document.getElementById("summary-actions"),M=document.getElementById("listing");function L(e){return String(e).replace(/[&<>"']/g,function(e){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[e]})}function S(e,t){return'<svg class="'+(t||"")+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(p[e]||p.file)+"</svg>"}function B(e){var t=function(e){if("dir"===e.kind||"parent"===e.kind)return e.kind;var t=(e.ext||"").toLowerCase();for(var n in m)if(-1!==m[n].indexOf(t))return n;return"file"}(e);return h[t]||h.file}function C(e){if(!e)return"0 B";for(var t=["B","KB","MB","GB","TB","PB"],n=e,a=0;n>=1024&&a<t.length-1;)n/=1024,a++;return(0===a?String(n):n.toFixed(1))+" "+t[a]}function I(e){return new Date(1e3*e).toLocaleDateString(r,{year:"numeric",month:"2-digit",day:"2-digit"})}function T(e){return new Date(1e3*e).toLocaleTimeString(r,{hour12:!1})}function z(e){return new Date(1e3*e).toLocaleString(r,{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:!1})}function D(){var e=o.entries.slice();return e.sort(function(e,t){var n="dir"===e.kind;return n!==("dir"===t.kind)?n?-1:1:("name"===o.sort.key?e.name.localeCompare(t.name,void 0,{numeric:!0,sensitivity:"base"}):"size"===o.sort.key?(e.size||0)-(t.size||0):(e.mod||0)-(t.mod||0))*o.sort.dir}),e}function H(){return Object.keys(o.selection).filter(function(e){return o.selection[e]})}function N(e,t,n){return 1===e?t:n}function P(e,t){return e.endsWith("/")||(e+="/"),e+t+"/"}function O(e){if(o.writable)if(o.authenticated){o.uploads=e?e.slice():[],l={},n('<div class="dialog-head"><h2>Upload files</h2><button type="button" class="icon-btn sm" data-close aria-label="Close">'+S("x")+'</button></div><p class="sub">Files go to <b>'+L(o.path)+'</b></p><div class="dropzone" id="dropzone">'+S("upload")+'<div><b>Drop files or folders here</b></div><span>or <button type="button" class="link-btn" id="pick-files">choose files</button> · <button type="button" class="link-btn" id="pick-folder">choose a folder</button></span><span>'+(o.maxUploadMB>0?"Up to "+o.maxUploadMB+" MB per upload":"No upload limit")+'</span></div><input type="file" id="file-input" multiple hidden><input type="file" id="folder-input" webkitdirectory hidden><div class="file-list" id="file-list"></div><div class="upload-meta"><label class="checkbox"><input type="checkbox" id="overwrite-checkbox"> Replace existing files</label><span id="upload-summary"></span></div><div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn btn-primary" id="start-upload" disabled>Upload</button></div>',"wide");var a=document.getElementById("dropzone"),i=document.getElementById("file-input"),s=document.getElementById("folder-input"),r=document.getElementById("file-list"),d=document.getElementById("start-upload");a.addEventListener("click",function(){i.click()}),document.getElementById("pick-files").addEventListener("click",function(e){e.stopPropagation(),i.click()}),document.getElementById("pick-folder").addEventListener("click",function(e){e.stopPropagation(),s.click()}),a.addEventListener("dragover",function(e){e.preventDefault(),a.classList.add("dragging")}),a.addEventListener("dragleave",function(){a.classList.remove("dragging")}),a.addEventListener("drop",function(e){e.preventDefault(),e.stopPropagation(),a.classList.remove("dragging"),U(e.dataTransfer).then(function(e){c(e)})}),i.addEventListener("change",function(){c(R(i.files)),i.value=""}),s.addEventListener("change",function(){c(R(s.files)),s.value=""}),r.addEventListener("click",function(e){var t=e.target.closest("[data-remove]");t&&(e.stopPropagation(),o.uploads.splice(Number(t.dataset.remove),1),j())}),d.addEventListener("click",A),j()}else le("Sign in to upload files.");else t("error","Write access is disabled. Run `next-index config -P` on the server to enable it.");function c(e){e&&0!==e.length&&(e.forEach(function(e){o.uploads.push(e)}),j())}}function R(e){return Array.prototype.map.call(e||[],function(e){var t=e.webkitRelativePath||"",n=t.lastIndexOf("/");return{file:e,dir:n>0?t.slice(0,n):""}})}function U(e){if(!e)return Promise.resolve([]);var t=e.items?Array.prototype.slice.call(e.items):[],n=[];if(t.forEach(function(e){if("file"===e.kind&&e.webkitGetAsEntry){var t=e.webkitGetAsEntry();t&&n.push(t)}}),0===n.length)return Promise.resolve(R(e.files));var a=[];return function e(t,n){return Promise.all(t.map(function(t){return new Promise(function(i){if(t.isFile)t.file(function(e){a.push({file:e,dir:n}),i()},function(){i()});else if(t.isDirectory){var o=t.createReader(),s=n?n+"/"+t.name:t.name,r=function(){o.readEntries(function(t){0!==t.length?e(t,s).then(r):i()},function(){i()})};r()}else i()})}))}(n,"").then(function(){return a})}function j(){var e=document.getElementById("file-list"),t=document.getElementById("start-upload"),n=document.getElementById("upload-summary");if(e){e.innerHTML=o.uploads.map(function(e,t){var n=(e.dir?e.dir+"/":"")+e.file.name;return'<div class="file-row" data-index="'+t+'"><span class="fname" title="'+L(n)+'">'+L(n)+'</span><span class="fsize">'+C(e.file.size)+'</span><div class="file-progress"><span></span></div><button type="button" class="row-action" data-remove="'+t+'" title="Remove" aria-label="Remove">'+S("x")+"</button></div>"}).join("");var a=o.uploads.reduce(function(e,t){return e+t.file.size},0);n.textContent=0===o.uploads.length?"No files selected":o.uploads.length+" "+N(o.uploads.length,"file","files")+" · "+C(a),t.disabled=0===o.uploads.length||o.uploading,t.textContent=o.uploading?"Uploading…":"Upload"}}function A(){if(!o.uploading&&0!==o.uploads.length){o.uploading=!0;var e=document.getElementById("start-upload"),n=document.getElementById("overwrite-checkbox"),i=!!n&&n.checked;j();var s=0,r=0,d=Promise.resolve();o.uploads.forEach(function(e,n){d=d.then(function(){var a=document.querySelector('.file-row[data-index="'+n+'"]'),d=a?a.querySelector(".file-progress span"):null,c=(e.dir?e.dir+"/":"")+e.file.name;return async function(e){if(!e)return o.path;for(var t=e.split("/").filter(Boolean),n=o.path,a="",i=0;i<t.length;i++){var s=t[i];if(!l[a+=(a?"/":"")+s]){try{await te("/@next-index/api/mkdir",{method:"POST",body:JSON.stringify({path:n,name:s})})}catch(e){if(409!==e.status)throw e}l[a]=!0}n=P(n,s)}return n}(e.dir).then(function(t){return function(e,t,n,a){return new Promise(function(i,o){var s=new XMLHttpRequest,r="?path="+encodeURIComponent(t)+(n?"&overwrite=1":"");s.open("POST","/@next-index/api/upload"+r),s.withCredentials=!0,s.upload.addEventListener("progress",function(e){e.lengthComputable&&a&&a(e.loaded/e.total)}),s.addEventListener("load",function(){var e={};try{e=JSON.parse(s.responseText)}catch(t){}if(s.status>=200&&s.status<300)i(e);else{var t=new Error(e.error||"upload failed ("+s.status+")");t.status=s.status,o(t)}}),s.addEventListener("error",function(){o(new Error("network error"))});var l=new FormData;l.append("file",e,e.name),s.send(l)})}(e.file,t,i,function(e){d&&(d.style.width=Math.round(100*e)+"%")})}).then(function(e){var t=e.files&&e.files[0];if(t&&!1===t.ok)throw new Error(t.error||"upload failed");s++,a&&a.classList.add("done"),d&&(d.style.width="100%")}).catch(function(e){r++,a&&a.classList.add("failed"),d&&(d.style.width="100%"),t("error",c+": "+e.message)})})}),d.then(function(){return o.uploading=!1,o.uploads=[],e.disabled=!0,e.textContent="Upload",ne()}).then(function(){a(),s>0&&t("success","Uploaded "+s+" "+N(s,"file","files")),r>0&&0===s&&t("error","No files were uploaded.")})}}var V,q=0,F=null;function J(e){return!!e.dataTransfer&&-1!==Array.prototype.indexOf.call(e.dataTransfer.types,"Files")}function W(){F&&(F.remove(),F=null)}function G(e){return o.selecting&&"parent"!==e.kind?'<input type="checkbox" data-select="'+L(e.name)+'"'+(o.selection[e.name]?" checked":"")+' aria-label="Select '+L(e.name)+'">':""}function Z(){var e;e=o.authenticated?'<span class="user-chip" title="Signed in"><span class="avatar">'+L((o.username||"?").slice(0,1))+'</span><span class="user-name">'+L(o.username)+'</span></span><button class="btn btn-sm" id="logout-btn" title="Sign out" aria-label="Sign out">'+S("logout")+'<span>Sign out</span></button><button class="btn btn-primary" id="upload-btn" title="Upload files" aria-label="Upload files">'+S("upload")+"<span>Upload</span></button>":o.writable?'<button class="btn btn-primary" id="login-btn" title="Sign in" aria-label="Sign in">'+S("login")+"<span>Sign in</span></button>":'<span class="readonly-chip">'+S("lock")+"read only</span>",f.innerHTML='<div class="topbar-inner"><a class="brand" href="/" aria-label="Home"><span class="brand-mark">'+S("layers")+'</span><span class="brand-name">'+L(o.site||"NEXT_INDEX")+'</span><span class="brand-version">v'+L(o.version)+'</span></a><div class="topbar-actions"><button class="icon-btn" id="refresh-btn" title="Refresh" aria-label="Refresh">'+S("refresh")+'</button><button class="icon-btn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">'+("dark"===c()?S("sun"):S("moon"))+"</button>"+e+"</div></div>",document.getElementById("refresh-btn").addEventListener("click",ne),document.getElementById("theme-btn").addEventListener("click",re);var t=document.getElementById("upload-btn");t&&t.addEventListener("click",function(){O()});var n=document.getElementById("login-btn");n&&n.addEventListener("click",function(){le()});var a=document.getElementById("logout-btn");a&&a.addEventListener("click",de)}function K(){x.classList.toggle("selecting",o.selecting);var e=o.entries,t=e.filter(function(e){return"dir"===e.kind}).length,n=e.length-t,a=e.reduce(function(e,t){return e+("file"===t.kind&&t.size||0)},0),i=["<span><b>"+t+"</b> "+N(t,"folder","folders")+"</span>",'<span class="stat-dot"></span>',"<span><b>"+n+"</b> "+N(n,"file","files")+"</span>",'<span class="stat-dot"></span>',"<span><b>"+C(a)+"</b> total</span>"];k.innerHTML=i.join("");var s=H(),r=o.authenticated?'<button class="icon-btn" data-action="mkdir" title="New folder" aria-label="New folder">'+S("folderPlus")+'</button><button class="icon-btn'+(o.selecting?" active":"")+'" data-action="toggle-selection" title="Select files" aria-label="Select files" aria-pressed="'+o.selecting+'">'+S("select")+"</button>":"",l="";o.selecting&&(l='<div class="batch"><span><b>'+s.length+"</b> selected</span>"+(s.length?'<button class="btn btn-sm" data-action="batch-copy">'+S("copy")+'<span>Copy</span></button><button class="btn btn-sm" data-action="batch-move">'+S("move")+'<span>Move</span></button><button class="btn btn-sm" data-action="batch-delete">'+S("trash")+"<span>Delete</span></button>":"")+'<button class="icon-btn" data-action="toggle-selection" title="Done" aria-label="Done">'+S("x")+"</button></div>"),E.innerHTML=l+r+'<div class="segmented" role="group" aria-label="View mode"><button data-view="list" class="'+("list"===o.view?"active":"")+'" title="List view" aria-label="List view">'+S("list")+'</button><button data-view="grid" class="'+("grid"===o.view?"active":"")+'" title="Grid view" aria-label="Grid view">'+S("grid")+"</button></div>",X()}function X(){var e=function(){return x.scrollWidth>x.clientWidth+1};x.classList.remove("compact","compact-tight"),e()&&(x.classList.add("compact"),e()&&x.classList.add("compact-tight"))}function Y(){var e=D();M.classList.toggle("selecting",o.selecting),0!==o.entries.length?0!==e.length?M.innerHTML="grid"===o.view?function(e){return'<div class="grid">'+("/"===o.parent.name?"":Q(o.parent))+e.map(Q).join("")+"</div>"}(e):function(e){var t=o.sort;function n(e,n,a){var i=t.key===e;return'<th class="col-'+a+(i?" sorted":"")+(i&&t.dir<0?" desc":"")+'"><button class="sort-btn" data-sort="'+e+'">'+n+S("arrowUp","arrow")+"</button></th>"}var a=("/"===o.parent.name?"":_(o.parent))+e.map(_).join("");return'<table class="table"><thead><tr>'+(o.selecting?'<th class="col-select">'+function(e){return'<input type="checkbox" id="select-all" aria-label="Select all"'+(e.length>0&&e.every(function(e){return o.selection[e.name]})?" checked":"")+">"}(e)+"</th>":"")+n("name","Name","name")+n("size","Size","size")+n("mod","Modified","time")+'<th class="col-actions"></th></tr></thead><tbody>'+a+"</tbody></table>"}(e):M.innerHTML='<div class="empty"><div class="empty-icon">'+S("folder")+"</div><h2>Empty folder</h2><p>Nothing has been uploaded here yet.</p></div>":M.innerHTML='<div class="empty"><div class="empty-icon">'+S("folderOpen")+'</div><h2>This folder is empty</h2><p>Nothing here yet. Upload a file to get started.</p><div><button class="btn" data-action="back">'+S("parent")+"<span>Back</span></button>"+(o.authenticated?'<button class="btn btn-primary" data-action="upload">'+S("upload")+"<span>Upload files</span></button>":o.writable?'<button class="btn btn-primary" data-action="login">'+S("login")+"<span>Sign in to upload</span></button>":"")+"</div></div>"}function _(e){var t=B(e),n="file"===e.kind?C(e.size):"—",a=o.selecting?"div":"a",i=o.selecting?"":' href="'+L(e.href)+'"';return"<tr"+(o.selection[e.name]?' class="selected"':"")+' data-name="'+L(e.name)+'" data-href="'+L(e.href)+'">'+(o.selecting?'<td class="col-select">'+G(e)+"</td>":"")+"<td><"+a+' class="entry"'+i+'><span class="entry-icon '+t[1]+'">'+S(t[0])+'</span><span class="name-wrap"><span class="entry-name">'+function(e){var t=e.name;if("file"!==e.kind)return L(t);var n=t.lastIndexOf(".");return n<=0||n===t.length-1?L(t):L(t.slice(0,n))+'<span class="entry-ext">'+L(t.slice(n))+"</span>"}(e)+"</span>"+(e.link?'<span class="badge">link</span>':"")+"</span></"+a+'></td><td class="col-size size" title="'+("file"===e.kind?e.size+" bytes":"")+'">'+n+'</td><td class="col-time time" title="'+L(z(e.mod))+'">'+L(I(e.mod))+"<small>"+L(T(e.mod))+'</small></td><td class="col-actions"><div class="row-actions">'+$(e)+"</div></td></tr>"}function Q(e){var t=B(e),n=o.selecting?"div":"a",a=o.selecting?"":' href="'+L(e.href)+'"',i=$(e),s='<div class="thumb"><span class="entry-icon '+t[1]+'">'+S(t[0])+"</span></div>";return'<div class="tile'+(o.selection[e.name]?" selected":"")+'" data-name="'+L(e.name)+'">'+(o.selecting?'<span class="tile-select">'+G(e)+"</span>":"")+"<"+n+' class="tile-main"'+a+">"+s+'<span class="tile-name" title="'+L(e.name)+'">'+L(e.name)+'</span><span class="tile-meta"><span>'+I(e.mod)+"</span><span>"+T(e.mod)+"</span></span></"+n+">"+(i?'<div class="tile-actions row-actions">'+i+"</div>":"")+"</div>"}function $(e){return o.selecting||"parent"===e.kind?"":'<button class="row-action" data-menu="'+L(e.name)+'" title="More" aria-label="More">'+S("more")+"</button>"}function ee(){var e,t=o.authenticated?'<span class="status-dot" title="Signed in"></span>':'<span class="status-dot locked" title="Read only"></span>';e=o.authenticated?"signed in as: "+L(o.username):o.writable?"sign in to manage files":"read only · uploads are disabled on this server",g.innerHTML='<div class="footer-side">'+t+'<span class="mono">'+e+"</span></div>"}function te(e,t){return(t=t||{}).body&&(t.headers=Object.assign({"Content-Type":"application/json"},t.headers||{})),fetch(e,Object.assign({credentials:"same-origin"},t)).then(function(e){return e.json().catch(function(){return{}}).then(function(t){if(!e.ok){var n=new Error(t.error||"request failed ("+e.status+")");throw n.status=e.status,n}return t})})}function ne(){var e=document.getElementById("refresh-btn"),t=e?e.querySelector("svg"):null;return t&&t.classList.add("spin"),te("/@next-index/api/list?path="+encodeURIComponent(o.path)).then(function(e){o.entries=Array.isArray(e.entries)?e.entries:[],o.crumbs=Array.isArray(e.crumbs)?e.crumbs:o.crumbs;var t={};return o.entries.forEach(function(e){o.selection[e.name]&&(t[e.name]=!0)}),o.selection=t,K(),Y(),ee(),e}).catch(ae).finally(function(){t&&t.classList.remove("spin")})}function ae(e){if(401===e.status)return o.authenticated=!1,o.username="",Z(),K(),Y(),ee(),void le("Your session expired. Sign in again to manage files.");t("error",e.message||String(e))}function ie(e,n,i,o){o.textContent="",te(e,{method:"POST",body:JSON.stringify(n)}).then(function(e){return a(),t("success","function"==typeof i?i(e):i),ne()}).catch(function(e){401!==e.status?o.textContent=e.message:ae(e)})}function oe(e,t){if("mkdir"!==e)if("upload"!==e)if("login"!==e)if("back"!==e){if("toggle-selection"===e)return o.selecting=!o.selecting,o.selecting||(o.selection={}),K(),void Y();if("batch-copy"!==e)if("batch-move"!==e)if("batch-delete"!==e){var s=o.entries.filter(function(e){return e.name===t})[0];s&&("details"!==e?"rename"===e?function(e){if(o.authenticated){var t=i({title:"Rename",sub:"Rename <b>"+L(e.name)+"</b> in this folder.",label:"New name",value:e.name,submit:"Rename",run:function(t,n){t?t!==e.name?ie("/@next-index/api/rename",{path:o.path,from:e.name,to:t},function(e){return"Renamed to “"+e.name+"”"},n):a():n.textContent="Enter a new name."}});if(t.select(),"file"===e.kind){var n=e.name.lastIndexOf(".");n>0&&t.setSelectionRange(0,n)}}else le("Sign in to rename files.")}(s):"delete"===e?pe([s.name]):"copy"===e?ue("copy",[s.name]):"move"===e&&ue("move",[s.name]):function(e){var t=[["Name",L(e.name)],["Kind","dir"===e.kind?"Folder":e.ext?e.ext.toUpperCase()+" file":"File"],["Size","dir"===e.kind?"—":L(C(e.size))+' <span class="muted">('+e.size+" bytes)</span>"],["Modified",L(z(e.mod))],["Location",L(o.path+e.name)]];e.link&&e.target&&t.push(["Links to",L(e.target)]);var a=t.map(function(e){return"<div><dt>"+e[0]+"</dt><dd>"+e[1]+"</dd></div>"}).join("");n('<div class="dialog-head"><div><h2>'+L(e.name)+'</h2></div><button type="button" class="icon-btn sm" data-close aria-label="Close">'+S("x")+'</button></div><dl class="detail-list">'+a+'</dl><div class="dialog-actions"><button type="button" class="btn" data-close>Close</button></div>')}(s))}else pe(H());else ue("move",H());else ue("copy",H())}else window.location.href="../";else le();else O();else ce()}function se(e){o.view="grid"===e?"grid":"list",localStorage.setItem("next-index-view",o.view),K(),Y()}function re(){o.theme="dark"===c()?"light":"dark",document.documentElement.dataset.theme=o.theme,localStorage.setItem("next-index-theme",o.theme),Z()}function le(e){if(o.writable){if(!o.authenticated){n('<form id="login-form" novalidate><div class="dialog-head"><div><h2>Sign in</h2></div><button type="button" class="icon-btn sm" data-close aria-label="Close">'+S("x")+'</button></div><p class="sub">'+(e?L(e):"Browsing is public. Sign in to upload, rename, create and delete files.")+'</p><div class="field"><label for="login-user">Username</label><input class="input" id="login-user" name="username" autocomplete="username" spellcheck="false"></div><div class="field"><label for="login-password">Password</label><input class="input" id="login-password" name="password" type="password" autocomplete="current-password"></div><div class="form-error" id="login-error"></div><div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn btn-primary" id="login-submit">Sign in</button></div></form>');var i=document.getElementById("login-form"),s=document.getElementById("login-error"),r=document.getElementById("login-submit"),l=document.getElementById("login-user");l.value=o.username||"",i.addEventListener("submit",function(e){e.preventDefault();var n=l.value.trim(),i=document.getElementById("login-password").value;n&&i?(s.textContent="",r.disabled=!0,r.textContent="Signing in…",te("/@next-index/api/login",{method:"POST",body:JSON.stringify({username:n,password:i})}).then(function(e){o.authenticated=!0,o.username=e.username||n,a(),Z(),K(),Y(),ee(),t("success","Signed in as "+o.username)}).catch(function(e){s.textContent=e.message}).finally(function(){r.disabled=!1,r.textContent="Sign in"})):s.textContent="Enter both a username and a password."})}}else t("error","Write access is disabled. Run `next-index config -P` on the server to enable it.")}function de(){te("/@next-index/api/logout",{method:"POST"}).catch(function(){return{}}).then(function(){o.authenticated=!1,o.username="",Z(),K(),Y(),ee(),t("success","Signed out.")})}function ce(){o.authenticated?i({title:"New folder",sub:"Create a folder inside <b>"+L(o.path)+"</b>",label:"Folder name",placeholder:"untitled folder",submit:"Create",run:function(e,t){e?ie("/@next-index/api/mkdir",{path:o.path,name:e},"Created folder “"+e+"”",t):t.textContent="Enter a folder name."}}):le("Sign in to create folders.")}function ue(e,t){if(t.length)if(o.authenticated){var n="copy"===e,a=1===t.length,s=i({title:n?"Copy":"Move",sub:a?"<b>"+L(t[0])+"</b> — "+(n?"the full path to copy it to.":"the folder to move it into."):"<b>"+t.length+"</b> items — the destination folder.",label:n&&a?"Destination path":"Destination folder",value:n&&a?o.path+t[0]:o.path,submit:n?"Copy":"Move",run:function(i,s){i?(n&&a||"/"!==i.charAt(i.length-1)&&(i+="/"),o.selection={},o.selecting=!1,ie("/@next-index/api/"+e,{path:o.path,names:t,to:i},(n?"Copied ":"Moved ")+(a?"“"+t[0]+"”":t.length+" items"),s)):s.textContent="Enter a destination path."}});s.setSelectionRange(s.value.length,s.value.length)}else le("Sign in to "+e+" files.")}function pe(e){if(e.length)if(o.authenticated){var i=1===e.length,s=i?o.entries.filter(function(t){return t.name===e[0]})[0]:null,r=s?B(s):null,l=e.slice(0,4).map(function(e){return"<span>"+L(e)+"</span>"}).join("");e.length>4&&(l+="<span>+"+(e.length-4)+" more</span>"),n('<div class="dialog-head"><div><h2>Delete '+(i?s&&"dir"===s.kind?"folder":"file":e.length+" items")+'?</h2></div><button type="button" class="icon-btn sm" data-close aria-label="Close">'+S("x")+'</button></div><p class="sub">This action cannot be undone.</p><div class="delete-target">'+(r?'<span class="entry-icon '+r[1]+'">'+S(r[0])+"</span>":"")+l+'</div><div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn btn-danger" id="confirm-delete">Delete</button></div>'),document.getElementById("confirm-delete").addEventListener("click",function(){var n=this;n.disabled=!0,n.textContent="Deleting…",te("/@next-index/api/delete",{method:"POST",body:JSON.stringify({path:o.path,names:e})}).then(function(){return a(),o.selection={},o.selecting=!1,t("success",i?"Deleted “"+e[0]+"”":"Deleted "+e.length+" items"),ne()}).catch(function(e){401!==e.status?(n.disabled=!1,n.textContent="Delete",t("error",e.message)):ae(e)})})}else le("Sign in to delete files.")}o&&(window.addEventListener("resize",function(){X()}),E.addEventListener("click",function(e){var t=e.target.closest("[data-view]");if(t)se(t.dataset.view);else{var n=e.target.closest("[data-action]");n&&oe(n.dataset.action)}}),M.addEventListener("click",function(t){var n,a=t.target.closest("[data-sort]");if(a)return n=a.dataset.sort,o.sort.key===n?o.sort.dir*=-1:o.sort={key:n,dir:"mod"===n?-1:1},localStorage.setItem("next-index-sort",JSON.stringify(o.sort)),void Y();var i,s,r,l=t.target.closest("[data-select]");if(l){t.stopPropagation(),o.selection[l.dataset.select]=l.checked;var d=l.closest("tr, .tile");return d&&d.classList.toggle("selected",l.checked),void K()}if(t.target.closest("#select-all"))return i=D(),s=i.length>0&&i.every(function(e){return o.selection[e.name]}),i.forEach(function(e){s?delete o.selection[e.name]:o.selection[e.name]=!0}),K(),void Y();if(o.selecting){var c=t.target.closest("tr[data-name], .tile[data-name]");if(c)return t.preventDefault(),void(o.entries.some(function(e){return e.name===c.dataset.name})&&(r=c.dataset.name,o.selection[r]?delete o.selection[r]:o.selection[r]=!0,K(),Y()))}var u=t.target.closest("[data-menu]");if(u)return t.preventDefault(),t.stopPropagation(),void function(t){e();var n=t.dataset.menu,a=document.createElement("div");a.className="menu",a.id="row-menu",a.innerHTML='<button type="button" data-action="details" data-name="'+L(n)+'">'+S("info")+'<span>Details</span></button><button type="button" data-action="rename" data-name="'+L(n)+'">'+S("pencil")+'<span>Rename</span></button><button type="button" data-action="move" data-name="'+L(n)+'">'+S("move")+'<span>Move</span></button><button type="button" data-action="copy" data-name="'+L(n)+'">'+S("copy")+'<span>Copy</span></button><button type="button" data-action="delete" data-name="'+L(n)+'" class="danger">'+S("trash")+"<span>Delete</span></button>",document.body.appendChild(a);var i=t.getBoundingClientRect(),o=window.scrollX,s=window.scrollY,r=o+8,l=s+8,d=o+window.innerWidth-a.offsetWidth-8,c=s+window.innerHeight-a.offsetHeight-8,u=Math.min(i.left+o,d),p=i.bottom+s+4;p>c&&(p=i.top+s-a.offsetHeight-4),a.style.left=Math.max(r,u)+"px",a.style.top=Math.max(l,p)+"px"}(u);var p=t.target.closest("[data-action]");if(p)return t.preventDefault(),t.stopPropagation(),void oe(p.dataset.action,p.dataset.name);if(!t.target.closest("button, a, input, label")){var m=t.target.closest("tr[data-href]");m&&(window.location.href=m.dataset.href)}}),document.addEventListener("keydown",function(t){if("Escape"===t.key)return e(),a(),void W();if(!(t.ctrlKey||t.metaKey||t.altKey)){var n=t.target,i=(n.tagName||"").toLowerCase();"input"===i||"textarea"===i||"select"===i||n.isContentEditable||("u"===t.key||"U"===t.key?O():"n"===t.key||"N"===t.key?ce():"g"!==t.key&&"G"!==t.key||se("grid"===o.view?"list":"grid"))}}),document.addEventListener("click",function(t){var n=t.target.closest("#row-menu [data-action]");if(n)return e(),void oe(n.dataset.action,n.dataset.name);t.target.closest("#row-menu")||e()}),window.addEventListener("dragenter",function(e){J(e)&&(e.preventDefault(),q++,o.writable&&o.authenticated&&(F||((F=document.createElement("div")).className="drop-overlay",F.innerHTML='<div class="drop-overlay-inner">'+S("upload")+"<strong>Drop files or folders to upload</strong><span>They will be added to this folder</span></div>",document.body.appendChild(F))))}),window.addEventListener("dragover",function(e){J(e)&&e.preventDefault()}),window.addEventListener("dragleave",function(){0===(q=Math.max(0,q-1))&&W()}),window.addEventListener("drop",function(e){J(e)&&(e.preventDefault(),q=0,W(),o.writable&&o.authenticated?U(e.dataTransfer).then(function(e){e.length>0&&O(e)}):le("Sign in to upload files."))}),Z(),(V=o.crumbs.map(function(e,t){var n=t===o.crumbs.length-1,a=(0===t?S("home"):"")+L(e.name);return n?'<span class="crumb current">'+a+"</span>":'<a class="crumb" href="'+L(e.href)+'">'+a+"</a>"}).join('<span class="crumb-sep">'+S("chevronRight")+"</span>"))||(V='<span class="crumb current">'+S("home")+"root</span>"),w.innerHTML=V,K(),Y(),ee())})();
+(function () {
+	"use strict";
+
+	function readState() {
+		try {
+			return JSON.parse(document.getElementById("next-index-bootstrap").textContent);
+		} catch (error) {
+			return null;
+		}
+	}
+
+	var state = readState();
+
+	var parameters = new URLSearchParams(window.location.search);
+
+	var LOCALE = "en-US";
+
+	var ensuredDirectories = {};
+
+	function resetEnsuredDirectories() {
+		ensuredDirectories = {};
+	}
+
+	if (state) {
+		state.entries = Array.isArray(state.entries) ? state.entries : [];
+		state.crumbs = Array.isArray(state.crumbs) ? state.crumbs : [];
+		state.view = localStorage.getItem("next-index-view") === "grid" ? "grid" : "list";
+		var storedTheme = localStorage.getItem("next-index-theme");
+		state.theme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "";
+
+		if (parameters.get("view") === "grid" || parameters.get("view") === "list") {
+			state.view = parameters.get("view");
+		}
+
+		if (parameters.get("theme") === "light" || parameters.get("theme") === "dark") {
+			state.theme = parameters.get("theme");
+		}
+
+		state.sort = readSort();
+		state.uploads = [];
+		state.uploading = false;
+		state.selection = {};
+		state.selecting = false;
+
+		if (state.theme) {
+			document.documentElement.dataset.theme = state.theme;
+		}
+	}
+
+	// Until the visitor picks a theme the page follows the system preference, which
+	// is what the light-dark() tokens resolve to.
+	function currentTheme() {
+		if (state.theme) {
+			return state.theme;
+		}
+
+		if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+			return "light";
+		}
+
+		return "dark";
+	}
+
+	var FOLDER = '<path d="M5.5 4.75h4.3c.6 0 1.15.25 1.55.7l.9 1.05H18.5A2.5 2.5 0 0 1 21 9v7.75a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.75V7.25a2.5 2.5 0 0 1 2.5-2.5Z"/>';
+
+	var ICONS = {
+		parent: FOLDER + '<path d="M14.8 13H9.2" stroke-width="1.5"/><path d="m11.8 10.6-2.6 2.4 2.6 2.4" stroke-width="1.5"/>',
+		layers: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/>',
+		refresh: '<path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/>',
+		moon: '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z"/>',
+		sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+		upload: '<path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
+		folder: FOLDER,
+		folderOpen: '<path d="M5.42 19.5 h11.9 a2 2 0 0 0 1.94 -1.5 l1.2 -5 A1.6 1.6 0 0 0 18.92 10.9 H7.92 a2 2 0 0 0 -1.94 1.5 L4.72 17.6 M5.42 19.5 a2 2 0 0 1 -2 -2 V6.1 a1.6 1.6 0 0 1 1.6 -1.6 h5.1 a2 2 0 0 1 1.6 .8 l1.2 1.6 h5.5 a1.6 1.6 0 0 1 1.6 1.6 v2.4"/>',
+		folderPlus: FOLDER + '<path d="M12 10.4v5"/><path d="M9.5 12.9h5"/>',
+		file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/>',
+		image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15-4.5-4.5L7 20"/>',
+		video: '<rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 10 4-2v8l-4-2"/>',
+		audio: '<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',
+		archive: '<path d="M4 7h16v13H4z"/><path d="M2 4h20v3H2z"/><path d="M10 11h4"/>',
+		code: '<path d="m9 8-5 4 5 4"/><path d="m15 8 5 4-5 4"/>',
+		doc: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M9 13h6M9 17h4"/>',
+		sheet: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16M15 4v16"/>',
+		slide: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M12 17v3M8 20h8"/>',
+		font: '<path d="m6 20 6-16 6 16"/><path d="M8.5 14h7"/>',
+		disk: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 3v3"/>',
+		pencil: '<path d="M4 20h4L19 9a2.83 2.83 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/>',
+		trash: '<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v5M14 11v5"/>',
+		x: '<path d="m6 6 12 12M18 6 6 18"/>',
+		chevronRight: '<path d="m9 6 6 6-6 6"/>',
+		arrowUp: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+		check: '<path d="m5 13 4 4L19 7"/>',
+		alert: '<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/>',
+		info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7.5v.5"/>',
+		login: '<path d="M14 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2"/><path d="M9 12h11"/><path d="m17 8 4 4-4 4"/>',
+		logout: '<path d="M10 8V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2v-2"/><path d="M15 12H4"/><path d="m7 8-4 4 4 4"/>',
+		lock: '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+		home: '<path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/>',
+		copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
+		move: '<path d="M3 12h11"/><path d="m10 8 4 4-4 4"/><path d="M17 4h4v16h-4"/>',
+		more: '<circle cx="5" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="2.2" fill="currentColor" stroke="none"/>',
+		select: '<rect x="3" y="3" width="18" height="18" rx="4"/><path d="m8 12 2.5 2.5L16 9"/>',
+		list: '<path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
+		grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'
+	};
+	var GROUPS = {
+		image: ["png", "jpg", "jpeg", "gif", "webp", "avif", "bmp", "ico", "svg", "tif", "tiff", "heic"],
+		video: ["mp4", "webm", "mkv", "mov", "avi", "m4v", "ogv", "flv", "wmv"],
+		audio: ["mp3", "wav", "flac", "ogg", "m4a", "aac", "opus", "wma", "mid"],
+		archive: ["zip", "tar", "gz", "bz2", "xz", "7z", "rar", "zst", "tgz", "tbz2", "lz4"],
+		code: ["js", "mjs", "cjs", "ts", "jsx", "tsx", "go", "py", "rb", "rs", "c", "h", "cc", "cpp", "hpp", "cs", "java", "kt", "swift", "php", "lua", "sh", "bash", "zsh", "fish", "ps1", "bat", "cmd", "sql", "toml", "yaml", "yml", "json", "jsonc", "xml", "html", "htm", "css", "scss", "sass", "less", "vue", "svelte", "proto", "graphql", "ini", "conf", "env", "dockerfile", "makefile"],
+		pdf: ["pdf"],
+		doc: ["md", "markdown", "txt", "text", "rst", "log", "doc", "docx", "odt", "rtf", "epub", "pages", "tex"],
+		sheet: ["xls", "xlsx", "csv", "tsv", "ods", "numbers"],
+		slide: ["ppt", "pptx", "odp", "key"],
+		font: ["ttf", "otf", "woff", "woff2", "eot"],
+		disk: ["iso", "img", "dmg", "vhd", "vhdx", "qcow2", "vmdk"]
+	};
+	var TYPE_ICONS = {
+		parent: ["parent", "icon-dir"],
+		dir: ["folder", "icon-dir"],
+		image: ["image", "icon-image"],
+		video: ["video", "icon-video"],
+		audio: ["audio", "icon-audio"],
+		archive: ["archive", "icon-archive"],
+		code: ["code", "icon-code"],
+		pdf: ["doc", "icon-pdf"],
+		doc: ["doc", "icon-doc"],
+		sheet: ["sheet", "icon-sheet"],
+		slide: ["slide", "icon-slide"],
+		font: ["font", "icon-font"],
+		disk: ["disk", "icon-disk"],
+		file: ["file", "icon-doc"]
+	};
+	var topbar = document.getElementById("topbar");
+	var main = document.getElementById("main");
+	var footer = document.getElementById("footer");
+	var toastRoot = document.getElementById("toast-root");
+	var modalRoot = document.getElementById("modal-root");
+	main.innerHTML = '<nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav><div class="summary"><div class="stats" id="stats"></div><div class="summary-actions" id="summary-actions"></div></div><div class="card" id="listing"></div>';
+	var crumbsRoot = document.getElementById("crumbs");
+	var summaryRoot = document.querySelector(".summary");
+	var stats = document.getElementById("stats");
+	var summaryActions = document.getElementById("summary-actions");
+	var listing = document.getElementById("listing");
+	function readSort() {
+		try {
+			var parsed = JSON.parse(localStorage.getItem("next-index-sort"));
+
+			if (parsed && ["name", "size", "mod"].indexOf(parsed.key) !== -1 && (parsed.dir === 1 || parsed.dir === -1)) {
+				return parsed;
+			}
+		} catch (error) {
+			/* ignore */
+		}
+
+		return { key: "name", dir: 1 };
+	}
+	function esc(value) {
+		return String(value).replace(/[&<>"']/g, function (char) {
+			return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+		});
+	}
+	function icon(name, className) {
+		return '<svg class="' + (className || "") + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || ICONS.file) + "</svg>";
+	}
+	function groupOf(entry) {
+		if (entry.kind === "dir" || entry.kind === "parent") {
+			return entry.kind;
+		}
+
+		var extension = (entry.ext || "").toLowerCase();
+
+		for (var group in GROUPS) {
+			if (GROUPS[group].indexOf(extension) !== -1) {
+				return group;
+			}
+		}
+
+		return "file";
+	}
+	function typeOf(entry) {
+		var group = groupOf(entry);
+		return TYPE_ICONS[group] || TYPE_ICONS.file;
+	}
+	function formatSize(bytes) {
+		if (!bytes) {
+			return "0 B";
+		}
+
+		var units = ["B", "KB", "MB", "GB", "TB", "PB"];
+		var value = bytes;
+		var index = 0;
+
+		while (value >= 1024 && index < units.length - 1) {
+			value /= 1024;
+			index++;
+		}
+
+		return (index === 0 ? String(value) : value.toFixed(1)) + " " + units[index];
+	}
+	function formatDate(unix) {
+		return new Date(unix * 1000).toLocaleDateString(LOCALE, {
+			year: "numeric",
+			month: "2-digit",
+			day: "2-digit"
+		});
+	}
+	function formatTime(unix) {
+		return new Date(unix * 1000).toLocaleTimeString(LOCALE, {
+			hour12: false
+		});
+	}
+	function formatFull(unix) {
+		return new Date(unix * 1000).toLocaleString(LOCALE, {
+			year: "numeric",
+			month: "2-digit",
+			day: "2-digit",
+			hour: "2-digit",
+			minute: "2-digit",
+			second: "2-digit",
+			hour12: false
+		});
+	}
+	function visibleEntries() {
+		var entries = state.entries.slice();
+
+		entries.sort(function (left, right) {
+			var leftDir = left.kind === "dir";
+			var rightDir = right.kind === "dir";
+
+			if (leftDir !== rightDir) {
+				return leftDir ? -1 : 1;
+			}
+
+			var result = 0;
+
+			if (state.sort.key === "name") {
+				result = left.name.localeCompare(right.name, undefined, { numeric: true, sensitivity: "base" });
+			} else if (state.sort.key === "size") {
+				result = (left.size || 0) - (right.size || 0);
+			} else {
+				result = (left.mod || 0) - (right.mod || 0);
+			}
+
+			return result * state.sort.dir;
+		});
+
+
+		return entries;
+	}
+	function selected() {
+		return Object.keys(state.selection).filter(function (name) {
+			return state.selection[name];
+		});
+	}
+	function plural(count, singular, many) {
+		return count === 1 ? singular : many;
+	}
+	function joinPath(base, name) {
+		if (!base.endsWith("/")) {
+			base += "/";
+		}
+
+		return base + name + "/";
+	}
+
+
+	function openMenu(button) {
+		closeMenu();
+
+		var name = button.dataset.menu;
+		var menu = document.createElement("div");
+
+		menu.className = "menu";
+		menu.id = "row-menu";
+		menu.innerHTML =
+			'<button type="button" data-action="details" data-name="' + esc(name) + '">' + icon("info") + "<span>Details</span></button>" +
+			'<button type="button" data-action="rename" data-name="' + esc(name) + '">' + icon("pencil") + "<span>Rename</span></button>" +
+			'<button type="button" data-action="move" data-name="' + esc(name) + '">' + icon("move") + "<span>Move</span></button>" +
+			'<button type="button" data-action="copy" data-name="' + esc(name) + '">' + icon("copy") + "<span>Copy</span></button>" +
+			'<button type="button" data-action="delete" data-name="' + esc(name) + '" class="danger">' + icon("trash") + "<span>Delete</span></button>";
+
+		document.body.appendChild(menu);
+
+		var rect = button.getBoundingClientRect();
+		var scrollX = window.scrollX;
+		var scrollY = window.scrollY;
+		var minLeft = scrollX + 8;
+		var minTop = scrollY + 8;
+		var maxLeft = scrollX + window.innerWidth - menu.offsetWidth - 8;
+		var maxTop = scrollY + window.innerHeight - menu.offsetHeight - 8;
+		var left = Math.min(rect.left + scrollX, maxLeft);
+		var top = rect.bottom + scrollY + 4;
+
+		if (top > maxTop) {
+			top = rect.top + scrollY - menu.offsetHeight - 4;
+		}
+
+		menu.style.left = Math.max(minLeft, left) + "px";
+		menu.style.top = Math.max(minTop, top) + "px";
+	}
+	function closeMenu() {
+		var menu = document.getElementById("row-menu");
+
+		if (menu) {
+			menu.remove();
+		}
+	}
+	function toast(type, message) {
+		var element = document.createElement("div");
+		element.className = "toast " + type;
+		element.innerHTML = icon(type === "success" ? "check" : "alert") + "<span>" + esc(message) + "</span>";
+		toastRoot.appendChild(element);
+
+		setTimeout(function () {
+			element.classList.add("leaving");
+			setTimeout(function () {
+				element.remove();
+			}, 220);
+		}, 3600);
+	}
+	function openModal(html, className) {
+		closeModal();
+
+		modalRoot.innerHTML =
+			'<div class="overlay" data-overlay><div class="dialog ' + (className || "") + '" role="dialog" aria-modal="true">' + html + "</div></div>";
+
+		document.body.classList.add("modal-open");
+
+		var overlay = modalRoot.querySelector("[data-overlay]");
+
+		overlay.addEventListener("mousedown", function (event) {
+			if (event.target === overlay) {
+				closeModal();
+			}
+		});
+
+		modalRoot.querySelectorAll("[data-close]").forEach(function (element) {
+			element.addEventListener("click", closeModal);
+		});
+
+		var focusTarget = modalRoot.querySelector("input:not([type=hidden]), textarea, button.btn-primary");
+
+		if (focusTarget) {
+			setTimeout(function () {
+				focusTarget.focus();
+			}, 30);
+		}
+	}
+	function closeModal() {
+		modalRoot.innerHTML = "";
+		document.body.classList.remove("modal-open");
+	}
+	function formDialog(options) {
+		openModal(
+			'<form id="dialog-form" novalidate>' +
+			'<div class="dialog-head"><h2>' + options.title + "</h2>" +
+			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+			'<p class="sub">' + options.sub + "</p>" +
+			'<div class="field"><label for="dialog-input">' + options.label + "</label>" +
+			'<input class="input" id="dialog-input" autocomplete="off" spellcheck="false" value="' + esc(options.value || "") + '" placeholder="' + esc(options.placeholder || "") + '"></div>' +
+			'<div class="form-error" id="dialog-error"></div>' +
+			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
+			'<button type="submit" class="btn btn-primary">' + options.submit + "</button></div>" +
+			"</form>"
+		);
+
+		var form = document.getElementById("dialog-form");
+		var input = document.getElementById("dialog-input");
+		var errorElement = document.getElementById("dialog-error");
+
+		input.focus();
+
+		form.addEventListener("submit", function (event) {
+			event.preventDefault();
+			options.run(input.value.trim(), errorElement);
+		});
+
+		return input;
+	}
+
+
+	function api(path, options) {
+		options = options || {};
+
+		if (options.body) {
+			options.headers = Object.assign({ "Content-Type": "application/json" }, options.headers || {});
+		}
+
+		return fetch(path, Object.assign({ credentials: "same-origin" }, options)).then(function (response) {
+			return response
+				.json()
+				.catch(function () {
+					return {};
+				})
+				.then(function (data) {
+					if (!response.ok) {
+						var error = new Error(data.error || "request failed (" + response.status + ")");
+						error.status = response.status;
+						throw error;
+					}
+
+					return data;
+				});
+		});
+	}
+	function refresh() {
+		var button = document.getElementById("refresh-btn");
+		var spinner = button ? button.querySelector("svg") : null;
+
+		if (spinner) {
+			spinner.classList.add("spin");
+		}
+
+		return api("/@next-index/api/list?path=" + encodeURIComponent(state.path))
+			.then(function (result) {
+				state.entries = Array.isArray(result.entries) ? result.entries : [];
+				state.crumbs = Array.isArray(result.crumbs) ? result.crumbs : state.crumbs;
+
+				var kept = {};
+
+				state.entries.forEach(function (entry) {
+					if (state.selection[entry.name]) {
+						kept[entry.name] = true;
+					}
+				});
+
+				state.selection = kept;
+
+				renderSummary();
+				renderListing();
+				renderFooter();
+				return result;
+			})
+			.catch(handleError)
+			.finally(function () {
+				if (spinner) {
+					spinner.classList.remove("spin");
+				}
+			});
+	}
+	function handleError(error) {
+		if (error.status === 401) {
+			state.authenticated = false;
+			state.username = "";
+			renderTopbar();
+			renderSummary();
+			renderListing();
+			renderFooter();
+			openLogin("Your session expired. Sign in again to manage files.");
+			return;
+		}
+
+		toast("error", error.message || String(error));
+	}
+	function send(url, body, message, errorElement) {
+		errorElement.textContent = "";
+
+		api(url, { method: "POST", body: JSON.stringify(body) })
+			.then(function (result) {
+				closeModal();
+				toast("success", typeof message === "function" ? message(result) : message);
+				return refresh();
+			})
+			.catch(function (error) {
+				if (error.status === 401) {
+					handleError(error);
+					return;
+				}
+
+				errorElement.textContent = error.message;
+			});
+	}
+
+
+	function selectMarkup(entry) {
+		if (!state.selecting || entry.kind === "parent") {
+			return "";
+		}
+
+		return '<input type="checkbox" data-select="' + esc(entry.name) + '"' + (state.selection[entry.name] ? " checked" : "") + ' aria-label="Select ' + esc(entry.name) + '">';
+	}
+	function renderCrumbs() {
+		var crumbs = state.crumbs
+			.map(function (crumb, index) {
+				var isLast = index === state.crumbs.length - 1;
+				var isRoot = index === 0;
+				var inner = (isRoot ? icon("home") : "") + esc(crumb.name);
+
+				if (isLast) {
+					return '<span class="crumb current">' + inner + "</span>";
+				}
+
+				return '<a class="crumb" href="' + esc(crumb.href) + '">' + inner + "</a>";
+			})
+			.join('<span class="crumb-sep">' + icon("chevronRight") + "</span>");
+
+		if (!crumbs) {
+			crumbs = '<span class="crumb current">' + icon("home") + "root</span>";
+		}
+
+		crumbsRoot.innerHTML = crumbs;
+	}
+	function renderTopbar() {
+		var authMarkup = "";
+
+		if (state.authenticated) {
+			authMarkup =
+				'<span class="user-chip" title="Signed in"><span class="avatar">' + esc((state.username || "?").slice(0, 1)) + '</span><span class="user-name">' + esc(state.username) + "</span></span>" +
+				'<button class="btn btn-sm" id="logout-btn" title="Sign out" aria-label="Sign out">' + icon("logout") + "<span>Sign out</span></button>" +
+				'<button class="btn btn-primary" id="upload-btn" title="Upload files" aria-label="Upload files">' + icon("upload") + "<span>Upload</span></button>";
+		} else if (state.writable) {
+			authMarkup = '<button class="btn btn-primary" id="login-btn" title="Sign in" aria-label="Sign in">' + icon("login") + "<span>Sign in</span></button>";
+		} else {
+			authMarkup = '<span class="readonly-chip">' + icon("lock") + "read only</span>";
+		}
+
+		topbar.innerHTML =
+			'<div class="topbar-inner">' +
+			'<a class="brand" href="/" aria-label="Home">' +
+			'<span class="brand-mark">' + icon("layers") + "</span>" +
+			'<span class="brand-name">' + esc(state.site || "NEXT_INDEX") + "</span>" +
+			'<span class="brand-version">v' + esc(state.version) + "</span>" +
+			"</a>" +
+			'<div class="topbar-actions">' +
+			'<button class="icon-btn" id="refresh-btn" title="Refresh" aria-label="Refresh">' + icon("refresh") + "</button>" +
+			'<button class="icon-btn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">' + (currentTheme() === "dark" ? icon("sun") : icon("moon")) + "</button>" +
+			authMarkup +
+			"</div>" +
+			"</div>";
+
+		document.getElementById("refresh-btn").addEventListener("click", refresh);
+		document.getElementById("theme-btn").addEventListener("click", toggleTheme);
+		var uploadButton = document.getElementById("upload-btn");
+
+		if (uploadButton) {
+			uploadButton.addEventListener("click", function () {
+				openUpload();
+			});
+		}
+
+		var loginButton = document.getElementById("login-btn");
+		if (loginButton) {
+			loginButton.addEventListener("click", function () {
+				openLogin();
+			});
+		}
+
+		var logoutButton = document.getElementById("logout-btn");
+		if (logoutButton) {
+			logoutButton.addEventListener("click", logout);
+		}
+	}
+	function renderSummary() {
+		summaryRoot.classList.toggle("selecting", state.selecting);
+
+		var entries = state.entries;
+		var directories = entries.filter(function (entry) {
+			return entry.kind === "dir";
+		}).length;
+		var files = entries.length - directories;
+		var totalSize = entries.reduce(function (sum, entry) {
+			return sum + (entry.kind === "file" ? entry.size || 0 : 0);
+		}, 0);
+
+		var parts = [
+			"<span><b>" + directories + "</b> " + plural(directories, "folder", "folders") + "</span>",
+			'<span class="stat-dot"></span>',
+			"<span><b>" + files + "</b> " + plural(files, "file", "files") + "</span>",
+			'<span class="stat-dot"></span>',
+			"<span><b>" + formatSize(totalSize) + "</b> total</span>"
+		];
+
+		stats.innerHTML = parts.join("");
+
+		var names = selected();
+
+		var tools = state.authenticated
+			? '<button class="icon-btn" data-action="mkdir" title="New folder" aria-label="New folder">' + icon("folderPlus") + "</button>" +
+				'<button class="icon-btn' + (state.selecting ? " active" : "") + '" data-action="toggle-selection" title="Select files" aria-label="Select files" aria-pressed="' + state.selecting + '">' + icon("select") + "</button>"
+			: "";
+
+		var batch = "";
+
+		if (state.selecting) {
+			batch =
+				'<div class="batch">' +
+				"<span><b>" + names.length + "</b> selected</span>" +
+				(names.length
+					? '<button class="btn btn-sm" data-action="batch-copy">' + icon("copy") + "<span>Copy</span></button>" +
+						'<button class="btn btn-sm" data-action="batch-move">' + icon("move") + "<span>Move</span></button>" +
+						'<button class="btn btn-sm" data-action="batch-delete">' + icon("trash") + "<span>Delete</span></button>"
+					: "") +
+				'<button class="icon-btn" data-action="toggle-selection" title="Done" aria-label="Done">' + icon("x") + "</button>" +
+				"</div>";
+		}
+
+		summaryActions.innerHTML =
+			batch +
+			tools +
+			'<div class="segmented" role="group" aria-label="View mode">' +
+			'<button data-view="list" class="' + (state.view === "list" ? "active" : "") + '" title="List view" aria-label="List view">' + icon("list") + "</button>" +
+			'<button data-view="grid" class="' + (state.view === "grid" ? "active" : "") + '" title="Grid view" aria-label="Grid view">' + icon("grid") + "</button>" +
+			"</div>";
+
+		fitSummary();
+	}
+	function fitSummary() {
+		var overflowing = function () {
+			return summaryRoot.scrollWidth > summaryRoot.clientWidth + 1;
+		};
+
+		summaryRoot.classList.remove("compact", "compact-tight");
+
+		if (!overflowing()) {
+			return;
+		}
+
+		summaryRoot.classList.add("compact");
+
+		if (overflowing()) {
+			summaryRoot.classList.add("compact-tight");
+		}
+	}
+	function renderListing() {
+		var entries = visibleEntries();
+
+		listing.classList.toggle("selecting", state.selecting);
+
+		if (state.entries.length === 0) {
+			listing.innerHTML =
+				'<div class="empty"><div class="empty-icon">' + icon("folderOpen") + "</div>" +
+				"<h2>This folder is empty</h2>" +
+				"<p>Nothing here yet. Upload a file to get started.</p>" +
+				'<div>' +
+				'<button class="btn" data-action="back">' + icon("parent") + "<span>Back</span></button>" +
+				(state.authenticated
+					? '<button class="btn btn-primary" data-action="upload">' + icon("upload") + "<span>Upload files</span></button>"
+					: state.writable
+						? '<button class="btn btn-primary" data-action="login">' + icon("login") + "<span>Sign in to upload</span></button>"
+						: "") +
+				"</div></div>";
+			return;
+		}
+
+		if (entries.length === 0) {
+			listing.innerHTML =
+				'<div class="empty"><div class="empty-icon">' + icon("folder") + "</div>" +
+				"<h2>Empty folder</h2>" +
+				"<p>Nothing has been uploaded here yet.</p>" +
+				"</div>";
+			return;
+		}
+
+		listing.innerHTML = state.view === "grid" ? gridMarkup(entries) : tableMarkup(entries);
+
+	}
+	function tableMarkup(entries) {
+		var sorted = state.sort;
+
+		function header(key, label, className) {
+			var isSorted = sorted.key === key;
+			var classes = "col-" + className + (isSorted ? " sorted" : "") + (isSorted && sorted.dir < 0 ? " desc" : "");
+
+			return (
+				'<th class="' + classes + '">' +
+				'<button class="sort-btn" data-sort="' + key + '">' + label + icon("arrowUp", "arrow") + "</button>" +
+				"</th>"
+			);
+		}
+
+		var lastPage = state.parent.name === "/" ? "" : rowMarkup(state.parent);
+		var rows = lastPage + entries.map(rowMarkup).join("");
+
+		return (
+			"<table class=\"table\">" +
+			"<thead><tr>" +
+			(state.selecting ? '<th class="col-select">' + selectAllMarkup(entries) + "</th>" : "") +
+			header("name", "Name", "name") +
+			header("size", "Size", "size") +
+			header("mod", "Modified", "time") +
+			'<th class="col-actions"></th>' +
+			"</tr></thead>" +
+			"<tbody>" + rows + "</tbody>" +
+			"</table>"
+		);
+	}
+	function selectAllMarkup(entries) {
+		var checked =
+			entries.length > 0 &&
+			entries.every(function (entry) {
+				return state.selection[entry.name];
+			});
+
+		return '<input type="checkbox" id="select-all" aria-label="Select all"' + (checked ? " checked" : "") + ">";
+	}
+	function gridMarkup(entries) {
+		var lastPage = state.parent.name === "/" ? "" : itemMarkup(state.parent);
+
+		return (
+			'<div class="grid">' + lastPage + entries.map(itemMarkup).join("") + "</div>"
+		);
+	}
+	function rowMarkup(entry) {
+		var type = typeOf(entry);
+		var size = entry.kind === "file" ? formatSize(entry.size) : "—";
+		var tag = state.selecting ? "div" : "a";
+		var hrefAttr = state.selecting ? "" : ' href="' + esc(entry.href) + '"';
+
+		return (
+			'<tr' + (state.selection[entry.name] ? ' class="selected"' : "") + ' data-name="' + esc(entry.name) + '" data-href="' + esc(entry.href) + '">' +
+			(state.selecting ? '<td class="col-select">' + selectMarkup(entry) + "</td>" : "") +
+			"<td>" +
+			'<' + tag + ' class="entry"' + hrefAttr + '>' +
+			'<span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span>" +
+			'<span class="name-wrap"><span class="entry-name">' + nameMarkup(entry) + "</span>" +
+			(entry.link ? '<span class="badge">link</span>' : "") +
+			"</span>" +
+			"</" + tag + ">" +
+			"</td>" +
+			'<td class="col-size size" title="' + (entry.kind === "file" ? entry.size + " bytes" : "") + '">' + size + "</td>" +
+			'<td class="col-time time" title="' + esc(formatFull(entry.mod)) + '">' + esc(formatDate(entry.mod)) + '<small>' + esc(formatTime(entry.mod)) + '</small></td>' +
+			'<td class="col-actions"><div class="row-actions">' + menuMarkup(entry) + "</div></td>" +
+			"</tr>"
+		);
+	}
+	function itemMarkup(entry) {
+		var type = typeOf(entry);
+		var tag = state.selecting ? "div" : "a";
+		var hrefAttr = state.selecting ? "" : ' href="' + esc(entry.href) + '"';
+		var menu = menuMarkup(entry);
+		var thumb = '<div class="thumb"><span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span></div>";
+
+		return (
+			'<div class="tile' + (state.selection[entry.name] ? " selected" : "") + '" data-name="' + esc(entry.name) + '">' +
+			(state.selecting ? '<span class="tile-select">' + selectMarkup(entry) + "</span>" : "") +
+			'<' + tag + ' class="tile-main"' + hrefAttr + '>' +
+			thumb +
+			'<span class="tile-name" title="' + esc(entry.name) + '">' + esc(entry.name) + "</span>" +
+			'<span class="tile-meta"><span>' + formatDate(entry.mod) + "</span><span>" + formatTime(entry.mod) + "</span></span>" +
+			"</" + tag + ">" +
+			(menu ? '<div class="tile-actions row-actions">' + menu + "</div>" : "") +
+			"</div>"
+		);
+	}
+	function nameMarkup(entry) {
+		var name = entry.name;
+
+		if (entry.kind !== "file") {
+			return esc(name);
+		}
+
+		var dot = name.lastIndexOf(".");
+
+		if (dot <= 0 || dot === name.length - 1) {
+			return esc(name);
+		}
+
+		return esc(name.slice(0, dot)) + '<span class="entry-ext">' + esc(name.slice(dot)) + "</span>";
+	}
+	function menuMarkup(entry) {
+		if (state.selecting || entry.kind === "parent") {
+			return "";
+		}
+
+		return '<button class="row-action" data-menu="' + esc(entry.name) + '" title="More" aria-label="More">' + icon("more") + "</button>";
+	}
+	function renderFooter() {
+		var status = state.authenticated ? '<span class="status-dot" title="Signed in"></span>' : '<span class="status-dot locked" title="Read only"></span>';
+		var location;
+
+		if (state.authenticated) {
+			location = "signed in as: " + esc(state.username);
+		} else if (state.writable) {
+			location = "sign in to manage files";
+		} else {
+			location = "read only · uploads are disabled on this server";
+		}
+
+		footer.innerHTML =
+			'<div class="footer-side">' + status + '<span class="mono">' + location + "</span></div>";
+	}
+
+
+	function handleAction(action, name) {
+		if (action === "mkdir") {
+			openMkdir();
+			return;
+		}
+
+		if (action === "upload") {
+			openUpload();
+			return;
+		}
+
+		if (action === "login") {
+			openLogin();
+			return;
+		}
+
+		if (action === "back") {
+			window.location.href = "../";
+			return;
+		}
+
+		if (action === "toggle-selection") {
+			state.selecting = !state.selecting;
+
+			if (!state.selecting) {
+				state.selection = {};
+			}
+
+			renderSummary();
+			renderListing();
+			return;
+		}
+
+		if (action === "batch-copy") {
+			openTransfer("copy", selected());
+			return;
+		}
+
+		if (action === "batch-move") {
+			openTransfer("move", selected());
+			return;
+		}
+
+		if (action === "batch-delete") {
+			openDelete(selected());
+			return;
+		}
+
+		var entry = state.entries.filter(function (item) {
+			return item.name === name;
+		})[0];
+
+		if (!entry) {
+			return;
+		}
+
+		if (action === "details") {
+			openDetails(entry);
+			return;
+		}
+
+		if (action === "rename") {
+			openRename(entry);
+		} else if (action === "delete") {
+			openDelete([entry.name]);
+		} else if (action === "copy") {
+			openTransfer("copy", [entry.name]);
+		} else if (action === "move") {
+			openTransfer("move", [entry.name]);
+		}
+	}
+	function toggleSelect(name) {
+		if (state.selection[name]) {
+			delete state.selection[name];
+		} else {
+			state.selection[name] = true;
+		}
+
+		renderSummary();
+		renderListing();
+	}
+	function toggleSelectAll() {
+		var entries = visibleEntries();
+		var all = entries.length > 0 && entries.every(function (entry) {
+			return state.selection[entry.name];
+		});
+
+		entries.forEach(function (entry) {
+			if (all) {
+				delete state.selection[entry.name];
+			} else {
+				state.selection[entry.name] = true;
+			}
+		});
+
+		renderSummary();
+		renderListing();
+	}
+	function toggleSort(key) {
+		if (state.sort.key === key) {
+			state.sort.dir *= -1;
+		} else {
+			state.sort = { key: key, dir: key === "mod" ? -1 : 1 };
+		}
+
+		localStorage.setItem("next-index-sort", JSON.stringify(state.sort));
+		renderListing();
+	}
+	function setView(view) {
+		state.view = view === "grid" ? "grid" : "list";
+		localStorage.setItem("next-index-view", state.view);
+		renderSummary();
+		renderListing();
+	}
+	function toggleTheme() {
+		state.theme = currentTheme() === "dark" ? "light" : "dark";
+		document.documentElement.dataset.theme = state.theme;
+		localStorage.setItem("next-index-theme", state.theme);
+		renderTopbar();
+	}
+	function openLogin(message) {
+		if (!state.writable) {
+			toast("error", "Write access is disabled. Run `next-index config -P` on the server to enable it.");
+			return;
+		}
+
+		if (state.authenticated) {
+			return;
+		}
+
+		openModal(
+			'<form id="login-form" novalidate>' +
+			'<div class="dialog-head"><div><h2>Sign in</h2></div>' +
+			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+			'<p class="sub">' + (message ? esc(message) : "Browsing is public. Sign in to upload, rename, create and delete files.") + "</p>" +
+			'<div class="field"><label for="login-user">Username</label>' +
+			'<input class="input" id="login-user" name="username" autocomplete="username" spellcheck="false"></div>' +
+			'<div class="field"><label for="login-password">Password</label>' +
+			'<input class="input" id="login-password" name="password" type="password" autocomplete="current-password"></div>' +
+			'<div class="form-error" id="login-error"></div>' +
+			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
+			'<button type="submit" class="btn btn-primary" id="login-submit">Sign in</button></div>' +
+			"</form>"
+		);
+
+		var form = document.getElementById("login-form");
+		var errorElement = document.getElementById("login-error");
+		var submitButton = document.getElementById("login-submit");
+		var userInput = document.getElementById("login-user");
+
+		userInput.value = state.username || "";
+
+		form.addEventListener("submit", function (event) {
+			event.preventDefault();
+
+			var username = userInput.value.trim();
+			var password = document.getElementById("login-password").value;
+
+			if (!username || !password) {
+				errorElement.textContent = "Enter both a username and a password.";
+				return;
+			}
+
+			errorElement.textContent = "";
+			submitButton.disabled = true;
+			submitButton.textContent = "Signing in…";
+
+			api("/@next-index/api/login", {
+				method: "POST",
+				body: JSON.stringify({ username: username, password: password })
+			})
+				.then(function (result) {
+					state.authenticated = true;
+					state.username = result.username || username;
+					closeModal();
+					renderTopbar();
+					renderSummary();
+					renderListing();
+					renderFooter();
+					toast("success", "Signed in as " + state.username);
+				})
+				.catch(function (error) {
+					errorElement.textContent = error.message;
+				})
+				.finally(function () {
+					submitButton.disabled = false;
+					submitButton.textContent = "Sign in";
+				});
+		});
+	}
+	function logout() {
+		api("/@next-index/api/logout", { method: "POST" })
+			.catch(function () {
+				return {};
+			})
+			.then(function () {
+				state.authenticated = false;
+				state.username = "";
+				renderTopbar();
+				renderSummary();
+				renderListing();
+				renderFooter();
+				toast("success", "Signed out.");
+			});
+	}
+	function openMkdir() {
+		if (!state.authenticated) {
+			openLogin("Sign in to create folders.");
+			return;
+		}
+
+		formDialog({
+			title: "New folder",
+			sub: "Create a folder inside <b>" + esc(state.path) + "</b>",
+			label: "Folder name",
+			placeholder: "untitled folder",
+			submit: "Create",
+			run: function (name, error) {
+				if (!name) {
+					error.textContent = "Enter a folder name.";
+					return;
+				}
+
+				send("/@next-index/api/mkdir", { path: state.path, name: name }, "Created folder \u201c" + name + "\u201d", error);
+			}
+		});
+	}
+	function openDetails(entry) {
+		var rows = [
+			["Name", esc(entry.name)],
+			["Kind", entry.kind === "dir" ? "Folder" : entry.ext ? entry.ext.toUpperCase() + " file" : "File"],
+			["Size", entry.kind === "dir" ? "\u2014" : esc(formatSize(entry.size)) + " <span class=\"muted\">(" + entry.size + " bytes)</span>"],
+			["Modified", esc(formatFull(entry.mod))],
+			["Location", esc(state.path + entry.name)]
+		];
+
+		if (entry.link && entry.target) {
+			rows.push(["Links to", esc(entry.target)]);
+		}
+
+		var body = rows.map(function (row) {
+			return "<div><dt>" + row[0] + "</dt><dd>" + row[1] + "</dd></div>";
+		}).join("");
+
+		openModal(
+			'<div class="dialog-head"><div><h2>' + esc(entry.name) + "</h2></div>" +
+			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+			'<dl class="detail-list">' + body + "</dl>" +
+			'<div class="dialog-actions"><button type="button" class="btn" data-close>Close</button></div>'
+		);
+	}
+	function openRename(entry) {
+		if (!state.authenticated) {
+			openLogin("Sign in to rename files.");
+			return;
+		}
+
+		var input = formDialog({
+			title: "Rename",
+			sub: "Rename <b>" + esc(entry.name) + "</b> in this folder.",
+			label: "New name",
+			value: entry.name,
+			submit: "Rename",
+			run: function (name, error) {
+				if (!name) {
+					error.textContent = "Enter a new name.";
+					return;
+				}
+
+				if (name === entry.name) {
+					closeModal();
+					return;
+				}
+
+				send("/@next-index/api/rename", { path: state.path, from: entry.name, to: name }, function (result) {
+					return "Renamed to \u201c" + result.name + "\u201d";
+				}, error);
+			}
+		});
+
+		input.select();
+
+		if (entry.kind === "file") {
+			var dot = entry.name.lastIndexOf(".");
+
+			if (dot > 0) {
+				input.setSelectionRange(0, dot);
+			}
+		}
+	}
+	function openTransfer(kind, names) {
+		if (!names.length) {
+			return;
+		}
+
+		if (!state.authenticated) {
+			openLogin("Sign in to " + kind + " files.");
+			return;
+		}
+
+		var copying = kind === "copy";
+		var single = names.length === 1;
+
+		var input = formDialog({
+			title: copying ? "Copy" : "Move",
+			sub: single ? "<b>" + esc(names[0]) + "</b> \u2014 " + (copying ? "the full path to copy it to." : "the folder to move it into.") : "<b>" + names.length + "</b> items \u2014 the destination folder.",
+			label: copying && single ? "Destination path" : "Destination folder",
+			value: copying && single ? state.path + names[0] : state.path,
+			submit: copying ? "Copy" : "Move",
+			run: function (to, error) {
+				if (!to) {
+					error.textContent = "Enter a destination path.";
+					return;
+				}
+
+				if (!copying || !single) {
+					if (to.charAt(to.length - 1) !== "/") {
+						to += "/";
+					}
+				}
+
+				state.selection = {};
+				state.selecting = false;
+
+				send("/@next-index/api/" + kind, { path: state.path, names: names, to: to }, (copying ? "Copied " : "Moved ") + (single ? "\u201c" + names[0] + "\u201d" : names.length + " items"), error);
+			}
+		});
+
+		input.setSelectionRange(input.value.length, input.value.length);
+	}
+	function openDelete(names) {
+		if (!names.length) {
+			return;
+		}
+
+		if (!state.authenticated) {
+			openLogin("Sign in to delete files.");
+			return;
+		}
+
+		var single = names.length === 1;
+		var entry = single ? state.entries.filter(function (item) {
+			return item.name === names[0];
+		})[0] : null;
+		var type = entry ? typeOf(entry) : null;
+
+		var preview = names
+			.slice(0, 4)
+			.map(function (name) {
+				return "<span>" + esc(name) + "</span>";
+			})
+			.join("");
+
+		if (names.length > 4) {
+			preview += "<span>+" + (names.length - 4) + " more</span>";
+		}
+
+		openModal(
+			'<div class="dialog-head"><div><h2>Delete ' + (single ? (entry && entry.kind === "dir" ? "folder" : "file") : names.length + " items") + "?</h2></div>" +
+			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+			'<p class="sub">This action cannot be undone.</p>' +
+			'<div class="delete-target">' + (type ? '<span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span>" : "") + preview + "</div>" +
+			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
+			'<button type="button" class="btn btn-danger" id="confirm-delete">Delete</button></div>'
+		);
+
+		document.getElementById("confirm-delete").addEventListener("click", function () {
+			var button = this;
+			button.disabled = true;
+			button.textContent = "Deleting\u2026";
+
+			api("/@next-index/api/delete", {
+				method: "POST",
+				body: JSON.stringify({ path: state.path, names: names })
+			})
+				.then(function () {
+					closeModal();
+					state.selection = {};
+					state.selecting = false;
+					toast("success", single ? "Deleted \u201c" + names[0] + "\u201d" : "Deleted " + names.length + " items");
+					return refresh();
+				})
+				.catch(function (error) {
+					if (error.status === 401) {
+						handleError(error);
+						return;
+					}
+
+					button.disabled = false;
+					button.textContent = "Delete";
+					toast("error", error.message);
+				});
+		});
+	}
+
+
+	function openUpload(items) {
+		if (!state.writable) {
+			toast("error", "Write access is disabled. Run `next-index config -P` on the server to enable it.");
+			return;
+		}
+
+		if (!state.authenticated) {
+			openLogin("Sign in to upload files.");
+			return;
+		}
+
+		state.uploads = items ? items.slice() : [];
+		resetEnsuredDirectories();
+
+		openModal(
+			'<div class="dialog-head"><h2>Upload files</h2>' +
+			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+			'<p class="sub">Files go to <b>' + esc(state.path) + "</b></p>" +
+			'<div class="dropzone" id="dropzone">' + icon("upload") +
+			"<div><b>Drop files or folders here</b></div>" +
+			'<span>or <button type="button" class="link-btn" id="pick-files">choose files</button> · <button type="button" class="link-btn" id="pick-folder">choose a folder</button></span>' +
+			"<span>" + (state.maxUploadMB > 0 ? "Up to " + state.maxUploadMB + " MB per upload" : "No upload limit") + "</span></div>" +
+			'<input type="file" id="file-input" multiple hidden>' +
+			'<input type="file" id="folder-input" webkitdirectory hidden>' +
+			'<div class="file-list" id="file-list"></div>' +
+			'<div class="upload-meta"><label class="checkbox"><input type="checkbox" id="overwrite-checkbox"> Replace existing files</label>' +
+			'<span id="upload-summary"></span></div>' +
+			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
+			'<button type="button" class="btn btn-primary" id="start-upload" disabled>Upload</button></div>',
+			"wide"
+		);
+
+		var dropzone = document.getElementById("dropzone");
+		var fileInput = document.getElementById("file-input");
+		var folderInput = document.getElementById("folder-input");
+		var fileList = document.getElementById("file-list");
+		var startButton = document.getElementById("start-upload");
+
+		dropzone.addEventListener("click", function () {
+			fileInput.click();
+		});
+
+		document.getElementById("pick-files").addEventListener("click", function (event) {
+			event.stopPropagation();
+			fileInput.click();
+		});
+
+		document.getElementById("pick-folder").addEventListener("click", function (event) {
+			event.stopPropagation();
+			folderInput.click();
+		});
+
+		dropzone.addEventListener("dragover", function (event) {
+			event.preventDefault();
+			dropzone.classList.add("dragging");
+		});
+
+		dropzone.addEventListener("dragleave", function () {
+			dropzone.classList.remove("dragging");
+		});
+
+		dropzone.addEventListener("drop", function (event) {
+			event.preventDefault();
+			event.stopPropagation();
+			dropzone.classList.remove("dragging");
+
+			itemsFromDataTransfer(event.dataTransfer).then(function (items) {
+				addUploads(items);
+			});
+		});
+
+		fileInput.addEventListener("change", function () {
+			addUploads(filesToItems(fileInput.files));
+			fileInput.value = "";
+		});
+
+		folderInput.addEventListener("change", function () {
+			addUploads(filesToItems(folderInput.files));
+			folderInput.value = "";
+		});
+
+		fileList.addEventListener("click", function (event) {
+			var removeButton = event.target.closest("[data-remove]");
+
+			if (!removeButton) {
+				return;
+			}
+
+			event.stopPropagation();
+			state.uploads.splice(Number(removeButton.dataset.remove), 1);
+			renderUploadFiles();
+		});
+
+		startButton.addEventListener("click", startUpload);
+
+		renderUploadFiles();
+
+		function addUploads(newItems) {
+			if (!newItems || newItems.length === 0) {
+				return;
+			}
+
+			newItems.forEach(function (item) {
+				state.uploads.push(item);
+			});
+
+			renderUploadFiles();
+		}
+	}
+	function filesToItems(files) {
+		return Array.prototype.map.call(files || [], function (file) {
+			var relative = file.webkitRelativePath || "";
+			var slash = relative.lastIndexOf("/");
+
+			return {
+				file: file,
+				dir: slash > 0 ? relative.slice(0, slash) : ""
+			};
+		});
+	}
+	function itemsFromDataTransfer(dataTransfer) {
+		if (!dataTransfer) {
+			return Promise.resolve([]);
+		}
+
+		var items = dataTransfer.items ? Array.prototype.slice.call(dataTransfer.items) : [];
+		var entries = [];
+
+		items.forEach(function (item) {
+			if (item.kind !== "file" || !item.webkitGetAsEntry) {
+				return;
+			}
+
+			var entry = item.webkitGetAsEntry();
+
+			if (entry) {
+				entries.push(entry);
+			}
+		});
+
+		if (entries.length === 0) {
+			return Promise.resolve(filesToItems(dataTransfer.files));
+		}
+
+		var collected = [];
+
+		return walkEntries(entries, "").then(function () {
+			return collected;
+		});
+
+		function walkEntries(entryList, baseDirectory) {
+			return Promise.all(
+				entryList.map(function (entry) {
+					return new Promise(function (resolve) {
+						if (entry.isFile) {
+							entry.file(
+								function (file) {
+									collected.push({ file: file, dir: baseDirectory });
+									resolve();
+								},
+								function () {
+									resolve();
+								}
+							);
+							return;
+						}
+
+						if (entry.isDirectory) {
+							var reader = entry.createReader();
+							var directory = baseDirectory ? baseDirectory + "/" + entry.name : entry.name;
+							var readNext = function () {
+								reader.readEntries(
+									function (children) {
+										if (children.length === 0) {
+											resolve();
+											return;
+										}
+
+										walkEntries(children, directory).then(readNext);
+									},
+									function () {
+										resolve();
+									}
+								);
+							};
+
+							readNext();
+							return;
+						}
+
+						resolve();
+					});
+				})
+			);
+		}
+	}
+	async function ensureDirectory(relativeDirectory) {
+		if (!relativeDirectory) {
+			return state.path;
+		}
+
+		var segments = relativeDirectory.split("/").filter(Boolean);
+		var current = state.path;
+		var relative = "";
+
+		for (var index = 0; index < segments.length; index++) {
+			var segment = segments[index];
+			relative += (relative ? "/" : "") + segment;
+
+			if (!ensuredDirectories[relative]) {
+				try {
+					await api("/@next-index/api/mkdir", {
+						method: "POST",
+						body: JSON.stringify({ path: current, name: segment })
+					});
+				} catch (error) {
+					if (error.status !== 409) {
+						throw error;
+					}
+				}
+
+				ensuredDirectories[relative] = true;
+			}
+
+			current = joinPath(current, segment);
+		}
+
+		return current;
+	}
+	function renderUploadFiles() {
+		var fileList = document.getElementById("file-list");
+		var startButton = document.getElementById("start-upload");
+		var summary = document.getElementById("upload-summary");
+
+		if (!fileList) {
+			return;
+		}
+
+		fileList.innerHTML = state.uploads
+			.map(function (item, index) {
+				var label = (item.dir ? item.dir + "/" : "") + item.file.name;
+
+				return (
+					'<div class="file-row" data-index="' + index + '">' +
+					'<span class="fname" title="' + esc(label) + '">' + esc(label) + "</span>" +
+					'<span class="fsize">' + formatSize(item.file.size) + "</span>" +
+					'<div class="file-progress"><span></span></div>' +
+					'<button type="button" class="row-action" data-remove="' + index + '" title="Remove" aria-label="Remove">' + icon("x") + "</button>" +
+					"</div>"
+				);
+			})
+			.join("");
+
+		var total = state.uploads.reduce(function (sum, item) {
+			return sum + item.file.size;
+		}, 0);
+
+		summary.textContent = state.uploads.length === 0 ? "No files selected" : state.uploads.length + " " + plural(state.uploads.length, "file", "files") + " · " + formatSize(total);
+		startButton.disabled = state.uploads.length === 0 || state.uploading;
+		startButton.textContent = state.uploading ? "Uploading…" : "Upload";
+	}
+	function startUpload() {
+		if (state.uploading || state.uploads.length === 0) {
+			return;
+		}
+
+		state.uploading = true;
+
+		var startButton = document.getElementById("start-upload");
+		var overwriteCheckbox = document.getElementById("overwrite-checkbox");
+		var overwrite = overwriteCheckbox ? overwriteCheckbox.checked : false;
+
+		renderUploadFiles();
+
+		var success = 0;
+		var failed = 0;
+
+		var chain = Promise.resolve();
+
+		state.uploads.forEach(function (item, index) {
+			chain = chain.then(function () {
+				var row = document.querySelector('.file-row[data-index="' + index + '"]');
+				var progress = row ? row.querySelector(".file-progress span") : null;
+				var label = (item.dir ? item.dir + "/" : "") + item.file.name;
+
+				return ensureDirectory(item.dir)
+					.then(function (targetPath) {
+						return uploadFile(item.file, targetPath, overwrite, function (ratio) {
+							if (progress) {
+								progress.style.width = Math.round(ratio * 100) + "%";
+							}
+						});
+					})
+					.then(function (result) {
+						var uploaded = result.files && result.files[0];
+
+						if (uploaded && uploaded.ok === false) {
+							throw new Error(uploaded.error || "upload failed");
+						}
+
+						success++;
+						if (row) {
+							row.classList.add("done");
+						}
+						if (progress) {
+							progress.style.width = "100%";
+						}
+					})
+					.catch(function (error) {
+						failed++;
+						if (row) {
+							row.classList.add("failed");
+						}
+						if (progress) {
+							progress.style.width = "100%";
+						}
+						toast("error", label + ": " + error.message);
+					});
+			});
+		});
+
+		chain
+			.then(function () {
+				state.uploading = false;
+				state.uploads = [];
+				startButton.disabled = true;
+				startButton.textContent = "Upload";
+				return refresh();
+			})
+			.then(function () {
+				closeModal();
+
+				if (success > 0) {
+					toast("success", "Uploaded " + success + " " + plural(success, "file", "files"));
+				}
+
+				if (failed > 0 && success === 0) {
+					toast("error", "No files were uploaded.");
+				}
+			});
+	}
+	function uploadFile(file, targetPath, overwrite, onProgress) {
+		return new Promise(function (resolve, reject) {
+			var request = new XMLHttpRequest();
+			var query = "?path=" + encodeURIComponent(targetPath) + (overwrite ? "&overwrite=1" : "");
+
+			request.open("POST", "/@next-index/api/upload" + query);
+			request.withCredentials = true;
+
+			request.upload.addEventListener("progress", function (event) {
+				if (event.lengthComputable && onProgress) {
+					onProgress(event.loaded / event.total);
+				}
+			});
+
+			request.addEventListener("load", function () {
+				var data = {};
+
+				try {
+					data = JSON.parse(request.responseText);
+				} catch (error) {
+					/* ignore */
+				}
+
+				if (request.status >= 200 && request.status < 300) {
+					resolve(data);
+					return;
+				}
+
+				var error = new Error(data.error || "upload failed (" + request.status + ")");
+				error.status = request.status;
+				reject(error);
+			});
+
+			request.addEventListener("error", function () {
+				reject(new Error("network error"));
+			});
+
+			var form = new FormData();
+			form.append("file", file, file.name);
+			request.send(form);
+		});
+	}
+	var dragDepth = 0;
+	var dropOverlay = null;
+	function bindDropEvents() {
+		window.addEventListener("dragenter", function (event) {
+			if (!hasFiles(event)) {
+				return;
+			}
+
+			event.preventDefault();
+			dragDepth++;
+
+			if (state.writable && state.authenticated) {
+				showDropOverlay();
+			}
+		});
+
+		window.addEventListener("dragover", function (event) {
+			if (hasFiles(event)) {
+				event.preventDefault();
+			}
+		});
+
+		window.addEventListener("dragleave", function () {
+			dragDepth = Math.max(0, dragDepth - 1);
+
+			if (dragDepth === 0) {
+				hideDropOverlay();
+			}
+		});
+
+		window.addEventListener("drop", function (event) {
+			if (!hasFiles(event)) {
+				return;
+			}
+
+			event.preventDefault();
+			dragDepth = 0;
+			hideDropOverlay();
+
+			if (!state.writable || !state.authenticated) {
+				openLogin("Sign in to upload files.");
+				return;
+			}
+
+			itemsFromDataTransfer(event.dataTransfer).then(function (items) {
+				if (items.length > 0) {
+					openUpload(items);
+				}
+			});
+		});
+	}
+	function hasFiles(event) {
+		return !!event.dataTransfer && Array.prototype.indexOf.call(event.dataTransfer.types, "Files") !== -1;
+	}
+	function showDropOverlay() {
+		if (dropOverlay) {
+			return;
+		}
+
+		dropOverlay = document.createElement("div");
+		dropOverlay.className = "drop-overlay";
+		dropOverlay.innerHTML =
+			'<div class="drop-overlay-inner">' + icon("upload") + "<strong>Drop files or folders to upload</strong><span>They will be added to this folder</span></div>";
+		document.body.appendChild(dropOverlay);
+	}
+	function hideDropOverlay() {
+		if (dropOverlay) {
+			dropOverlay.remove();
+			dropOverlay = null;
+		}
+	}
+
+
+	if (state) {
+		bindEvents();
+		renderTopbar();
+		renderCrumbs();
+		renderSummary();
+		renderListing();
+		renderFooter();
+	}
+	function bindEvents() {
+		window.addEventListener("resize", function () {
+			fitSummary();
+		});
+
+		summaryActions.addEventListener("click", function (event) {
+			var viewButton = event.target.closest("[data-view]");
+
+			if (viewButton) {
+				setView(viewButton.dataset.view);
+				return;
+			}
+
+			var actionButton = event.target.closest("[data-action]");
+
+			if (actionButton) {
+				handleAction(actionButton.dataset.action);
+			}
+		});
+
+		listing.addEventListener("click", function (event) {
+			var sortButton = event.target.closest("[data-sort]");
+
+			if (sortButton) {
+				toggleSort(sortButton.dataset.sort);
+				return;
+			}
+
+			var checkbox = event.target.closest("[data-select]");
+
+			if (checkbox) {
+				event.stopPropagation();
+				state.selection[checkbox.dataset.select] = checkbox.checked;
+
+				var item = checkbox.closest("tr, .tile");
+
+				if (item) {
+					item.classList.toggle("selected", checkbox.checked);
+				}
+
+				renderSummary();
+				return;
+			}
+
+			if (event.target.closest("#select-all")) {
+				toggleSelectAll();
+				return;
+			}
+
+			if (state.selecting) {
+				var target = event.target.closest("tr[data-name], .tile[data-name]");
+
+				if (target) {
+					event.preventDefault();
+
+					var known = state.entries.some(function (entry) {
+						return entry.name === target.dataset.name;
+					});
+
+					if (known) {
+						toggleSelect(target.dataset.name);
+					}
+
+					return;
+				}
+			}
+
+			var menuButton = event.target.closest("[data-menu]");
+
+			if (menuButton) {
+				event.preventDefault();
+				event.stopPropagation();
+				openMenu(menuButton);
+				return;
+			}
+
+			var action = event.target.closest("[data-action]");
+
+			if (action) {
+				event.preventDefault();
+				event.stopPropagation();
+				handleAction(action.dataset.action, action.dataset.name);
+				return;
+			}
+
+			if (event.target.closest("button, a, input, label")) {
+				return;
+			}
+
+			var row = event.target.closest("tr[data-href]");
+
+			if (row) {
+				window.location.href = row.dataset.href;
+			}
+		});
+
+		document.addEventListener("keydown", function (event) {
+			if (event.key === "Escape") {
+				closeMenu();
+				closeModal();
+				hideDropOverlay();
+				return;
+			}
+
+			if (event.ctrlKey || event.metaKey || event.altKey) {
+				return;
+			}
+
+			var target = event.target;
+			var tag = (target.tagName || "").toLowerCase();
+
+			if (tag === "input" || tag === "textarea" || tag === "select" || target.isContentEditable) {
+				return;
+			}
+
+			if (event.key === "u" || event.key === "U") {
+				openUpload();
+			} else if (event.key === "n" || event.key === "N") {
+				openMkdir();
+			} else if (event.key === "g" || event.key === "G") {
+				setView(state.view === "grid" ? "list" : "grid");
+			}
+		});
+
+		document.addEventListener("click", function (event) {
+			var item = event.target.closest("#row-menu [data-action]");
+
+			if (item) {
+				closeMenu();
+				handleAction(item.dataset.action, item.dataset.name);
+				return;
+			}
+
+			if (!event.target.closest("#row-menu")) {
+				closeMenu();
+			}
+		});
+
+		bindDropEvents();
+	}
+
+})();

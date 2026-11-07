@@ -152,9 +152,10 @@ place, so a failed upload never leaves a partial file.
 
 `web/js` and `web/css` hold the sources; `web/app.js` and `web/main.css` are
 build output committed to the tree because `//go:embed web` takes whatever is
-there at compile time. Run `npm run build` inside `web/` after changing a
-source file: webpack bundles `js/main.js` into `app.js`, and the same command
-concatenates the stylesheets into `main.css` in cascade order.
+there at compile time. Run `web/build.sh` after changing a source file: it
+wraps the modules in one IIFE in dependency order, drops the `import`/`export`
+keywords, and concatenates the stylesheets in cascade order. The output is
+plain readable JavaScript, not a minified bundle.
 
 `web/index.html` is a `html/template` with two slots: the title and a JSON
 bootstrap document. It loads three assets:
