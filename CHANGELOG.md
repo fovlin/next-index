@@ -3,6 +3,20 @@
 All notable changes to NEXT_INDEX are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## 0.0.9-beta - 2026-11-08
+
+### Removed
+
+- Drag and drop in the upload dialog. The dialog is a file picker now: choose
+  files, or choose a folder and keep its structure.
+- The dimmed file extension: a name is one colour again, and `nameMarkup` no
+  longer has to split it.
+
+### Changed
+
+- Renaming selects the whole name, extension included.
+- The select column sits closer to the name: 10px before the box, 6px after it.
+
 ## 0.0.8-beta - 2026-11-07
 
 ### Added
