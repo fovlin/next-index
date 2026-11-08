@@ -681,13 +681,14 @@ th.sorted.desc .arrow {
 
 .table th.col-select,
 .table td.col-select {
-	width: 30px;
+	width: 22px;
 	padding-right: 0;
+	padding-left: 6px;
 }
 
 .table th.col-select + th,
 .table td.col-select + td {
-	padding-left: 6px;
+	padding-left: 4px;
 }
 
 .col-select input,
