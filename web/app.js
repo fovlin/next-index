@@ -49,6 +49,16 @@
 				renderTopbar();
 			});
 		}
+
+		window.addEventListener("storage", function (event) {
+			if (event.key !== null && event.key !== "next-index-theme") {
+				return;
+			}
+
+			state.theme = event.newValue === "light" || event.newValue === "dark" ? event.newValue : "";
+			applyTheme();
+			renderTopbar();
+		});
 	}
 
 	function systemTheme() {
