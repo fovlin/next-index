@@ -1052,14 +1052,6 @@
 		});
 
 		input.select();
-
-		if (entry.kind === "file") {
-			var dot = entry.name.lastIndexOf(".");
-
-			if (dot > 0) {
-				input.setSelectionRange(0, dot);
-			}
-		}
 	}
 	function openTransfer(kind, names) {
 		if (!names.length) {
