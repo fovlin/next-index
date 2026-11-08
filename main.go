@@ -329,7 +329,7 @@ options:
   -r, --root <dir>       root directory for run/config
   -u, --user <name>      username for run/config
   -P, --password <pass>  password for run/config (hashed; leaks into shell history)
-  -x, --max-size <mb>    max upload size in megabytes (0 for no limit)
+  -x, --max-size <mb>    max upload size in megabytes (default: 1024, 0 for no limit)
   -q, --quiet            do not log every request
   -o, --cross-origin <origin>  exact Origin allowed to call the API (experimental)
   -c, --color            colored log output

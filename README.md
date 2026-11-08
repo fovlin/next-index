@@ -53,7 +53,7 @@ next-index [command] [options] [root]
 | `-r, --root <dir>` | directory to serve |
 | `-u, --user <name>` | username for writes (default `admin`) |
 | `-P, --password <pass>` | password for writes, hashed before storing (ends up in shell history) |
-| `-x, --max-size <mb>` | upload limit in MiB, `0` means no limit |
+| `-x, --max-size <mb>` | upload limit in MiB (default `1024`), `0` means no limit |
 | `-o, --cross-origin <origin>` | exact Origin allowed to call the API |
 | `-q, --quiet` | do not log every request |
 | `-c, --color` | colored log output |
@@ -76,7 +76,7 @@ Keys to press: `g` toggles list and grid, `u` uploads, `n` creates a folder,
 | `title` | site title in the header and page title |
 | `username`, `password` | credentials required for writes, password stored as a SHA-256 hex hash |
 | `tls` | enable HTTPS with a certificate and key path |
-| `max_upload_mb` | maximum upload size in MiB, `0` means no limit |
+| `max_upload_mb` | maximum upload size in MiB (default `1024`), `0` means no limit |
 | `allow_origin` | exact Origin allowed for cross-origin API calls |
 
 Missing fields are filled with the defaults on load.
