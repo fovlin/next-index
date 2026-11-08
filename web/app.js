@@ -28,6 +28,11 @@
 		var storedTheme = localStorage.getItem("next-index-theme");
 		state.theme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "";
 
+		if (state.theme === systemTheme()) {
+			state.theme = "";
+			localStorage.removeItem("next-index-theme");
+		}
+
 		if (parameters.get("view") === "grid" || parameters.get("view") === "list") {
 			state.view = parameters.get("view");
 		}
@@ -42,23 +47,40 @@
 		state.selection = {};
 		state.selecting = false;
 
-		if (state.theme) {
-			document.documentElement.dataset.theme = state.theme;
+		applyTheme();
+
+		if (window.matchMedia) {
+			window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
+				if (state.theme === systemTheme()) {
+					state.theme = "";
+					localStorage.removeItem("next-index-theme");
+					applyTheme();
+				}
+
+				renderTopbar();
+			});
 		}
 	}
 
-	// Until the visitor picks a theme the page follows the system preference, which
-	// is what the light-dark() tokens resolve to.
+	function systemTheme() {
+		if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+			return "dark";
+		}
+
+		return "light";
+	}
+
 	function currentTheme() {
+		return state.theme || systemTheme();
+	}
+
+	function applyTheme() {
 		if (state.theme) {
-			return state.theme;
+			document.documentElement.dataset.theme = state.theme;
+			return;
 		}
 
-		if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
-			return "light";
-		}
-
-		return "dark";
+		delete document.documentElement.dataset.theme;
 	}
 
 	var FOLDER = '<path d="M5.5 4.75h4.3c.6 0 1.15.25 1.55.7l.9 1.05H18.5A2.5 2.5 0 0 1 21 9v7.75a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.75V7.25a2.5 2.5 0 0 1 2.5-2.5Z"/>';
@@ -886,9 +908,17 @@
 		renderListing();
 	}
 	function toggleTheme() {
-		state.theme = currentTheme() === "dark" ? "light" : "dark";
-		document.documentElement.dataset.theme = state.theme;
-		localStorage.setItem("next-index-theme", state.theme);
+		var next = currentTheme() === "dark" ? "light" : "dark";
+
+		if (next === systemTheme()) {
+			state.theme = "";
+			localStorage.removeItem("next-index-theme");
+		} else {
+			state.theme = next;
+			localStorage.setItem("next-index-theme", next);
+		}
+
+		applyTheme();
 		renderTopbar();
 	}
 	function openLogin(message) {
