@@ -681,9 +681,9 @@ th.sorted.desc .arrow {
 
 .table th.col-select,
 .table td.col-select {
-	width: 22px;
+	width: 26px;
 	padding-right: 0;
-	padding-left: 6px;
+	padding-left: 10px;
 }
 
 .table th.col-select + th,
