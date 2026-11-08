@@ -745,19 +745,7 @@
 		);
 	}
 	function nameMarkup(entry) {
-		var name = entry.name;
-
-		if (entry.kind !== "file") {
-			return esc(name);
-		}
-
-		var dot = name.lastIndexOf(".");
-
-		if (dot <= 0 || dot === name.length - 1) {
-			return esc(name);
-		}
-
-		return esc(name.slice(0, dot)) + '<span class="entry-ext">' + esc(name.slice(dot)) + "</span>";
+		return esc(entry.name);
 	}
 	function menuMarkup(entry) {
 		if (state.selecting || entry.kind === "parent") {

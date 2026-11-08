@@ -614,10 +614,6 @@ th.sorted.desc .arrow {
 	text-overflow: ellipsis;
 }
 
-.entry-ext {
-	color: var(--faint);
-}
-
 .badge {
 	flex: 0 0 auto;
 	padding: 0 4px;
