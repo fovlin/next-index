@@ -1109,8 +1109,7 @@ th.sorted.desc .arrow {
 	cursor: pointer;
 }
 
-.dropzone:hover,
-.dropzone.dragging {
+.dropzone:hover {
 	border-color: var(--accent);
 }
 

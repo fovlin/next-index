@@ -1178,8 +1178,8 @@
 			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
 			'<p class="sub">Files go to <b>' + esc(state.path) + "</b></p>" +
 			'<div class="dropzone" id="dropzone">' + icon("upload") +
-			"<div><b>Drop files here</b></div>" +
-			'<span>or <button type="button" class="link-btn" id="pick-files">choose files</button> · <button type="button" class="link-btn" id="pick-folder">choose a folder</button></span>' +
+			"<div><b>Choose what to upload</b></div>" +
+			'<span><button type="button" class="link-btn" id="pick-files">files</button> · <button type="button" class="link-btn" id="pick-folder">a folder</button></span>' +
 			"<span>" + (state.maxUploadMB > 0 ? "Up to " + state.maxUploadMB + " MB per upload" : "No upload limit") + "</span></div>" +
 			'<input type="file" id="file-input" multiple hidden>' +
 			'<input type="file" id="folder-input" webkitdirectory hidden>' +
@@ -1209,23 +1209,6 @@
 		document.getElementById("pick-folder").addEventListener("click", function (event) {
 			event.stopPropagation();
 			folderInput.click();
-		});
-
-		dropzone.addEventListener("dragover", function (event) {
-			event.preventDefault();
-			dropzone.classList.add("dragging");
-		});
-
-		dropzone.addEventListener("dragleave", function () {
-			dropzone.classList.remove("dragging");
-		});
-
-		dropzone.addEventListener("drop", function (event) {
-			event.preventDefault();
-			event.stopPropagation();
-			dropzone.classList.remove("dragging");
-
-			addUploads(filesToItems(event.dataTransfer.files));
 		});
 
 		fileInput.addEventListener("change", function () {
