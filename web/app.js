@@ -28,11 +28,6 @@
 		var storedTheme = localStorage.getItem("next-index-theme");
 		state.theme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "";
 
-		if (state.theme === systemTheme()) {
-			state.theme = "";
-			localStorage.removeItem("next-index-theme");
-		}
-
 		if (parameters.get("view") === "grid" || parameters.get("view") === "list") {
 			state.view = parameters.get("view");
 		}
@@ -51,12 +46,6 @@
 
 		if (window.matchMedia) {
 			window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
-				if (state.theme === systemTheme()) {
-					state.theme = "";
-					localStorage.removeItem("next-index-theme");
-					applyTheme();
-				}
-
 				renderTopbar();
 			});
 		}
