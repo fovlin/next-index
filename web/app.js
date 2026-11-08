@@ -278,14 +278,6 @@
 	function plural(count, singular, many) {
 		return count === 1 ? singular : many;
 	}
-	function joinPath(base, name) {
-		if (!base.endsWith("/")) {
-			base += "/";
-		}
-
-		return base + name + "/";
-	}
-
 
 	function openMenu(button) {
 		closeMenu();
@@ -449,8 +441,7 @@
 
 				state.selection = kept;
 
-				renderSummary();
-				renderListing();
+				renderBody();
 				renderFooter();
 				return result;
 			})
@@ -465,10 +456,7 @@
 		if (error.status === 401) {
 			state.authenticated = false;
 			state.username = "";
-			renderTopbar();
-			renderSummary();
-			renderListing();
-			renderFooter();
+			renderPage();
 			openLogin("Your session expired. Sign in again to manage files.");
 			return;
 		}
@@ -723,22 +711,29 @@
 			'<div class="grid">' + lastPage + entries.map(itemMarkup).join("") + "</div>"
 		);
 	}
+	function entryTag(entry) {
+		if (state.selecting) {
+			return ["div", ""];
+		}
+
+		return ["a", ' href="' + esc(entry.href) + '"'];
+	}
+
 	function rowMarkup(entry) {
 		var type = typeOf(entry);
 		var size = entry.kind === "file" ? formatSize(entry.size) : "—";
-		var tag = state.selecting ? "div" : "a";
-		var hrefAttr = state.selecting ? "" : ' href="' + esc(entry.href) + '"';
+		var link = entryTag(entry);
 
 		return (
 			'<tr' + (state.selection[entry.name] ? ' class="selected"' : "") + ' data-name="' + esc(entry.name) + '" data-href="' + esc(entry.href) + '">' +
 			(state.selecting ? '<td class="col-select">' + selectMarkup(entry) + "</td>" : "") +
 			"<td>" +
-			'<' + tag + ' class="entry"' + hrefAttr + '>' +
+			'<' + link[0] + ' class="entry"' + link[1] + '>' +
 			'<span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span>" +
 			'<span class="name-wrap"><span class="entry-name">' + nameMarkup(entry) + "</span>" +
 			(entry.link ? '<span class="badge">link</span>' : "") +
 			"</span>" +
-			"</" + tag + ">" +
+			"</" + link[0] + ">" +
 			"</td>" +
 			'<td class="col-size size" title="' + (entry.kind === "file" ? entry.size + " bytes" : "") + '">' + size + "</td>" +
 			'<td class="col-time time" title="' + esc(formatFull(entry.mod)) + '">' + esc(formatDate(entry.mod)) + '<small>' + esc(formatTime(entry.mod)) + '</small></td>' +
@@ -748,19 +743,18 @@
 	}
 	function itemMarkup(entry) {
 		var type = typeOf(entry);
-		var tag = state.selecting ? "div" : "a";
-		var hrefAttr = state.selecting ? "" : ' href="' + esc(entry.href) + '"';
+		var link = entryTag(entry);
 		var menu = menuMarkup(entry);
 		var thumb = '<div class="thumb"><span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span></div>";
 
 		return (
 			'<div class="tile' + (state.selection[entry.name] ? " selected" : "") + '" data-name="' + esc(entry.name) + '">' +
 			(state.selecting ? '<span class="tile-select">' + selectMarkup(entry) + "</span>" : "") +
-			'<' + tag + ' class="tile-main"' + hrefAttr + '>' +
+			'<' + link[0] + ' class="tile-main"' + link[1] + '>' +
 			thumb +
 			'<span class="tile-name" title="' + esc(entry.name) + '">' + esc(entry.name) + "</span>" +
 			'<span class="tile-meta"><span>' + formatDate(entry.mod) + "</span><span>" + formatTime(entry.mod) + "</span></span>" +
-			"</" + tag + ">" +
+			"</" + link[0] + ">" +
 			(menu ? '<div class="tile-actions row-actions">' + menu + "</div>" : "") +
 			"</div>"
 		);
@@ -789,6 +783,19 @@
 
 		footer.innerHTML =
 			'<div class="footer-side">' + status + '<span class="mono">' + location + "</span></div>";
+	}
+
+	function renderBody() {
+		renderSummary();
+		renderListing();
+	}
+
+	function renderPage() {
+		renderTopbar();
+		renderCrumbs();
+		renderSummary();
+		renderListing();
+		renderFooter();
 	}
 
 
@@ -820,8 +827,7 @@
 				state.selection = {};
 			}
 
-			renderSummary();
-			renderListing();
+			renderBody();
 			return;
 		}
 
@@ -870,8 +876,7 @@
 			state.selection[name] = true;
 		}
 
-		renderSummary();
-		renderListing();
+		renderBody();
 	}
 	function toggleSelectAll() {
 		var entries = visibleEntries();
@@ -887,8 +892,7 @@
 			}
 		});
 
-		renderSummary();
-		renderListing();
+		renderBody();
 	}
 	function toggleSort(key) {
 		if (state.sort.key === key) {
@@ -903,8 +907,7 @@
 	function setView(view) {
 		state.view = view === "grid" ? "grid" : "list";
 		localStorage.setItem("next-index-view", state.view);
-		renderSummary();
-		renderListing();
+		renderBody();
 	}
 	function toggleTheme() {
 		var next = currentTheme() === "dark" ? "light" : "dark";
@@ -975,10 +978,7 @@
 					state.authenticated = true;
 					state.username = result.username || username;
 					closeModal();
-					renderTopbar();
-					renderSummary();
-					renderListing();
-					renderFooter();
+					renderPage();
 					toast("success", "Signed in as " + state.username);
 				})
 				.catch(function (error) {
@@ -998,10 +998,7 @@
 			.then(function () {
 				state.authenticated = false;
 				state.username = "";
-				renderTopbar();
-				renderSummary();
-				renderListing();
-				renderFooter();
+				renderPage();
 				toast("success", "Signed out.");
 			});
 	}
@@ -1445,11 +1442,7 @@
 	}
 	if (state) {
 		bindEvents();
-		renderTopbar();
-		renderCrumbs();
-		renderSummary();
-		renderListing();
-		renderFooter();
+		renderPage();
 	}
 	function bindEvents() {
 		window.addEventListener("resize", function () {
