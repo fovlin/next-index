@@ -15,11 +15,7 @@
 
 	var LOCALE = "en-US";
 
-	var ensuredDirectories = {};
 
-	function resetEnsuredDirectories() {
-		ensuredDirectories = {};
-	}
 
 	if (state) {
 		state.entries = Array.isArray(state.entries) ? state.entries : [];
@@ -1279,18 +1275,15 @@
 		}
 
 		state.uploads = [];
-		resetEnsuredDirectories();
 
 		openModal(
 			'<div class="dialog-head"><h2>Upload files</h2>' +
 			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
 			'<p class="sub">Files go to <b>' + esc(state.path) + "</b></p>" +
 			'<div class="dropzone" id="dropzone">' + icon("upload") +
-			"<div><b>Choose what to upload</b></div>" +
-			'<span><button type="button" class="link-btn" id="pick-files">files</button> · <button type="button" class="link-btn" id="pick-folder">a folder</button></span>' +
+			"<div><b>Choose files to upload</b></div>" +
 			"<span>" + (state.maxUploadMB > 0 ? "Up to " + state.maxUploadMB + " MB per upload" : "No upload limit") + "</span></div>" +
 			'<input type="file" id="file-input" multiple hidden>' +
-			'<input type="file" id="folder-input" webkitdirectory hidden>' +
 			'<div class="file-list" id="file-list"></div>' +
 			'<div class="upload-meta"><label class="checkbox"><input type="checkbox" id="overwrite-checkbox"> Replace existing files</label>' +
 			'<span id="upload-summary"></span></div>' +
@@ -1301,7 +1294,6 @@
 
 		var dropzone = document.getElementById("dropzone");
 		var fileInput = document.getElementById("file-input");
-		var folderInput = document.getElementById("folder-input");
 		var fileList = document.getElementById("file-list");
 		var startButton = document.getElementById("start-upload");
 
@@ -1309,24 +1301,9 @@
 			fileInput.click();
 		});
 
-		document.getElementById("pick-files").addEventListener("click", function (event) {
-			event.stopPropagation();
-			fileInput.click();
-		});
-
-		document.getElementById("pick-folder").addEventListener("click", function (event) {
-			event.stopPropagation();
-			folderInput.click();
-		});
-
 		fileInput.addEventListener("change", function () {
-			addUploads(filesToItems(fileInput.files));
+			addUploads(fileInput.files);
 			fileInput.value = "";
-		});
-
-		folderInput.addEventListener("change", function () {
-			addUploads(filesToItems(folderInput.files));
-			folderInput.value = "";
 		});
 
 		fileList.addEventListener("click", function (event) {
@@ -1345,28 +1322,17 @@
 
 		renderUploadFiles();
 
-		function addUploads(newItems) {
-			if (!newItems || newItems.length === 0) {
+		function addUploads(files) {
+			if (!files || files.length === 0) {
 				return;
 			}
 
-			newItems.forEach(function (item) {
-				state.uploads.push(item);
+			Array.prototype.forEach.call(files, function (file) {
+				state.uploads.push(file);
 			});
 
 			renderUploadFiles();
 		}
-	}
-	function filesToItems(files) {
-		return Array.prototype.map.call(files || [], function (file) {
-			var relative = file.webkitRelativePath || "";
-			var slash = relative.lastIndexOf("/");
-
-			return {
-				file: file,
-				dir: slash > 0 ? relative.slice(0, slash) : ""
-			};
-		});
 	}
 	function renderUploadFiles() {
 		var fileList = document.getElementById("file-list");
@@ -1379,12 +1345,12 @@
 
 		fileList.innerHTML = state.uploads
 			.map(function (item, index) {
-				var label = (item.dir ? item.dir + "/" : "") + item.file.name;
+				var label = item.name;
 
 				return (
 					'<div class="file-row" data-index="' + index + '">' +
 					'<span class="fname" title="' + esc(label) + '">' + esc(label) + "</span>" +
-					'<span class="fsize">' + formatSize(item.file.size) + "</span>" +
+					'<span class="fsize">' + formatSize(item.size) + "</span>" +
 					'<div class="file-progress"><span></span></div>' +
 					'<button type="button" class="row-action" data-remove="' + index + '" title="Remove" aria-label="Remove">' + icon("x") + "</button>" +
 					"</div>"
@@ -1393,7 +1359,7 @@
 			.join("");
 
 		var total = state.uploads.reduce(function (sum, item) {
-			return sum + item.file.size;
+			return sum + item.size;
 		}, 0);
 
 		summary.textContent = state.uploads.length === 0 ? "No files selected" : state.uploads.length + " " + plural(state.uploads.length, "file", "files") + " · " + formatSize(total);
@@ -1422,16 +1388,13 @@
 			chain = chain.then(function () {
 				var row = document.querySelector('.file-row[data-index="' + index + '"]');
 				var progress = row ? row.querySelector(".file-progress span") : null;
-				var label = (item.dir ? item.dir + "/" : "") + item.file.name;
+				var label = item.name;
 
-				return ensureDirectory(item.dir)
-					.then(function (targetPath) {
-						return uploadFile(item.file, targetPath, overwrite, function (ratio) {
-							if (progress) {
-								progress.style.width = Math.round(ratio * 100) + "%";
-							}
-						});
-					})
+				return uploadFile(item, state.path, overwrite, function (ratio) {
+					if (progress) {
+						progress.style.width = Math.round(ratio * 100) + "%";
+					}
+				})
 					.then(function (result) {
 						var uploaded = result.files && result.files[0];
 

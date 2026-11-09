@@ -1262,22 +1262,6 @@ th.sorted.desc .arrow {
 	accent-color: var(--accent);
 }
 
-.link-btn {
-	padding: 0;
-	border: 0;
-	background: none;
-	color: var(--link);
-	font: inherit;
-	font-size: inherit;
-	cursor: pointer;
-	text-decoration: underline;
-	text-underline-offset: 2px;
-}
-
-.link-btn:hover {
-	color: var(--accent-hover);
-}
-
 /* toasts */
 
 .toast-root {
