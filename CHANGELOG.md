@@ -3,6 +3,16 @@
 All notable changes to NEXT_INDEX are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## 0.0.10-beta - 2026-11-09
+
+### Added
+
+- `-f, --force-login`: anonymous visitors are sent to
+  `/@next-index/login`, which keeps the requested path in `next`, and the list
+  API answers `401`. Signing in returns to where they were going.
+- `-s, --tls`, `--tls-cert` and `--tls-key` write the TLS settings that until
+  now you could only edit in the config file.
+
 ## 0.0.9-beta - 2026-11-08
 
 ### Removed
