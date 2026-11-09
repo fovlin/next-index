@@ -33,7 +33,6 @@ type bootstrapData struct {
 	Authenticated bool    `json:"authenticated"`
 	LoginRequired bool    `json:"loginRequired,omitempty"`
 	Username      string  `json:"username,omitempty"`
-	Writable      bool    `json:"writable"`
 	Version       string  `json:"version"`
 	MaxUploadMB   int64   `json:"maxUploadMB"`
 	Now           int64   `json:"now"`
@@ -55,8 +54,7 @@ func (server *Server) renderPage(w http.ResponseWriter, r *http.Request, list *l
 		Crumbs:        list.Crumbs,
 		Entries:       list.Entries,
 		Authenticated: authenticated,
-		LoginRequired: server.Config.ForceLogin && server.Config.writable(),
-		Writable:      server.Config.writable(),
+		LoginRequired: server.Config.ForceLogin,
 		Version:       version,
 		MaxUploadMB:   server.Config.MaxUploadMB,
 		Now:           time.Now().Unix(),

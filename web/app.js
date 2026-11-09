@@ -524,10 +524,8 @@
 		if (state.authenticated) {
 			logoutMarkup = '<button class="btn btn-sm" id="logout-btn" title="Sign out" aria-label="Sign out">' + icon("logout") + "<span>Sign out</span></button>";
 			authMarkup = '<button class="btn btn-primary" id="upload-btn" title="Upload files" aria-label="Upload files">' + icon("upload") + "<span>Upload</span></button>";
-		} else if (state.writable) {
-			authMarkup = '<button class="btn btn-primary" id="login-btn" title="Sign in" aria-label="Sign in">' + icon("login") + "<span>Sign in</span></button>";
 		} else {
-			authMarkup = '<span class="readonly-chip">' + icon("lock") + "read only</span>";
+			authMarkup = '<button class="btn btn-primary" id="login-btn" title="Sign in" aria-label="Sign in">' + icon("login") + "<span>Sign in</span></button>";
 		}
 
 		topbar.innerHTML =
@@ -652,9 +650,7 @@
 				'<button class="btn" data-action="back">' + icon("parent") + "<span>Back</span></button>" +
 				(state.authenticated
 					? '<button class="btn btn-primary" data-action="upload">' + icon("upload") + "<span>Upload files</span></button>"
-					: state.writable
-						? '<button class="btn btn-primary" data-action="login">' + icon("login") + "<span>Sign in to upload</span></button>"
-						: "") +
+					: '<button class="btn btn-primary" data-action="login">' + icon("login") + "<span>Sign in to upload</span></button>") +
 				"</div></div>";
 			return;
 		}
@@ -776,16 +772,8 @@
 		return '<button class="row-action" data-menu="' + esc(entry.name) + '" title="More" aria-label="More">' + icon("more") + "</button>";
 	}
 	function renderFooter() {
-		var status = state.authenticated ? '<span class="status-dot" title="Signed in"></span>' : '<span class="status-dot locked" title="Read only"></span>';
-		var location;
-
-		if (state.authenticated) {
-			location = "signed in as: " + esc(state.username);
-		} else if (state.writable) {
-			location = "sign in to manage files";
-		} else {
-			location = "read only · uploads are disabled on this server";
-		}
+		var status = state.authenticated ? '<span class="status-dot" title="Signed in"></span>' : '<span class="status-dot locked" title="Not signed in"></span>';
+		var location = state.authenticated ? "signed in as: " + esc(state.username) : "sign in to manage files";
 
 		footer.innerHTML =
 			'<div class="footer-side">' + status + '<span class="mono">' + location + "</span></div>";
@@ -1032,11 +1020,6 @@
 	}
 
 	function openLogin() {
-		if (!state.writable) {
-			toast("error", "Write access is disabled. Run `next-index passwd` on the server to enable it.");
-			return;
-		}
-
 		if (state.authenticated) {
 			return;
 		}
@@ -1264,11 +1247,6 @@
 
 
 	function openUpload() {
-		if (!state.writable) {
-			toast("error", "Write access is disabled. Run `next-index config -P` on the server to enable it.");
-			return;
-		}
-
 		if (!state.authenticated) {
 			openLogin();
 			return;

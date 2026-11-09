@@ -80,9 +80,8 @@ func loadConfig() error {
 	}
 
 	config.normalize()
-	err = initUser()
 
-	return err
+	return nil
 }
 
 func (config *Config) normalize() {
@@ -98,6 +97,11 @@ func (config *Config) normalize() {
 
 	if config.Port <= 0 || config.Port > 65535 {
 		config.Port = defaultPort
+		configChanged = true
+	}
+
+	if config.Username == "" {
+		config.Username = defaultUsername
 		configChanged = true
 	}
 
@@ -201,8 +205,4 @@ func (config Config) masked() Config {
 	}
 
 	return config
-}
-
-func (config Config) writable() bool {
-	return config.Username != "" && config.Password != ""
 }

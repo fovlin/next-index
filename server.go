@@ -67,7 +67,7 @@ func newServer(cfg Config, root string) (*Server, error) {
 const loginPath = "/@next-index/login"
 
 func (server *Server) loginRequired(r *http.Request) bool {
-	return server.Config.ForceLogin && server.Config.writable() && !server.authenticated(r)
+	return server.Config.ForceLogin && !server.authenticated(r)
 }
 
 func (server *Server) handler() http.Handler {
@@ -265,7 +265,7 @@ func (server *Server) urlPath(fsPath string, isDir bool) string {
 	return urlPath
 }
 
-func (server *Server) listenAndServe() error {
+func (server *Server) run() error {
 	address := net.JoinHostPort(server.Config.Addr, strconv.Itoa(server.Config.Port))
 
 	httpServer := &http.Server{

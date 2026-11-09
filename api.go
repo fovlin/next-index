@@ -20,7 +20,6 @@ import (
 type sessionResponse struct {
 	Authenticated bool   `json:"authenticated"`
 	Username      string `json:"username,omitempty"`
-	Writable      bool   `json:"writable"`
 	Version       string `json:"version"`
 	MaxUploadMB   int64  `json:"maxUploadMB"`
 }
@@ -47,7 +46,6 @@ func (server *Server) handleSession(w http.ResponseWriter, r *http.Request) {
 func (server *Server) session(authenticated bool) sessionResponse {
 	response := sessionResponse{
 		Authenticated: authenticated,
-		Writable:      server.Config.writable(),
 		Version:       version,
 		MaxUploadMB:   server.Config.MaxUploadMB,
 	}
@@ -62,11 +60,6 @@ func (server *Server) session(authenticated bool) sessionResponse {
 func (server *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	if !sameOrigin(r) {
 		server.apiError(w, http.StatusForbidden, "cross-origin request blocked")
-		return
-	}
-
-	if !server.Config.writable() {
-		server.apiError(w, http.StatusForbidden, "write access is disabled, run `next-index config -P <password>` on the server")
 		return
 	}
 
@@ -505,11 +498,6 @@ func (server *Server) checkWrite(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 
-	if !server.Config.writable() {
-		server.apiError(w, http.StatusForbidden, "write access is disabled, run `next-index config -P <password>` on the server")
-		return false
-	}
-
 	if !server.authenticated(r) {
 		server.apiError(w, http.StatusUnauthorized, "sign in to manage files")
 		return false
@@ -531,10 +519,6 @@ func (server *Server) authenticated(r *http.Request) bool {
 }
 
 func (server *Server) checkCredentials(username string, password string) bool {
-	if !server.Config.writable() {
-		return false
-	}
-
 	usernameOK := subtle.ConstantTimeCompare([]byte(username), []byte(server.Config.Username)) == 1
 	passwordOK := verifyPassword(server.Config.Password, password)
 

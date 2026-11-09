@@ -137,7 +137,6 @@ button {
 .btn svg,
 .icon-btn svg,
 .icon-btn.sm svg,
-.readonly-chip svg,
 .segmented svg,
 .entry-icon svg,
 .row-action svg,
@@ -317,17 +316,6 @@ button {
 
 .empty .btn{
 	margin: 0px 2px;
-}
-
-.readonly-chip {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	height: 28px;
-	padding: 0 6px;
-	color: var(--faint);
-	font-size: var(--text-tiny);
-	white-space: nowrap;
 }
 
 /* main */
@@ -625,11 +613,6 @@ th.sorted.desc .arrow {
 	width: 24px;
 	padding-right: 0;
 	padding-left: 10px;
-}
-
-.table th.col-select + th,
-.table td.col-select + td {
-	padding-left: 4px;
 }
 
 .col-select input,

@@ -40,6 +40,16 @@ func run() error {
 		}
 	}
 
+	if err := initUser(); err != nil {
+		return err
+	}
+
+	if configChanged {
+		if err := saveConfig(); err != nil {
+			return err
+		}
+	}
+
 	server, err = newServer(config, root)
 	if err != nil {
 		return err
@@ -58,19 +68,14 @@ func run() error {
 
 	record.Info("next-index:", version)
 	record.Info("serving:", root)
+	record.Info("username:", config.Username)
 	record.Info("listening on:", scheme+"://"+listenAddress)
 
-	if config.writable() {
-		record.Info("uploads and file management: enabled (user:", config.Username+")")
-	} else {
-		record.Warn("uploads and file management: disabled, run `next-index config -P <password>` to enable them")
+	if !validPasswordHash(config.Password) {
+		record.Warn("the stored password hash is not a SHA-256 digest, run `next-index passwd` to set a new password")
 	}
 
-	if config.Password != "" && !validPasswordHash(config.Password) {
-		record.Warn("the stored password hash is not a SHA-256 digest, run `next-index config -P <password>` to set a new password")
-	}
-
-	return server.listenAndServe()
+	return server.run()
 }
 
 func expandHome(value string) string {
