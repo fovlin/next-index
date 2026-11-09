@@ -64,12 +64,19 @@ func newServer(cfg Config, root string) (*Server, error) {
 	}, nil
 }
 
+const loginPath = "/@next-index/login"
+
+func (server *Server) loginRequired(r *http.Request) bool {
+	return server.Config.ForceLogin && server.Config.writable() && !server.authenticated(r)
+}
+
 func (server *Server) handler() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /@next-index/assets/", server.serveAsset)
 	mux.HandleFunc("GET /favicon.ico", server.serveAsset)
 
+	mux.HandleFunc("GET "+loginPath, server.handleLoginPage)
 	mux.HandleFunc("GET /@next-index/api/session", server.handleSession)
 	mux.HandleFunc("POST /@next-index/api/login", server.handleLogin)
 	mux.HandleFunc("POST /@next-index/api/logout", server.handleLogout)

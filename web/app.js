@@ -456,6 +456,12 @@
 		if (error.status === 401) {
 			state.authenticated = false;
 			state.username = "";
+
+			if (state.loginRequired) {
+				window.location.reload();
+				return;
+			}
+
 			renderPage();
 			openLogin("Your session expired. Sign in again to manage files.");
 			return;
@@ -923,43 +929,50 @@
 		applyTheme();
 		renderTopbar();
 	}
-	function openLogin(message) {
-		if (!state.writable) {
-			toast("error", "Write access is disabled. Run `next-index config -P` on the server to enable it.");
-			return;
+	function loginNext() {
+		var next = new URLSearchParams(window.location.search).get("next");
+
+		if (next && next.charAt(0) === "/" && next.charAt(1) !== "/" && next.indexOf("\\") === -1) {
+			return next;
 		}
 
-		if (state.authenticated) {
-			return;
-		}
+		return "/";
+	}
 
-		openModal(
+	function loginFormMarkup(message, closable) {
+		return (
 			'<form id="login-form" novalidate>' +
 			'<div class="dialog-head"><div><h2>Sign in</h2></div>' +
-			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+			(closable ? '<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button>" : "") +
+			"</div>" +
 			'<p class="sub">' + (message ? esc(message) : "Browsing is public. Sign in to upload, rename, create and delete files.") + "</p>" +
 			'<div class="field"><label for="login-user">Username</label>' +
 			'<input class="input" id="login-user" name="username" autocomplete="username" spellcheck="false"></div>' +
 			'<div class="field"><label for="login-password">Password</label>' +
 			'<input class="input" id="login-password" name="password" type="password" autocomplete="current-password"></div>' +
 			'<div class="form-error" id="login-error"></div>' +
-			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
+			'<div class="dialog-actions">' +
+			(closable ? '<button type="button" class="btn" data-close>Cancel</button>' : "") +
 			'<button type="submit" class="btn btn-primary" id="login-submit">Sign in</button></div>' +
 			"</form>"
 		);
+	}
 
+	function bindLoginForm() {
 		var form = document.getElementById("login-form");
 		var errorElement = document.getElementById("login-error");
 		var submitButton = document.getElementById("login-submit");
 		var userInput = document.getElementById("login-user");
+		var passwordInput = document.getElementById("login-password");
 
 		userInput.value = state.username || "";
+		(passwordInput.value ? passwordInput : userInput).focus();
 
 		form.addEventListener("submit", function (event) {
 			event.preventDefault();
 
 			var username = userInput.value.trim();
-			var password = document.getElementById("login-password").value;
+			var password = passwordInput.value;
 
 			if (!username || !password) {
 				errorElement.textContent = "Enter both a username and a password.";
@@ -978,6 +991,12 @@
 					state.authenticated = true;
 					state.username = result.username || username;
 					closeModal();
+
+					if (state.loginRequired) {
+						window.location.replace(loginNext());
+						return;
+					}
+
 					renderPage();
 					toast("success", "Signed in as " + state.username);
 				})
@@ -990,6 +1009,34 @@
 				});
 		});
 	}
+
+	function openLogin(message) {
+		if (!state.writable) {
+			toast("error", "Write access is disabled. Run `next-index config -P` on the server to enable it.");
+			return;
+		}
+
+		if (state.authenticated) {
+			return;
+		}
+
+		openModal(loginFormMarkup(message, true));
+		bindLoginForm();
+	}
+
+	function renderLoginScreen() {
+		document.body.classList.add("login-page");
+		topbar.innerHTML = "";
+		footer.innerHTML = "";
+		main.innerHTML =
+			'<div class="dialog login-card">' +
+			'<div class="login-brand">' + icon("layers") + "<span>" + esc(state.site || "NEXT_INDEX") + "</span></div>" +
+			loginFormMarkup("This server only shows its files to signed-in visitors.", false) +
+			"</div>";
+
+		bindLoginForm();
+	}
+
 	function logout() {
 		api("/@next-index/api/logout", { method: "POST" })
 			.catch(function () {
@@ -998,6 +1045,12 @@
 			.then(function () {
 				state.authenticated = false;
 				state.username = "";
+
+				if (state.loginRequired) {
+					window.location.reload();
+					return;
+				}
+
 				renderPage();
 				toast("success", "Signed out.");
 			});
@@ -1434,6 +1487,11 @@
 		});
 	}
 	if (state) {
+		if (state.loginRequired && !state.authenticated) {
+			renderLoginScreen();
+			return;
+		}
+
 		bindEvents();
 		renderPage();
 	}

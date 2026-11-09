@@ -31,6 +31,7 @@ type bootstrapData struct {
 	Crumbs        []Crumb `json:"crumbs"`
 	Entries       []Entry `json:"entries"`
 	Authenticated bool    `json:"authenticated"`
+	LoginRequired bool    `json:"loginRequired,omitempty"`
 	Username      string  `json:"username,omitempty"`
 	Writable      bool    `json:"writable"`
 	Version       string  `json:"version"`
@@ -38,7 +39,7 @@ type bootstrapData struct {
 	Now           int64   `json:"now"`
 }
 
-func (server *Server) renderListing(w http.ResponseWriter, r *http.Request, list *listing) {
+func (server *Server) renderPage(w http.ResponseWriter, r *http.Request, list *listing) {
 	authenticated := server.authenticated(r)
 
 	title := server.Config.Title
@@ -54,6 +55,7 @@ func (server *Server) renderListing(w http.ResponseWriter, r *http.Request, list
 		Crumbs:        list.Crumbs,
 		Entries:       list.Entries,
 		Authenticated: authenticated,
+		LoginRequired: server.Config.ForceLogin && server.Config.writable(),
 		Writable:      server.Config.writable(),
 		Version:       version,
 		MaxUploadMB:   server.Config.MaxUploadMB,

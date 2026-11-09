@@ -36,6 +36,7 @@ type Config struct {
 	TLS         TLSConfig `json:"tls"`
 	MaxUploadMB int64     `json:"max_upload_mb"`
 	AllowOrigin string    `json:"allow_origin"`
+	ForceLogin  bool      `json:"force_login"`
 }
 
 var (

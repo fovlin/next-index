@@ -962,6 +962,39 @@ th.sorted.desc .arrow {
 	background: rgba(0, 0, 0, 0.6);
 }
 
+.login-page .app {
+	justify-content: center;
+	align-items: center;
+	padding: 24px 16px;
+}
+
+.login-page .topbar,
+.login-page .footer {
+	display: none;
+}
+
+.login-page .main {
+	flex: 0 0 auto;
+	width: min(420px, 100%);
+	padding: 0;
+}
+
+.login-brand {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 14px;
+	font-size: 14px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+}
+
+.login-brand svg {
+	width: 20px;
+	height: 20px;
+	color: var(--accent);
+}
+
 .dialog {
 	width: min(420px, 100%);
 	max-height: 90vh;

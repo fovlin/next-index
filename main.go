@@ -29,6 +29,10 @@ var (
 	passwordFlag      string
 	allowOriginFlag   string
 	upfileMaxSizeFlag string
+	tlsFlag           bool
+	tlsCertFlag       string
+	tlsKeyFlag        string
+	forceLoginFlag    bool
 	quietFlag         bool
 	server            *Server
 
@@ -92,6 +96,11 @@ func initProgram() error {
 	opt.StringVar(&upfileMaxSizeFlag, "x", "max-size", "")
 	opt.StringVar(&passwordFlag, "P", "password", "")
 	opt.StringVar(&allowOriginFlag, "o", "cross-origin", "")
+
+	opt.BoolSwitch(&tlsFlag, "s", "tls")
+	opt.StringVar(&tlsCertFlag, "", "tls-cert", "")
+	opt.StringVar(&tlsKeyFlag, "", "tls-key", "")
+	opt.BoolSwitch(&forceLoginFlag, "f", "force-login")
 
 	opt.BoolSwitch(&quietFlag, "q", "quiet")
 	opt.BoolSwitch(&record.EnableColor, "c", "color")
@@ -203,6 +212,26 @@ func parseFlag() error {
 		if err != nil {
 			return fmt.Errorf("parse max size option: %w", err)
 		}
+		configChanged = true
+	}
+
+	if tlsFlag {
+		config.TLS.Enable = true
+		configChanged = true
+	}
+
+	if tlsCertFlag != "" {
+		config.TLS.Cert = tlsCertFlag
+		configChanged = true
+	}
+
+	if tlsKeyFlag != "" {
+		config.TLS.Key = tlsKeyFlag
+		configChanged = true
+	}
+
+	if forceLoginFlag {
+		config.ForceLogin = true
 		configChanged = true
 	}
 
@@ -330,6 +359,10 @@ options:
   -u, --user <name>      username for run/config
   -P, --password <pass>  password for run/config (hashed; leaks into shell history)
   -x, --max-size <mb>    max upload size in megabytes (default: 1024, 0 for no limit)
+  -s, --tls              serve https, using the certificate and key below
+      --tls-cert <file>  TLS certificate for run/config
+      --tls-key <file>   TLS private key for run/config
+  -f, --force-login      only signed-in visitors can list and download files
   -q, --quiet            do not log every request
   -o, --cross-origin <origin>  exact Origin allowed to call the API (experimental)
   -c, --color            colored log output

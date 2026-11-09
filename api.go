@@ -122,6 +122,11 @@ func (server *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server *Server) handleList(w http.ResponseWriter, r *http.Request) {
+	if server.loginRequired(r) {
+		server.apiError(w, http.StatusUnauthorized, "sign in to list files")
+		return
+	}
+
 	fsPath, err := server.resolveUrlPath(r.URL.Query().Get("path"))
 	if err != nil {
 		server.failAPI(w, err)
