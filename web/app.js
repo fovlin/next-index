@@ -523,12 +523,11 @@
 	}
 	function renderTopbar() {
 		var authMarkup = "";
+		var logoutMarkup = "";
 
 		if (state.authenticated) {
-			authMarkup =
-				'<span class="user-chip" title="Signed in"><span class="avatar">' + esc((state.username || "?").slice(0, 1)) + '</span><span class="user-name">' + esc(state.username) + "</span></span>" +
-				'<button class="btn btn-sm" id="logout-btn" title="Sign out" aria-label="Sign out">' + icon("logout") + "<span>Sign out</span></button>" +
-				'<button class="btn btn-primary" id="upload-btn" title="Upload files" aria-label="Upload files">' + icon("upload") + "<span>Upload</span></button>";
+			logoutMarkup = '<button class="btn btn-sm" id="logout-btn" title="Sign out" aria-label="Sign out">' + icon("logout") + "<span>Sign out</span></button>";
+			authMarkup = '<button class="btn btn-primary" id="upload-btn" title="Upload files" aria-label="Upload files">' + icon("upload") + "<span>Upload</span></button>";
 		} else if (state.writable) {
 			authMarkup = '<button class="btn btn-primary" id="login-btn" title="Sign in" aria-label="Sign in">' + icon("login") + "<span>Sign in</span></button>";
 		} else {
@@ -543,6 +542,7 @@
 			'<span class="brand-version">v' + esc(state.version) + "</span>" +
 			"</a>" +
 			'<div class="topbar-actions">' +
+			logoutMarkup +
 			'<button class="icon-btn" id="refresh-btn" title="Refresh" aria-label="Refresh">' + icon("refresh") + "</button>" +
 			'<button class="icon-btn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">' + (currentTheme() === "dark" ? icon("sun") : icon("moon")) + "</button>" +
 			authMarkup +

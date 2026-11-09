@@ -319,31 +319,6 @@ button {
 	margin: 0px 2px;
 }
 
-.user-chip {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	height: 28px;
-	padding: 0 4px;
-	color: var(--text);
-	font-size: var(--text-small);
-	font-weight: 500;
-	white-space: nowrap;
-}
-
-.avatar {
-	display: grid;
-	place-items: center;
-	width: 16px;
-	height: 16px;
-	border-radius: 50%;
-	background: var(--accent);
-	color: #fff;
-	font-size: var(--text-tiny);
-	font-weight: 600;
-	text-transform: uppercase;
-}
-
 .readonly-chip {
 	display: inline-flex;
 	align-items: center;
@@ -1437,7 +1412,8 @@ th.sorted.desc .arrow {
 		display: none;
 	}
 
-	.topbar-actions #logout-btn span {
+	.topbar-actions #logout-btn span,
+	.topbar-actions #upload-btn span {
 		display: none;
 	}
 
@@ -1456,13 +1432,6 @@ th.sorted.desc .arrow {
 		display: none;
 	}
 
-	.topbar-actions #upload-btn span {
-		display: none;
-	}
-
-	.user-chip .user-name {
-		display: none;
-	}
 }
 
 @media (prefers-reduced-motion: reduce) {
