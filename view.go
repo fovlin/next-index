@@ -43,7 +43,7 @@ func (server *Server) renderListing(w http.ResponseWriter, r *http.Request, list
 
 	title := server.Config.Title
 	if list.Path != "/" {
-		title += " · " + strings.Trim(list.Path, "/")
+		title += " | " + strings.Trim(list.Path, "/")
 	}
 
 	data := bootstrapData{
