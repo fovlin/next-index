@@ -1133,24 +1133,17 @@
 		var entry = single ? state.entries.filter(function (item) {
 			return item.name === names[0];
 		})[0] : null;
-		var type = entry ? typeOf(entry) : null;
-
 		var preview = names
-			.slice(0, 4)
 			.map(function (name) {
-				return "<span>" + esc(name) + "</span>";
+				return '<div class="delete-name">' + esc(name) + "</div>";
 			})
 			.join("");
-
-		if (names.length > 4) {
-			preview += "<span>+" + (names.length - 4) + " more</span>";
-		}
 
 		openModal(
 			'<div class="dialog-head"><div><h2>Delete ' + (single ? (entry && entry.kind === "dir" ? "folder" : "file") : names.length + " items") + "?</h2></div>" +
 			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
 			'<p class="sub">This action cannot be undone.</p>' +
-			'<div class="delete-target">' + (type ? '<span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span>" : "") + preview + "</div>" +
+			'<div class="delete-target">' + preview + "</div>" +
 			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
 			'<button type="button" class="btn btn-danger" id="confirm-delete">Delete</button></div>'
 		);
