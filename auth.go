@@ -12,7 +12,6 @@ import (
 )
 
 const (
-	passwordAlphabet   = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 	sessionCookieName  = "next_index_session"
 	sessionDuration    = 12 * time.Hour
 	sessionTokenLength = 32
@@ -39,33 +38,6 @@ func verifyPassword(encoded string, password string) bool {
 	sum := sha256.Sum256([]byte(password))
 
 	return subtle.ConstantTimeCompare(sum[:], expected) == 1
-}
-
-func randomPassword(length int) (string, error) {
-	result := make([]byte, 0, length)
-	random := make([]byte, length)
-
-	limit := 256 - 256%len(passwordAlphabet)
-
-	for len(result) < length {
-		if _, err := rand.Read(random); err != nil {
-			return "", fmt.Errorf("create random password: %w", err)
-		}
-
-		for _, value := range random {
-			if int(value) >= limit {
-				continue
-			}
-
-			result = append(result, passwordAlphabet[int(value)%len(passwordAlphabet)])
-
-			if len(result) == length {
-				break
-			}
-		}
-	}
-
-	return string(result), nil
 }
 
 type sessionStore struct {

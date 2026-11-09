@@ -38,13 +38,14 @@ go build .
 next-index [command] [options] [root]
         │
         ├── initProgram   opt.Parse, then cmdMap lookup
-        ├── loadConfig    read ~/.next_index.json, fill defaults and credentials
-        ├── parseFlag     override config from -i/-p/-r/-u/-P/-o
-        └── run / config
-                          run:    resolveRoot
-                                  → save if new/credentials generated
-                                  → newServer → listenAndServe
-                          config: save if flags/credentials generated (silent)
+        ├── loadConfig    read ~/.next_index.json and fill defaults
+        ├── parseFlag     override config from -i/-p/-r/-u/-o and the TLS flags
+        └── run / config / unset / passwd
+                          run:    refuse without a password
+                                  → resolveRoot → newServer → serve
+                          config: save the flags (silent)
+                          unset:  drop a field and restore its default
+                          passwd: ask twice, hash, save
 ```
 
 `main` dispatches through `cmdMap`. With no command, or when the first argument
@@ -53,13 +54,10 @@ separator), it selects `run` with that directory. Anything else is an unknown
 command.
 
 `parseFlag` runs after `loadConfig` and writes any non-empty `-i`, `-p`, `-r`,
-`-u`, `-P` or `-o` value directly into the config struct, setting
-`configChanged`. `run` resolves the root from the positional argument, then the
-config, then the current directory. It saves the config on first use and when
-credentials had to be generated; otherwise its flags stay in memory. `config`
-saves flag overrides (and generated credentials) silently; without flags it
-prints a complete existing config, and a missing config or missing credentials
-are created or repaired silently.
+`-u` or `-o` value directly into the config struct, setting `configChanged`.
+`run` resolves the root from the positional argument, then the config, then the
+current directory, and never writes the config: its flags stay in memory.
+`config` saves the flags silently; without flags it prints the config.
 
 ## Server
 
@@ -113,16 +111,13 @@ names outright.
 to a temporary file in the same directory, `chmod 0600`, then renames it over
 the config, so a crash cannot leave a truncated file.
 
-`loadConfig` reads the file (or `defaultConfig()` when missing), fills missing
-defaults, then calls `initUser`: it fills an empty username with `admin` (or the
-`-u` value) and generates a password only when the config has none and `-P` was
-not given. It never writes. `run` saves when the file is new or credentials were
-generated; `config` also saves when `configChanged` is set. Later `run` flags
-stay in memory.
+`loadConfig` reads the file (or `defaultConfig()` when missing) and fills any
+missing defaults, including the `admin` username. It never writes.
 
-`needSaveConfig` tracks a new file, filled defaults or generated credentials;
-`configChanged` tracks flag overrides. `run` saves only the former, while
-`config` saves either. `-o/--cross-origin` stores an exact `Origin` in
+There is no generated password. `passwd` asks twice, hashes with SHA-256, and
+saves; `run` refuses to start while the config has no password. `configChanged`
+tracks flag overrides and lets `config` and `unset` decide whether to save.
+`-o/--cross-origin` stores an exact `Origin` in
 `allow_origin`; the same value is used by `sameOrigin`, the CORS headers and the
 preflight response.
 

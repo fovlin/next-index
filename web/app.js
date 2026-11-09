@@ -220,17 +220,19 @@
 
 		return (index === 0 ? String(value) : value.toFixed(1)) + " " + units[index];
 	}
-	function formatDate(unix) {
-		return new Date(unix * 1000).toLocaleDateString(LOCALE, {
-			year: "numeric",
-			month: "2-digit",
-			day: "2-digit"
-		});
-	}
-	function formatTime(unix) {
-		return new Date(unix * 1000).toLocaleTimeString(LOCALE, {
-			hour12: false
-		});
+	function timeParts(unix) {
+		var date = new Date(unix * 1000);
+
+		return {
+			date: date.toLocaleDateString(LOCALE, {
+				year: "numeric",
+				month: "2-digit",
+				day: "2-digit"
+			}),
+			time: date.toLocaleTimeString(LOCALE, {
+				hour12: false
+			})
+		};
 	}
 	function formatFull(unix) {
 		return new Date(unix * 1000).toLocaleString(LOCALE, {
@@ -703,12 +705,16 @@
 			"</table>"
 		);
 	}
-	function selectAllMarkup(entries) {
-		var checked =
+	function allSelected(entries) {
+		return (
 			entries.length > 0 &&
 			entries.every(function (entry) {
 				return state.selection[entry.name];
-			});
+			})
+		);
+	}
+	function selectAllMarkup(entries) {
+		var checked = allSelected(entries);
 
 		return '<input type="checkbox" id="select-all" aria-label="Select all"' + (checked ? " checked" : "") + ">";
 	}
@@ -730,6 +736,7 @@
 	function rowMarkup(entry) {
 		var type = typeOf(entry);
 		var size = entry.kind === "file" ? formatSize(entry.size) : "—";
+		var when = timeParts(entry.mod);
 		var link = entryTag(entry);
 
 		return (
@@ -744,13 +751,14 @@
 			"</" + link[0] + ">" +
 			"</td>" +
 			'<td class="col-size size" title="' + (entry.kind === "file" ? entry.size + " bytes" : "") + '">' + size + "</td>" +
-			'<td class="col-time time" title="' + esc(formatFull(entry.mod)) + '">' + esc(formatDate(entry.mod)) + '<small>' + esc(formatTime(entry.mod)) + '</small></td>' +
+			'<td class="col-time time">' + esc(when.date) + "<small>" + esc(when.time) + "</small></td>" +
 			'<td class="col-actions"><div class="row-actions">' + menuMarkup(entry) + "</div></td>" +
 			"</tr>"
 		);
 	}
 	function itemMarkup(entry) {
 		var type = typeOf(entry);
+		var when = timeParts(entry.mod);
 		var link = entryTag(entry);
 		var menu = menuMarkup(entry);
 		var thumb = '<div class="thumb"><span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span></div>";
@@ -761,7 +769,7 @@
 			'<' + link[0] + ' class="tile-main"' + link[1] + '>' +
 			thumb +
 			'<span class="tile-name" title="' + esc(entry.name) + '">' + esc(entry.name) + "</span>" +
-			'<span class="tile-meta"><span>' + formatDate(entry.mod) + "</span><span>" + formatTime(entry.mod) + "</span></span>" +
+			'<span class="tile-meta"><span>' + esc(when.date) + "</span><span>" + esc(when.time) + "</span></span>" +
 			"</" + link[0] + ">" +
 			(menu ? '<div class="tile-actions row-actions">' + menu + "</div>" : "") +
 			"</div>"
@@ -917,9 +925,7 @@
 	}
 	function toggleSelectAll() {
 		var entries = visibleEntries();
-		var all = entries.length > 0 && entries.every(function (entry) {
-			return state.selection[entry.name];
-		});
+		var all = allSelected(entries);
 
 		state.selection = {};
 

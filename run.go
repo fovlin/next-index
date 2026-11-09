@@ -26,28 +26,22 @@ func run() error {
 		return fmt.Errorf("root is not a directory: %v", root)
 	}
 
-	if config.TLS.Enable {
-		if config.TLS.Cert == "" || config.TLS.Key == "" {
+	if config.EnableTLS {
+		if config.TLSCert == "" || config.TLSKey == "" {
 			return fmt.Errorf("tls is enabled but the certificate or key is missing from the config")
 		}
 
-		if _, err := os.Stat(config.TLS.Cert); err != nil {
+		if _, err := os.Stat(config.TLSCert); err != nil {
 			return fmt.Errorf("tls certificate: %w", err)
 		}
 
-		if _, err := os.Stat(config.TLS.Key); err != nil {
+		if _, err := os.Stat(config.TLSKey); err != nil {
 			return fmt.Errorf("tls key: %w", err)
 		}
 	}
 
-	if err := initUser(); err != nil {
-		return err
-	}
-
-	if configChanged {
-		if err := saveConfig(); err != nil {
-			return err
-		}
+	if config.Password == "" {
+		return fmt.Errorf("no password is set: run `next-index passwd` to choose one")
 	}
 
 	server, err = newServer(config, root)
@@ -56,7 +50,7 @@ func run() error {
 	}
 
 	scheme := "http"
-	if config.TLS.Enable {
+	if config.EnableTLS {
 		scheme = "https"
 	}
 

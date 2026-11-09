@@ -12,6 +12,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"acovia.net/record"
 )
 
 const (
@@ -359,13 +361,15 @@ func copyUpload(dir string, source io.Reader, overwrite bool, name string) (stri
 	} else {
 		var err error
 		if target, err = uniquePath(dir, name); err != nil {
-			return "", 0, err
+			record.Warn("find a free name for", name, ":", err)
+			return "", 0, fmt.Errorf("could not store the file")
 		}
 	}
 
 	temp, err := os.CreateTemp(dir, tempNamePrefix+"upload-*")
 	if err != nil {
-		return "", 0, fmt.Errorf("create upload file: %w", err)
+		record.Warn("create upload file in", dir, ":", err)
+		return "", 0, fmt.Errorf("could not store the file")
 	}
 
 	tempPath := temp.Name()
@@ -378,22 +382,26 @@ func copyUpload(dir string, source io.Reader, overwrite bool, name string) (stri
 	size, err := io.Copy(temp, source)
 	if err != nil {
 		cleanup()
-		return "", 0, fmt.Errorf("write upload file: %w", err)
+		record.Warn("write upload file", tempPath, ":", err)
+		return "", 0, fmt.Errorf("could not store the file")
 	}
 
 	if err := temp.Chmod(0644); err != nil {
 		cleanup()
-		return "", 0, fmt.Errorf("change upload permissions: %w", err)
+		record.Warn("change upload permissions", tempPath, ":", err)
+		return "", 0, fmt.Errorf("could not store the file")
 	}
 
 	if err := temp.Close(); err != nil {
 		os.Remove(tempPath)
-		return "", 0, fmt.Errorf("close upload file: %w", err)
+		record.Warn("close upload file", tempPath, ":", err)
+		return "", 0, fmt.Errorf("could not store the file")
 	}
 
 	if err := os.Rename(tempPath, target); err != nil {
 		os.Remove(tempPath)
-		return "", 0, fmt.Errorf("store upload file: %w", err)
+		record.Warn("store upload file", target, ":", err)
+		return "", 0, fmt.Errorf("could not store the file")
 	}
 
 	return filepath.Base(target), size, nil

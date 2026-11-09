@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"acovia.net/record"
+	"golang.org/x/term"
 )
 
 const (
@@ -20,23 +22,19 @@ const (
 	defaultUsername    = "admin"
 )
 
-type TLSConfig struct {
-	Enable bool   `json:"enable"`
-	Cert   string `json:"cert"`
-	Key    string `json:"key"`
-}
-
 type Config struct {
-	Root        string    `json:"root"`
-	Addr        string    `json:"addr"`
-	Port        int       `json:"port"`
-	Title       string    `json:"title"`
-	Username    string    `json:"username"`
-	Password    string    `json:"password"`
-	TLS         TLSConfig `json:"tls"`
-	MaxUploadMB int64     `json:"max_upload_mb"`
-	AllowOrigin string    `json:"allow_origin"`
-	ForceLogin  bool      `json:"force_login"`
+	Root        string `json:"root"`
+	Addr        string `json:"addr"`
+	Port        int    `json:"port"`
+	Title       string `json:"title"`
+	Username    string `json:"username"`
+	Password    string `json:"password"`
+	EnableTLS   bool   `json:"enable_tls"`
+	TLSCert     string `json:"tls_cert"`
+	TLSKey      string `json:"tls_key"`
+	MaxUploadMB int64  `json:"max_upload_mb"`
+	ForceLogin  bool   `json:"force_login"`
+	AllowOrigin string `json:"allow_origin"`
 }
 
 var (
@@ -121,35 +119,6 @@ func (config *Config) normalize() {
 	}
 }
 
-func initUser() error {
-	if config.Username == "" {
-		if userFlag != "" {
-			config.Username = userFlag
-		} else {
-			config.Username = defaultUsername
-		}
-		configChanged = true
-	}
-
-	if config.Password == "" {
-		password, err := randomPassword(16)
-		if err != nil {
-			return err
-		}
-
-		config.Password = hashPassword(password)
-		configChanged = true
-
-		record.Info("generated a password for this server")
-		record.Info("username:", config.Username)
-		record.Info("password:", password)
-		record.Info("stored hashed in", configPath)
-		record.Info("change it with `next-index passwd`")
-	}
-
-	return nil
-}
-
 func saveConfig() error {
 	data, err := json.MarshalIndent(config, "", "  ")
 	if err != nil {
@@ -205,4 +174,130 @@ func (config Config) masked() Config {
 	}
 
 	return config
+}
+
+func setConfig() error {
+	if configChanged {
+		if err := saveConfig(); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	data, err := json.MarshalIndent(config.masked(), "", "  ")
+	if err != nil {
+		return err
+	}
+
+	record.Print(string(data))
+	record.Println()
+
+	return nil
+}
+
+func unsetConfig() error {
+	if len(subCmdArgs) < 1 {
+		record.Error("usage: next-index unset <field>")
+	}
+
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return fmt.Errorf("read config file: %w", err)
+	}
+
+	var stored map[string]any
+
+	if err := json.Unmarshal(data, &stored); err != nil {
+		return fmt.Errorf("decode config file: %w", err)
+	}
+
+	if _, ok := stored[subCmdArgs[0]]; !ok {
+		return fmt.Errorf("no such field: %v", subCmdArgs[0])
+	}
+
+	delete(stored, subCmdArgs[0])
+
+	remaining, err := json.Marshal(stored)
+	if err != nil {
+		return fmt.Errorf("encode config file: %w", err)
+	}
+
+	config = defaultConfig()
+
+	if err := json.Unmarshal(remaining, &config); err != nil {
+		return fmt.Errorf("decode config file: %w", err)
+	}
+
+	return saveConfig()
+}
+func setPassword() error {
+	password, err := readPassword("new password: ")
+	if err != nil {
+		return err
+	}
+
+	if password == "" {
+		return fmt.Errorf("the password cannot be empty")
+	}
+
+	again, err := readPassword("repeat password: ")
+	if err != nil {
+		return err
+	}
+
+	if password != again {
+		return fmt.Errorf("the passwords do not match")
+	}
+
+	if len(password) < 8 {
+		record.Warn("this password is shorter than 8 characters")
+	}
+
+	config.Password = hashPassword(password)
+	configChanged = true
+
+	if err := saveConfig(); err != nil {
+		return err
+	}
+
+	fmt.Println("password updated")
+
+	return nil
+}
+
+func readPassword(prompt string) (string, error) {
+	fd := int(os.Stdin.Fd())
+
+	state, stateErr := term.GetState(fd)
+
+	interrupt := make(chan os.Signal, 1)
+	done := make(chan struct{})
+	signal.Notify(interrupt, os.Interrupt)
+
+	go func() {
+		select {
+		case <-interrupt:
+			if stateErr == nil {
+				_ = term.Restore(fd, state)
+			}
+			os.Exit(1)
+		case <-done:
+		}
+	}()
+
+	fmt.Fprint(os.Stderr, prompt)
+
+	raw, err := term.ReadPassword(fd)
+
+	fmt.Fprintln(os.Stderr)
+
+	close(done)
+	signal.Stop(interrupt)
+
+	if err != nil {
+		return "", fmt.Errorf("read password: %w", err)
+	}
+
+	return string(raw), nil
 }

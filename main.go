@@ -1,11 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -13,10 +11,9 @@ import (
 
 	"acovia.net/opt"
 	"acovia.net/record"
-	"golang.org/x/term"
 )
 
-const version = "1.0.0-rc1"
+const version = "1.0.0"
 
 var (
 	cmdMap map[string]CmdFunc
@@ -112,7 +109,7 @@ func initProgram() error {
 		os.Exit(0)
 	})
 
-	opt.BoolFunc("", "version", func() {
+	opt.BoolFunc("v", "version", func() {
 		record.Println("next-index", version)
 		os.Exit(0)
 	})
@@ -208,17 +205,17 @@ func parseFlag() error {
 	}
 
 	if tlsFlag {
-		config.TLS.Enable = true
+		config.EnableTLS = true
 		configChanged = true
 	}
 
 	if tlsCertFlag != "" {
-		config.TLS.Cert = tlsCertFlag
+		config.TLSCert = tlsCertFlag
 		configChanged = true
 	}
 
 	if tlsKeyFlag != "" {
-		config.TLS.Key = tlsKeyFlag
+		config.TLSKey = tlsKeyFlag
 		configChanged = true
 	}
 
@@ -261,133 +258,6 @@ func normalizeOrigin(value string) (string, error) {
 	return strings.ToLower(parsed.Scheme) + "://" + strings.ToLower(parsed.Host), nil
 }
 
-func setConfig() error {
-	if configChanged {
-		if err := saveConfig(); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	data, err := json.MarshalIndent(config.masked(), "", "  ")
-	if err != nil {
-		return err
-	}
-
-	record.Print(string(data))
-	record.Println()
-
-	return nil
-}
-
-func unsetConfig() error {
-	if len(subCmdArgs) < 1 {
-		record.Error("usage: next-index unset <value>")
-	}
-
-	data, err := os.ReadFile(configPath)
-	if err != nil {
-		return err
-	}
-
-	var newConfig map[string]any
-	err = json.Unmarshal(data, &newConfig)
-	if err != nil {
-		return fmt.Errorf("unmarshal json data:, %w", err)
-	}
-
-	if _, ok := newConfig[subCmdArgs[0]]; !ok {
-		return fmt.Errorf("value not found")
-	}
-
-	delete(newConfig, subCmdArgs[0])
-
-	data, err = json.MarshalIndent(newConfig, "", "  ")
-	if err != nil {
-		return fmt.Errorf("marshal json data:, %w", err)
-	}
-
-	if err := writeConfigFile(data); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func setPassword() error {
-	password, err := readPassword("new password: ")
-	if err != nil {
-		return err
-	}
-
-	if password == "" {
-		return fmt.Errorf("the password cannot be empty")
-	}
-
-	again, err := readPassword("repeat password: ")
-	if err != nil {
-		return err
-	}
-
-	if password != again {
-		return fmt.Errorf("the passwords do not match")
-	}
-
-	if len(password) < 8 {
-		record.Warn("this password is shorter than 8 characters")
-	}
-
-	config.Password = hashPassword(password)
-	configChanged = true
-
-	if err := saveConfig(); err != nil {
-		return err
-	}
-
-	fmt.Println("password updated")
-
-	return nil
-}
-
-// readPassword turns the echo off for one line and always puts the terminal
-// back, including when the prompt is interrupted.
-func readPassword(prompt string) (string, error) {
-	fd := int(os.Stdin.Fd())
-
-	state, stateErr := term.GetState(fd)
-
-	interrupt := make(chan os.Signal, 1)
-	done := make(chan struct{})
-	signal.Notify(interrupt, os.Interrupt)
-
-	go func() {
-		select {
-		case <-interrupt:
-			if stateErr == nil {
-				_ = term.Restore(fd, state)
-			}
-			os.Exit(1)
-		case <-done:
-		}
-	}()
-
-	fmt.Fprint(os.Stderr, prompt)
-
-	raw, err := term.ReadPassword(fd)
-
-	fmt.Fprintln(os.Stderr)
-
-	close(done)
-	signal.Stop(interrupt)
-
-	if err != nil {
-		return "", fmt.Errorf("read password: %w", err)
-	}
-
-	return string(raw), nil
-}
-
 func about() error {
 	record.Println("NEXT_INDEX", version)
 	record.Println("a small, plain web file server with uploads and file management")
@@ -414,6 +284,7 @@ usage:
 commands:
   run        serve a directory over http (default)
   config     update the config from flags, or print it
+  unset      remove a field from the config, restoring its default
   passwd     set a new password (asked twice, never echoed)
   about      print build information
   help       print this message
@@ -448,7 +319,8 @@ config:
   ~/.next_index.json stores the root, address, port, credentials and limits.
   The password is stored as a SHA-256 hash.
   config without flags prints the file; with flags it saves them.
-  config and run create the file on first use; later run flags are not saved.
+  run needs a password; set one with "next-index passwd" first.
+  config and passwd create the file on first use; later run flags are not saved.
 
 browsing is public; the username and password are only required to upload
 files or to rename, create and delete them.

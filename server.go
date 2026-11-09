@@ -282,8 +282,8 @@ func (server *Server) run() error {
 	errChan := make(chan error, 1)
 
 	go func() {
-		if server.Config.TLS.Enable {
-			errChan <- httpServer.ListenAndServeTLS(server.Config.TLS.Cert, server.Config.TLS.Key)
+		if server.Config.EnableTLS {
+			errChan <- httpServer.ListenAndServeTLS(server.Config.TLSCert, server.Config.TLSKey)
 			return
 		}
 
@@ -400,7 +400,8 @@ func (server *Server) transfer(w http.ResponseWriter, r *http.Request, move bool
 		}
 
 		if err != nil {
-			server.apiError(w, http.StatusInternalServerError, "could not "+action+" "+object.name+": "+err.Error())
+			record.Warn(action, object.source, "to", object.target, ":", err)
+			server.apiError(w, http.StatusInternalServerError, "could not "+action+" "+object.name)
 			return
 		}
 	}

@@ -250,7 +250,16 @@ func (server *Server) handleMkdir(w http.ResponseWriter, r *http.Request) {
 	defer server.FsMutex.Unlock()
 
 	if err := os.Mkdir(target, 0755); err != nil {
-		server.apiError(w, http.StatusInternalServerError, "could not create the directory")
+		switch {
+		case errors.Is(err, os.ErrExist):
+			server.apiError(w, http.StatusConflict, "a folder with that name already exists")
+		case errors.Is(err, os.ErrNotExist):
+			server.apiError(w, http.StatusNotFound, "the parent folder does not exist")
+		default:
+			record.Warn("create directory", target, ":", err)
+			server.apiError(w, http.StatusInternalServerError, "could not create the directory")
+		}
+
 		return
 	}
 
@@ -307,7 +316,8 @@ func (server *Server) handleRename(w http.ResponseWriter, r *http.Request) {
 	defer server.FsMutex.Unlock()
 
 	if err := os.Rename(fromPath, toPath); err != nil {
-		server.apiError(w, http.StatusInternalServerError, "could not rename the file: "+err.Error())
+		record.Warn("rename", fromPath, "to", toPath, ":", err)
+		server.apiError(w, http.StatusInternalServerError, "could not rename the file")
 		return
 	}
 
@@ -530,7 +540,7 @@ func (server *Server) setSessionCookie(w http.ResponseWriter, token string) {
 }
 
 func (server *Server) sessionCookie(token string, maxAge int) *http.Cookie {
-	secure := server.Config.TLS.Enable
+	secure := server.Config.EnableTLS
 	sameSite := http.SameSiteLaxMode
 
 	if secure && server.Config.AllowOrigin != "" {

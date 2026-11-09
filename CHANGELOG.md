@@ -3,6 +3,31 @@
 All notable changes to NEXT_INDEX are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## 1.0.0 - 2026-11-10
+
+### Changed
+
+- The password is no longer generated at start. `next-index passwd` asks for it
+  twice and stores the hash; `run` refuses to start without one, so a generated
+  password never ends up in the logs.
+- Icons are 18px and the sort arrow 12px. Table cells, headers and dialog titles
+  use the body size, which leaves three text sizes: 16, 14 and 12.
+- Selecting files updates the row that changed instead of rebuilding the list.
+
+### Removed
+
+- The read-only mode. A config without a password is an error now, not a second
+  way to run the server.
+
+### Fixed
+
+- `next-index unset <field>` restores the field's default; it used to write the
+  old value back.
+- Creating a folder that already exists answers `409` and a missing parent
+  `404`, instead of `500`.
+- A failed rename, move or copy no longer hands the filesystem path to the
+  client; the detail goes to the log.
+
 ## 1.0.0-rc1 - 2026-11-09
 
 ### Added

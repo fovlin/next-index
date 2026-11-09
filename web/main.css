@@ -10,14 +10,18 @@
 	--faint: light-dark(#8a8a8a, #707070);
 	--accent: #004f8f;
 	--accent-hover: #003f73;
+	--on-accent: #fff;
 	--accent-soft: light-dark(rgba(0, 79, 143, 0.1), rgba(0, 79, 143, 0.18));
 	--link: light-dark(#004f8f, #6cb0e0);
 	--green: light-dark(#2f7d32, #7fbf8f);
 	--amber: light-dark(#8a6d1f, #c9a86a);
 	--red: light-dark(#b3261e, #d97b7b);
 	--radius: 16px;
+	--radius-md: 12px;
 	--radius-sm: 10px;
+	--radius-xs: 4px;
 	--font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+	--text-large: 18px;
 	--text-body: 16px;
 	--text-small: 14px;
 	--text-tiny: 12px;
@@ -129,7 +133,7 @@ button {
 	height: 24px;
 	border-radius: var(--radius-sm);
 	background: var(--accent);
-	color: #fff;
+	color: var(--on-accent);
 }
 
 .brand-mark svg,
@@ -141,8 +145,8 @@ button {
 .row-action svg,
 .menu button svg,
 .input-reveal svg {
-	width: 16px;
-	height: 16px;
+	width: 18px;
+	height: 18px;
 }
 
 .brand-name {
@@ -196,8 +200,8 @@ button {
 }
 
 .crumb svg {
-	width: 16px;
-	height: 16px;
+	width: 18px;
+	height: 18px;
 	flex: 0 0 auto;
 	color: var(--faint);
 }
@@ -211,8 +215,8 @@ button {
 
 .crumb-sep svg {
 	display: block;
-	width: 10px;
-	height: 10px;
+	width: 12px;
+	height: 12px;
 }
 
 .topbar-actions {
@@ -229,7 +233,7 @@ button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 10px;
+	gap: 4px;
 	height: 36px;
 	min-width: 36px;
 	padding: 0px 10px;
@@ -253,7 +257,7 @@ button {
 .btn-primary {
 	border-color: var(--accent);
 	background: var(--accent);
-	color: #fff;
+	color: var(--on-accent);
 }
 
 .btn-primary:hover {
@@ -310,7 +314,7 @@ button {
 .icon-btn.sm {
 	width: 24px;
 	height: 24px;
-	border-radius: 4px;
+	border-radius: var(--radius-xs);
 }
 
 .empty .btn{
@@ -476,8 +480,8 @@ th.sorted .sort-btn {
 }
 
 .sort-btn .arrow {
-	width: 10px;
-	height: 10px;
+	width: 12px;
+	height: 12px;
 	opacity: 0;
 }
 
@@ -555,7 +559,7 @@ th.sorted.desc .arrow {
 	flex: 0 0 auto;
 	padding: 0 4px;
 	border: 1px solid var(--border-strong);
-	border-radius: 4px;
+	border-radius: var(--radius-xs);
 	color: var(--faint);
 	font-size: var(--text-tiny);
 	letter-spacing: 0.03em;
@@ -663,7 +667,7 @@ th.sorted.desc .arrow {
 	min-width: 136px;
 	padding: 6px;
 	border: 1px solid var(--border-strong);
-	border-radius: 12px;
+	border-radius: var(--radius-md);
 	background: var(--surface-2);
 }
 
@@ -697,7 +701,7 @@ th.sorted.desc .arrow {
 	height: 32px;
 	padding: 0 4px 0 10px;
 	border: 1px solid var(--border);
-	border-radius: 12px;
+	border-radius: var(--radius-md);
 	background: var(--surface-2);
 	color: var(--muted);
 	font-size: var(--text-tiny);
@@ -758,7 +762,7 @@ th.sorted.desc .arrow {
 	height: 96px;
 	overflow: hidden;
 	border: 1px solid var(--border);
-	border-radius: 4px;
+	border-radius: var(--radius-xs);
 	background: var(--surface-2);
 }
 
@@ -963,15 +967,15 @@ th.sorted.desc .arrow {
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	margin-bottom: 20px;
-	font-size: 18px;
+	margin-bottom: 24px;
+	font-size: var(--text-large);
 	font-weight: 600;
 	letter-spacing: 0.02em;
 }
 
 .login-brand svg {
-	width: 16px;
-	height: 16px;
+	width: 18px;
+	height: 18px;
 	color: var(--accent);
 }
 
@@ -997,8 +1001,8 @@ th.sorted.desc .arrow {
 }
 
 .dialog h2 {
-	margin: 0;
-	font-size: var(--text-body);
+	margin: 0px 0px 16px 0px;
+	font-size: var(--text-large);
 	font-weight: 600;
 }
 
@@ -1071,7 +1075,6 @@ th.sorted.desc .arrow {
 .detail-list > div {
 	display: flex;
 	gap: 10px;
-	font-size: var(--text-small);
 	line-height: 1.5;
 }
 
@@ -1190,8 +1193,8 @@ th.sorted.desc .arrow {
 }
 
 .file-row .row-action svg {
-	width: 10px;
-	height: 10px;
+	width: 12px;
+	height: 12px;
 }
 
 .file-progress {
@@ -1275,8 +1278,8 @@ th.sorted.desc .arrow {
 
 .toast svg {
 	flex: 0 0 auto;
-	width: 16px;
-	height: 16px;
+	width: 18px;
+	height: 18px;
 	margin-top: 1px;
 }
 

@@ -18,9 +18,9 @@ Two ways to use it:
 ./next-index ~/Downloads
 ```
 
-The first run writes `~/.next_index.json`, generates a password and prints it
-once. Use `next-index config <option>` to change what is stored there, and
-`next-index passwd` to set a new password.
+Set a password with `next-index passwd` before the first run: the server refuses
+to start without one, and `passwd` writes `~/.next_index.json`. Use
+`next-index config <option>` to change what is stored there.
 
 ## Features
 
