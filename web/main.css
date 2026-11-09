@@ -911,7 +911,7 @@ th.sorted.desc .arrow {
 	--text-tiny: 16px;
 }
 
-.login-submit {
+.login-card .login-submit {
 	flex: 1;
 	height: 44px;
 }
