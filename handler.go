@@ -12,15 +12,6 @@ import (
 )
 
 func (server *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
-	if !server.Quiet {
-		record.Info(
-			r.Method,
-			r.URL.RequestURI(),
-			"from:",
-			r.RemoteAddr,
-		)
-	}
-
 	if r.Method != http.MethodGet && r.Method != http.MethodHead {
 		server.fail(w, r, http.StatusMethodNotAllowed, "method not allowed")
 		return

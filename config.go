@@ -127,7 +127,7 @@ func initUser() error {
 		configChanged = true
 	}
 
-	if config.Password == "" && passwordFlag == "" {
+	if config.Password == "" {
 		password, err := randomPassword(16)
 		if err != nil {
 			return err
@@ -140,7 +140,7 @@ func initUser() error {
 		record.Info("username:", config.Username)
 		record.Info("password:", password)
 		record.Info("stored hashed in", configPath)
-		record.Info("change it with `next-index config -P`")
+		record.Info("change it with `next-index passwd`")
 	}
 
 	return nil

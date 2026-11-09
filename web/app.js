@@ -46,7 +46,7 @@
 
 		if (window.matchMedia) {
 			window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
-				renderTopbar();
+				syncTheme();
 			});
 		}
 
@@ -56,8 +56,7 @@
 			}
 
 			state.theme = event.newValue === "light" || event.newValue === "dark" ? event.newValue : "";
-			applyTheme();
-			renderTopbar();
+			syncTheme();
 		});
 	}
 
@@ -69,6 +68,10 @@
 		return "light";
 	}
 
+	function syncTheme() {
+		applyTheme();
+		renderTopbar();
+	}
 	function currentTheme() {
 		return state.theme || systemTheme();
 	}
@@ -120,6 +123,7 @@
 		copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
 		move: '<path d="M3 12h11"/><path d="m10 8 4 4-4 4"/><path d="M17 4h4v16h-4"/>',
 		more: '<circle cx="5" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="2.2" fill="currentColor" stroke="none"/>',
+		eye: '<path d="M3 12a9 6.5 0 0 1 18 0 9 6.5 0 0 1-18 0Z"/><circle cx="12" cy="12" r="3"/>',
 		select: '<rect x="3" y="3" width="18" height="18" rx="4"/><path d="m8 12 2.5 2.5L16 9"/>',
 		list: '<path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
 		grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'
@@ -463,7 +467,7 @@
 			}
 
 			renderPage();
-			openLogin("Your session expired. Sign in again to manage files.");
+			openLogin();
 			return;
 		}
 
@@ -805,74 +809,76 @@
 	}
 
 
-	function handleAction(action, name) {
-		if (action === "mkdir") {
+	function toggleSelection() {
+		state.selecting = !state.selecting;
+
+		if (!state.selecting) {
+			state.selection = {};
+		}
+
+		renderBody();
+	}
+	var shellActions = {
+		mkdir: function () {
 			openMkdir();
-			return;
-		}
-
-		if (action === "upload") {
+		},
+		upload: function () {
 			openUpload();
-			return;
-		}
-
-		if (action === "login") {
+		},
+		login: function () {
 			openLogin();
-			return;
-		}
-
-		if (action === "back") {
+		},
+		back: function () {
 			window.location.href = "../";
-			return;
-		}
-
-		if (action === "toggle-selection") {
-			state.selecting = !state.selecting;
-
-			if (!state.selecting) {
-				state.selection = {};
-			}
-
-			renderBody();
-			return;
-		}
-
-		if (action === "batch-copy") {
+		},
+		"toggle-selection": toggleSelection,
+		"batch-copy": function () {
 			openTransfer("copy", selected());
-			return;
-		}
-
-		if (action === "batch-move") {
+		},
+		"batch-move": function () {
 			openTransfer("move", selected());
-			return;
-		}
-
-		if (action === "batch-delete") {
+		},
+		"batch-delete": function () {
 			openDelete(selected());
+		}
+	};
+	var entryActions = {
+		details: function (entry) {
+			openDetails(entry);
+		},
+		rename: function (entry) {
+			openRename(entry);
+		},
+		delete: function (entry) {
+			openDelete([entry.name]);
+		},
+		copy: function (entry) {
+			openTransfer("copy", [entry.name]);
+		},
+		move: function (entry) {
+			openTransfer("move", [entry.name]);
+		}
+	};
+	function handleAction(action, name) {
+		var run = shellActions[action];
+
+		if (run) {
+			run();
 			return;
 		}
 
-		var entry = state.entries.filter(function (item) {
+		var entry = state.entries.find(function (item) {
 			return item.name === name;
-		})[0];
+		});
 
 		if (!entry) {
 			return;
 		}
 
-		if (action === "details") {
-			openDetails(entry);
-			return;
-		}
+		run = entryActions[action];
 
-		if (action === "rename") {
-			openRename(entry);
-		} else if (action === "delete") {
-			openDelete([entry.name]);
-		} else if (action === "copy") {
-			openTransfer("copy", [entry.name]);
-		} else if (action === "move") {
-			openTransfer("move", [entry.name]);
+		if (run) {
+			run(entry);
 		}
 	}
 	function toggleSelect(name) {
@@ -915,7 +921,7 @@
 		localStorage.setItem("next-index-view", state.view);
 		renderBody();
 	}
-	function toggleTheme() {
+	function flipTheme() {
 		var next = currentTheme() === "dark" ? "light" : "dark";
 
 		if (next === systemTheme()) {
@@ -927,6 +933,9 @@
 		}
 
 		applyTheme();
+	}
+	function toggleTheme() {
+		flipTheme();
 		renderTopbar();
 	}
 	function loginNext() {
@@ -939,21 +948,23 @@
 		return "/";
 	}
 
-	function loginFormMarkup(message, closable) {
+	function loginFormMarkup(closable) {
 		return (
-			'<form id="login-form" novalidate>' +
-			'<div class="dialog-head"><div><h2>Sign in</h2></div>' +
-			(closable ? '<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button>" : "") +
-			"</div>" +
-			'<p class="sub">' + (message ? esc(message) : "Browsing is public. Sign in to upload, rename, create and delete files.") + "</p>" +
+			'<form id="login-form" novalidate aria-label="Sign in">' +
+			(closable
+				? '<div class="dialog-head"><h2>Sign in</h2><button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>"
+				: "") +
 			'<div class="field"><label for="login-user">Username</label>' +
-			'<input class="input" id="login-user" name="username" autocomplete="username" spellcheck="false"></div>' +
+			'<input class="input" id="login-user" name="username" autocomplete="username" autocapitalize="off" spellcheck="false"></div>' +
 			'<div class="field"><label for="login-password">Password</label>' +
-			'<input class="input" id="login-password" name="password" type="password" autocomplete="current-password"></div>' +
+			'<div class="input-wrap">' +
+			'<input class="input" id="login-password" name="password" type="password" autocomplete="current-password" autocapitalize="off">' +
+			'<button type="button" class="input-reveal" id="login-reveal" aria-label="Show password">' + icon("eye") + "</button>" +
+			"</div></div>" +
 			'<div class="form-error" id="login-error"></div>' +
 			'<div class="dialog-actions">' +
 			(closable ? '<button type="button" class="btn" data-close>Cancel</button>' : "") +
-			'<button type="submit" class="btn btn-primary" id="login-submit">Sign in</button></div>' +
+			'<button type="submit" class="btn btn-primary login-submit" id="login-submit">Sign in</button></div>' +
 			"</form>"
 		);
 	}
@@ -964,6 +975,20 @@
 		var submitButton = document.getElementById("login-submit");
 		var userInput = document.getElementById("login-user");
 		var passwordInput = document.getElementById("login-password");
+
+		var revealButton = document.getElementById("login-reveal");
+
+		revealButton.addEventListener("mousedown", function (event) {
+			event.preventDefault();
+		});
+
+		revealButton.addEventListener("click", function () {
+			var show = passwordInput.type === "password";
+
+			passwordInput.type = show ? "text" : "password";
+			revealButton.classList.toggle("on", show);
+			revealButton.setAttribute("aria-label", show ? "Hide password" : "Show password");
+		});
 
 		userInput.value = state.username || "";
 		(passwordInput.value ? passwordInput : userInput).focus();
@@ -1010,9 +1035,9 @@
 		});
 	}
 
-	function openLogin(message) {
+	function openLogin() {
 		if (!state.writable) {
-			toast("error", "Write access is disabled. Run `next-index config -P` on the server to enable it.");
+			toast("error", "Write access is disabled. Run `next-index passwd` on the server to enable it.");
 			return;
 		}
 
@@ -1020,7 +1045,7 @@
 			return;
 		}
 
-		openModal(loginFormMarkup(message, true));
+		openModal(loginFormMarkup(true));
 		bindLoginForm();
 	}
 
@@ -1030,11 +1055,22 @@
 		footer.innerHTML = "";
 		main.innerHTML =
 			'<div class="dialog login-card">' +
-			'<div class="login-brand">' + icon("layers") + "<span>" + esc(state.site || "NEXT_INDEX") + "</span></div>" +
-			loginFormMarkup("This server only shows its files to signed-in visitors.", false) +
+			'<button type="button" class="icon-btn login-theme" id="login-theme" title="Toggle theme" aria-label="Toggle theme">' +
+			(currentTheme() === "dark" ? icon("sun") : icon("moon")) +
+			"</button>" +
+			'<div class="login-brand"><img class="login-mark" src="/@next-index/assets/favicon.svg" alt="">' +
+			"<span>" + esc(state.site || "NEXT_INDEX") + "</span></div>" +
+			loginFormMarkup(false) +
 			"</div>";
 
 		bindLoginForm();
+
+		var loginTheme = document.getElementById("login-theme");
+
+		loginTheme.addEventListener("click", function () {
+			flipTheme();
+			loginTheme.innerHTML = currentTheme() === "dark" ? icon("sun") : icon("moon");
+		});
 	}
 
 	function logout() {
@@ -1057,7 +1093,7 @@
 	}
 	function openMkdir() {
 		if (!state.authenticated) {
-			openLogin("Sign in to create folders.");
+			openLogin();
 			return;
 		}
 
@@ -1103,7 +1139,7 @@
 	}
 	function openRename(entry) {
 		if (!state.authenticated) {
-			openLogin("Sign in to rename files.");
+			openLogin();
 			return;
 		}
 
@@ -1138,7 +1174,7 @@
 		}
 
 		if (!state.authenticated) {
-			openLogin("Sign in to " + kind + " files.");
+			openLogin();
 			return;
 		}
 
@@ -1178,7 +1214,7 @@
 		}
 
 		if (!state.authenticated) {
-			openLogin("Sign in to delete files.");
+			openLogin();
 			return;
 		}
 
@@ -1238,7 +1274,7 @@
 		}
 
 		if (!state.authenticated) {
-			openLogin("Sign in to upload files.");
+			openLogin();
 			return;
 		}
 

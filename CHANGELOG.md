@@ -3,6 +3,28 @@
 All notable changes to NEXT_INDEX are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## 1.0.0-rc1 - 2026-11-09
+
+### Added
+
+- `next-index passwd` sets the password on the terminal: asked twice, never
+  echoed, and the terminal is restored even when the prompt is interrupted.
+- The login page carries the theme button and the site mark from the favicon.
+- A reveal button in the password field.
+
+### Changed
+
+- `-P, --password` is gone, so a password no longer ends up in the shell
+  history or the process list.
+- The interface sits on a four pixel grid with four text sizes (16, 14, 12 and
+  10), and the login card is 400px wide.
+- Every request is logged apart from the embedded assets.
+- Front end actions are dispatched through one table.
+
+### Removed
+
+- The subtitle under the login card.
+
 ## 0.0.10-beta - 2026-11-09
 
 ### Added

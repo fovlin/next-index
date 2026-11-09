@@ -135,7 +135,15 @@ func (server *Server) wrap(next http.Handler) http.Handler {
 		}()
 
 		next.ServeHTTP(w, r)
+
+		if server.loggable(r.URL.Path) {
+			record.Info(r.Method, r.URL.RequestURI(), "from:", r.RemoteAddr)
+		}
 	})
+}
+
+func (server *Server) loggable(urlPath string) bool {
+	return !server.Quiet && !strings.HasPrefix(urlPath, "/@next-index/assets/") && urlPath != "/favicon.ico"
 }
 
 func (server *Server) serveAsset(w http.ResponseWriter, r *http.Request) {

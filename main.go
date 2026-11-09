@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -12,9 +13,10 @@ import (
 
 	"acovia.net/opt"
 	"acovia.net/record"
+	"golang.org/x/term"
 )
 
-const version = "0.0.10-beta"
+const version = "1.0.0-rc1"
 
 var (
 	cmdMap map[string]CmdFunc
@@ -26,7 +28,6 @@ var (
 	portFlag          string
 	rootFlag          string
 	userFlag          string
-	passwordFlag      string
 	allowOriginFlag   string
 	upfileMaxSizeFlag string
 	tlsFlag           bool
@@ -85,6 +86,7 @@ func initProgram() error {
 		"run":    newCmdFunction(true, run),
 		"config": newCmdFunction(true, setConfig),
 		"unset":  newCmdFunction(true, unsetConfig),
+		"passwd": newCmdFunction(true, setPassword),
 		"about":  newCmdFunction(false, about),
 		"help":   newCmdFunction(false, help),
 	}
@@ -94,7 +96,6 @@ func initProgram() error {
 	opt.StringVar(&rootFlag, "r", "root", "")
 	opt.StringVar(&userFlag, "u", "user", "")
 	opt.StringVar(&upfileMaxSizeFlag, "x", "max-size", "")
-	opt.StringVar(&passwordFlag, "P", "password", "")
 	opt.StringVar(&allowOriginFlag, "o", "cross-origin", "")
 
 	opt.BoolSwitch(&tlsFlag, "s", "tls")
@@ -194,15 +195,6 @@ func parseFlag() error {
 
 	if userFlag != "" {
 		config.Username = userFlag
-		configChanged = true
-	}
-
-	if passwordFlag != "" {
-		if len(passwordFlag) < 8 {
-			record.Warn("this password is shorter than 8 characters")
-		}
-
-		config.Password = hashPassword(passwordFlag)
 		configChanged = true
 	}
 
@@ -323,6 +315,79 @@ func unsetConfig() error {
 	return nil
 }
 
+func setPassword() error {
+	password, err := readPassword("new password: ")
+	if err != nil {
+		return err
+	}
+
+	if password == "" {
+		return fmt.Errorf("the password cannot be empty")
+	}
+
+	again, err := readPassword("repeat password: ")
+	if err != nil {
+		return err
+	}
+
+	if password != again {
+		return fmt.Errorf("the passwords do not match")
+	}
+
+	if len(password) < 8 {
+		record.Warn("this password is shorter than 8 characters")
+	}
+
+	config.Password = hashPassword(password)
+	configChanged = true
+
+	if err := saveConfig(); err != nil {
+		return err
+	}
+
+	fmt.Println("password updated")
+
+	return nil
+}
+
+// readPassword turns the echo off for one line and always puts the terminal
+// back, including when the prompt is interrupted.
+func readPassword(prompt string) (string, error) {
+	fd := int(os.Stdin.Fd())
+
+	state, stateErr := term.GetState(fd)
+
+	interrupt := make(chan os.Signal, 1)
+	done := make(chan struct{})
+	signal.Notify(interrupt, os.Interrupt)
+
+	go func() {
+		select {
+		case <-interrupt:
+			if stateErr == nil {
+				_ = term.Restore(fd, state)
+			}
+			os.Exit(1)
+		case <-done:
+		}
+	}()
+
+	fmt.Fprint(os.Stderr, prompt)
+
+	raw, err := term.ReadPassword(fd)
+
+	fmt.Fprintln(os.Stderr)
+
+	close(done)
+	signal.Stop(interrupt)
+
+	if err != nil {
+		return "", fmt.Errorf("read password: %w", err)
+	}
+
+	return string(raw), nil
+}
+
 func about() error {
 	record.Println("NEXT_INDEX", version)
 	record.Println("a small, plain web file server with uploads and file management")
@@ -349,6 +414,7 @@ usage:
 commands:
   run        serve a directory over http (default)
   config     update the config from flags, or print it
+  passwd     set a new password (asked twice, never echoed)
   about      print build information
   help       print this message
 
@@ -357,7 +423,6 @@ options:
   -p, --port <port>      port for run/config (default: 8080)
   -r, --root <dir>       root directory for run/config
   -u, --user <name>      username for run/config
-  -P, --password <pass>  password for run/config (hashed; leaks into shell history)
   -x, --max-size <mb>    max upload size in megabytes (default: 1024, 0 for no limit)
   -s, --tls              serve https, using the certificate and key below
       --tls-cert <file>  TLS certificate for run/config
@@ -374,7 +439,7 @@ examples:
   next-index ~/Downloads
   next-index run -p 9000 -i 127.0.0.1 ./public
   next-index config -p 9000 -i 127.0.0.1
-  next-index config -u admin -P "new password"
+  next-index passwd
   next-index config -r ~/Downloads
   next-index config -o http://localhost:3000
   next-index config

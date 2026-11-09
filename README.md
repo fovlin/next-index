@@ -19,7 +19,8 @@ Two ways to use it:
 ```
 
 The first run writes `~/.next_index.json`, generates a password and prints it
-once. Use `next-index config <option>` to change what is stored there.
+once. Use `next-index config <option>` to change what is stored there, and
+`next-index passwd` to set a new password.
 
 ## Features
 
@@ -43,6 +44,7 @@ next-index [command] [options] [root]
 | `run` | serve a directory (default command) |
 | `config` | save flags to the config, or print the current config |
 | `unset <field>` | remove one top level key from the config file |
+| `passwd` | set a new password: asked twice, never echoed |
 | `about` | build information |
 | `help` | usage text |
 
@@ -52,7 +54,6 @@ next-index [command] [options] [root]
 | `-p, --port <port>` | port (default `8080`) |
 | `-r, --root <dir>` | directory to serve |
 | `-u, --user <name>` | username for writes (default `admin`) |
-| `-P, --password <pass>` | password for writes, hashed before storing (ends up in shell history) |
 | `-x, --max-size <mb>` | upload limit in MiB (default `1024`), `0` means no limit |
 | `-o, --cross-origin <origin>` | exact Origin allowed to call the API |
 | `-q, --quiet` | do not log every request |
