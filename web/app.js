@@ -569,13 +569,19 @@
 		summaryRoot.classList.toggle("selecting", state.selecting);
 
 		var entries = state.entries;
-		var directories = entries.filter(function (entry) {
-			return entry.kind === "dir";
-		}).length;
+		var directories = 0;
+		var totalSize = 0;
+
+		entries.forEach(function (entry) {
+			if (entry.kind === "dir") {
+				directories++;
+				return;
+			}
+
+			totalSize += entry.size || 0;
+		});
+
 		var files = entries.length - directories;
-		var totalSize = entries.reduce(function (sum, entry) {
-			return sum + (entry.kind === "file" ? entry.size || 0 : 0);
-		}, 0);
 
 		var parts = [
 			"<span><b>" + directories + "</b> " + plural(directories, "folder", "folders") + "</span>",
@@ -646,8 +652,8 @@
 				'<div class="empty"><div class="empty-icon">' + icon("folderOpen") + "</div>" +
 				"<h2>This folder is empty</h2>" +
 				"<p>Nothing here yet. Upload a file to get started.</p>" +
-				'<div>' +
-				'<button class="btn" data-action="back">' + icon("parent") + "<span>Back</span></button>" +
+				"<div>" +
+				(state.path === "/" ? "" : '<button class="btn" data-action="back">' + icon("parent") + "<span>Back</span></button>") +
 				(state.authenticated
 					? '<button class="btn btn-primary" data-action="upload">' + icon("upload") + "<span>Upload files</span></button>"
 					: '<button class="btn btn-primary" data-action="login">' + icon("login") + "<span>Sign in to upload</span></button>") +
@@ -732,7 +738,7 @@
 			"<td>" +
 			'<' + link[0] + ' class="entry"' + link[1] + '>' +
 			'<span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span>" +
-			'<span class="name-wrap"><span class="entry-name">' + nameMarkup(entry) + "</span>" +
+			'<span class="name-wrap"><span class="entry-name" title="' + esc(entry.name) + '">' + nameMarkup(entry) + "</span>" +
 			(entry.link ? '<span class="badge">link</span>' : "") +
 			"</span>" +
 			"</" + link[0] + ">" +
@@ -865,14 +871,49 @@
 			run(entry);
 		}
 	}
-	function toggleSelect(name) {
-		if (state.selection[name]) {
-			delete state.selection[name];
-		} else {
-			state.selection[name] = true;
+	function syncSelectAll() {
+		var checkbox = document.getElementById("select-all");
+
+		if (!checkbox) {
+			return;
 		}
 
-		renderBody();
+		var entries = visibleEntries();
+		var picked = entries.filter(function (entry) {
+			return state.selection[entry.name];
+		}).length;
+
+		checkbox.checked = entries.length > 0 && picked === entries.length;
+		checkbox.indeterminate = picked > 0 && picked < entries.length;
+	}
+	function markRows(name, selected) {
+		Array.prototype.forEach.call(listing.querySelectorAll("tr[data-name], .tile[data-name]"), function (item) {
+			if (item.dataset.name !== name) {
+				return;
+			}
+
+			item.classList.toggle("selected", selected);
+
+			var checkbox = item.querySelector("[data-select]");
+
+			if (checkbox) {
+				checkbox.checked = selected;
+			}
+		});
+	}
+	function setSelected(name, selected) {
+		if (selected) {
+			state.selection[name] = true;
+		} else {
+			delete state.selection[name];
+		}
+
+		markRows(name, selected);
+		syncSelectAll();
+		renderSummary();
+	}
+	function toggleSelect(name) {
+		setSelected(name, !state.selection[name]);
 	}
 	function toggleSelectAll() {
 		var entries = visibleEntries();
@@ -880,15 +921,28 @@
 			return state.selection[entry.name];
 		});
 
-		entries.forEach(function (entry) {
-			if (all) {
-				delete state.selection[entry.name];
-			} else {
+		state.selection = {};
+
+		if (!all) {
+			entries.forEach(function (entry) {
 				state.selection[entry.name] = true;
+			});
+		}
+
+		Array.prototype.forEach.call(listing.querySelectorAll("tr[data-name], .tile[data-name]"), function (item) {
+			var selected = !!state.selection[item.dataset.name];
+
+			item.classList.toggle("selected", selected);
+
+			var checkbox = item.querySelector("[data-select]");
+
+			if (checkbox) {
+				checkbox.checked = selected;
 			}
 		});
 
-		renderBody();
+		syncSelectAll();
+		renderSummary();
 	}
 	function toggleSort(key) {
 		if (state.sort.key === key) {
@@ -975,7 +1029,12 @@
 		});
 
 		userInput.value = state.username || "";
-		(passwordInput.value ? passwordInput : userInput).focus();
+
+		if (passwordInput.value) {
+			passwordInput.focus();
+		} else {
+			userInput.focus();
+		}
 
 		form.addEventListener("submit", function (event) {
 			event.preventDefault();
@@ -1473,8 +1532,11 @@
 		renderPage();
 	}
 	function bindEvents() {
+		var resizeTimer = 0;
+
 		window.addEventListener("resize", function () {
-			fitSummary();
+			clearTimeout(resizeTimer);
+			resizeTimer = setTimeout(fitSummary, 100);
 		});
 
 		summaryActions.addEventListener("click", function (event) {
@@ -1504,15 +1566,7 @@
 
 			if (checkbox) {
 				event.stopPropagation();
-				state.selection[checkbox.dataset.select] = checkbox.checked;
-
-				var item = checkbox.closest("tr, .tile");
-
-				if (item) {
-					item.classList.toggle("selected", checkbox.checked);
-				}
-
-				renderSummary();
+				setSelected(checkbox.dataset.select, checkbox.checked);
 				return;
 			}
 
@@ -1583,6 +1637,10 @@
 			var tag = (target.tagName || "").toLowerCase();
 
 			if (tag === "input" || tag === "textarea" || tag === "select" || target.isContentEditable) {
+				return;
+			}
+
+			if (modalRoot.firstChild || document.getElementById("row-menu")) {
 				return;
 			}
 
