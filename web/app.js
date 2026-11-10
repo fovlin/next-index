@@ -623,7 +623,7 @@
 						'<button class="btn btn-sm" data-action="batch-move">' + icon("move") + "<span>Move</span></button>" +
 						'<button class="btn btn-sm" data-action="batch-delete">' + icon("trash") + "<span>Delete</span></button>"
 					: "") +
-				'<button class="btn-sm" data-action="toggle-selection" title="Done" aria-label="Done">' + icon("x") + "</button>" +
+				'<button class="icon-btn" data-action="toggle-selection" title="Done" aria-label="Done">' + icon("x") + "</button>" +
 				"</div>";
 		}
 
@@ -634,39 +634,6 @@
 			'<button data-view="list" class="' + (state.view === "list" ? "active" : "") + '" title="List view" aria-label="List view">' + icon("list") + "</button>" +
 			'<button data-view="grid" class="' + (state.view === "grid" ? "active" : "") + '" title="Grid view" aria-label="Grid view">' + icon("grid") + "</button>" +
 			"</div>";
-
-		fitSummary();
-	}
-	function fitSummary() {
-		var overflowing = function () {
-			return summaryRoot.scrollWidth > summaryRoot.clientWidth + 1;
-		};
-
-		summaryRoot.classList.remove("compact", "compact-tight");
-
-		if (!overflowing()) {
-			return;
-		}
-
-		summaryRoot.classList.add("compact");
-
-		var batch = summaryRoot.querySelector(".batch");
-
-		if (!batch) {
-			return;
-		}
-
-		var needed = 0;
-
-		Array.prototype.forEach.call(batch.children, function (child) {
-			needed += child.getBoundingClientRect().width;
-		});
-
-		needed += parseFloat(getComputedStyle(batch).columnGap || 0) * Math.max(0, batch.children.length - 1);
-
-		if (needed > batch.clientWidth + 1) {
-			summaryRoot.classList.add("compact-tight");
-		}
 	}
 	function renderListing() {
 		var entries = visibleEntries();
@@ -1547,13 +1514,6 @@
 		});
 	}
 	function bindEvents() {
-		var resizeTimer = 0;
-
-		window.addEventListener("resize", function () {
-			clearTimeout(resizeTimer);
-			resizeTimer = setTimeout(fitSummary, 100);
-		});
-
 		summaryActions.addEventListener("click", function (event) {
 			var viewButton = event.target.closest("[data-view]");
 

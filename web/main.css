@@ -346,6 +346,7 @@ button {
 	flex-wrap: nowrap;
 	min-width: 0;
 	overflow: hidden;
+	container-type: inline-size;
 }
 
 .stats {
@@ -388,39 +389,6 @@ button {
 .summary.selecting .summary-actions > :is([data-action="mkdir"], [data-action="toggle-selection"]),
 .summary.selecting .segmented {
 	display: none;
-}
-
-.summary.compact .stats {
-	display: none;
-}
-
-.summary.compact .summary-actions {
-	flex: 1 1 auto;
-	justify-content: flex-end;
-	min-width: 0;
-}
-
-.summary.compact .batch {
-	flex: 1 1 auto;
-	min-width: 0;
-	flex-wrap: nowrap;
-	justify-content: flex-end;
-}
-
-.summary.compact .batch > * {
-	flex: 0 0 auto;
-}
-
-.summary.compact-tight .batch {
-	height: auto;
-	min-height: 32px;
-	flex-wrap: wrap;
-	justify-content: center;
-}
-
-.summary.compact-tight .batch > span {
-	flex: 1 0 100%;
-	text-align: center;
 }
 
 .segmented {
@@ -1433,6 +1401,41 @@ th.sorted.desc .arrow {
 @media (max-width: 320px) {
 	.brand-name {
 		display: none;
+	}
+}
+
+@container (max-width: 620px) {
+	.summary.selecting .stats {
+		display: none;
+	}
+}
+
+@container (max-width: 420px) {
+	.stats {
+		display: none;
+	}
+}
+
+@container (max-width: 250px) {
+	.summary-actions {
+		flex: 0 1 auto;
+		min-width: 0;
+	}
+
+	.batch {
+		height: auto;
+		min-height: 32px;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+
+	.batch > * {
+		flex: 0 0 auto;
+	}
+
+	.batch > span {
+		flex: 1 0 100%;
+		text-align: center;
 	}
 }
 
