@@ -288,20 +288,10 @@
 		var name = button.dataset.menu;
 		var menu = document.createElement("div");
 
-		var entry = state.entries.find(function (item) {
-			return item.name === name;
-		});
-
-		var download = "";
-
-		if (entry && entry.kind === "dir") {
-			download = '<button type="button" data-action="download" data-name="' + esc(name) + '">' + icon("download") + "<span>Download</span></button>";
-		}
-
 		menu.className = "menu";
 		menu.id = "row-menu";
 		menu.innerHTML =
-			download +
+			'<button type="button" data-action="download" data-name="' + esc(name) + '">' + icon("download") + "<span>Download</span></button>" +
 			'<button type="button" data-action="details" data-name="' + esc(name) + '">' + icon("info") + "<span>Details</span></button>" +
 			'<button type="button" data-action="rename" data-name="' + esc(name) + '">' + icon("pencil") + "<span>Rename</span></button>" +
 			'<button type="button" data-action="move" data-name="' + esc(name) + '">' + icon("move") + "<span>Move</span></button>" +

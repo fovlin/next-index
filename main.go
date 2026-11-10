@@ -27,6 +27,7 @@ var (
 	userFlag          string
 	allowOriginFlag   string
 	upfileMaxSizeFlag string
+	titleFlag         string
 	tlsFlag           bool
 	tlsCertFlag       string
 	tlsKeyFlag        string
@@ -94,6 +95,7 @@ func initProgram() error {
 	opt.StringVar(&userFlag, "u", "user", "")
 	opt.StringVar(&upfileMaxSizeFlag, "x", "max-size", "")
 	opt.StringVar(&allowOriginFlag, "o", "cross-origin", "")
+	opt.StringVar(&titleFlag, "T", "title", "")
 
 	opt.BoolSwitch(&tlsFlag, "s", "tls")
 	opt.StringVar(&tlsCertFlag, "", "tls-cert", "")
@@ -224,6 +226,11 @@ func parseFlag() error {
 		configChanged = true
 	}
 
+	if titleFlag != "" {
+		config.Title = titleFlag
+		configChanged = true
+	}
+
 	if allowOriginFlag != "" {
 		origin, err := normalizeOrigin(allowOriginFlag)
 		if err != nil {
@@ -295,6 +302,7 @@ options:
   -r, --root <dir>       root directory for run/config
   -u, --user <name>      username for run/config
   -x, --max-size <mb>    max upload size in megabytes (default: 1024, 0 for no limit)
+  -T, --title <name>     site title (default: NEXT_INDEX)
   -s, --tls              serve https, using the certificate and key below
       --tls-cert <file>  TLS certificate for run/config
       --tls-key <file>   TLS private key for run/config

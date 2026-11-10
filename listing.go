@@ -220,7 +220,7 @@ func (server *Server) serveFile(w http.ResponseWriter, r *http.Request, fsPath s
 
 	extension := strings.ToLower(strings.TrimPrefix(filepath.Ext(info.Name()), "."))
 
-	if attachmentExtensions[extension] {
+	if attachmentExtensions[extension] || r.URL.Query().Get("download") == "1" {
 		w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{
 			"filename": info.Name(),
 		}))

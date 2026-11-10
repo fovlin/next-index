@@ -2,11 +2,10 @@ package main
 
 import (
 	"archive/zip"
-	"fmt"
 	"io"
 	"io/fs"
+	"mime"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,7 +23,9 @@ func (server *Server) serveZip(w http.ResponseWriter, r *http.Request, dirPath s
 	name += ".zip"
 
 	w.Header().Set("Content-Type", "application/zip")
-	w.Header().Set("Content-Disposition", attachmentHeader(name))
+	w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{
+		"filename": name,
+	}))
 	w.Header().Set("Cache-Control", "no-store")
 
 	if r.Method == http.MethodHead {
@@ -97,16 +98,4 @@ func (server *Server) serveZip(w http.ResponseWriter, r *http.Request, dirPath s
 	if walkErr != nil {
 		record.Warn("archive", dirPath, ":", walkErr)
 	}
-}
-
-func attachmentHeader(name string) string {
-	fallback := strings.Map(func(char rune) rune {
-		if char < 0x20 || char > 0x7e || char == '"' || char == '\\' {
-			return '_'
-		}
-
-		return char
-	}, name)
-
-	return fmt.Sprintf("attachment; filename=\"%v\"; filename*=UTF-8''%v", fallback, url.PathEscape(name))
 }

@@ -55,6 +55,7 @@ next-index [command] [options] [root]
 | `-r, --root <dir>` | directory to serve |
 | `-u, --user <name>` | username for writes (default `admin`) |
 | `-x, --max-size <mb>` | upload limit in MiB (default `1024`), `0` means no limit |
+| `-T, --title <name>` | site title (default `NEXT_INDEX`) |
 | `-o, --cross-origin <origin>` | exact Origin allowed to call the API |
 | `-q, --quiet` | do not log every request |
 | `-c, --color` | colored log output |
