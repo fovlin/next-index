@@ -291,8 +291,8 @@
 		menu.className = "menu";
 		menu.id = "row-menu";
 		menu.innerHTML =
-			'<button type="button" data-action="download" data-name="' + esc(name) + '">' + icon("download") + "<span>Download</span></button>" +
 			'<button type="button" data-action="details" data-name="' + esc(name) + '">' + icon("info") + "<span>Details</span></button>" +
+			'<button type="button" data-action="download" data-name="' + esc(name) + '">' + icon("download") + "<span>Download</span></button>" +
 			'<button type="button" data-action="rename" data-name="' + esc(name) + '">' + icon("pencil") + "<span>Rename</span></button>" +
 			'<button type="button" data-action="move" data-name="' + esc(name) + '">' + icon("move") + "<span>Move</span></button>" +
 			'<button type="button" data-action="copy" data-name="' + esc(name) + '">' + icon("copy") + "<span>Copy</span></button>" +
@@ -314,8 +314,8 @@
 			top = rect.top + scrollY - menu.offsetHeight - 4;
 		}
 
-		menu.style.left = Math.max(minLeft, left) + "px";
-		menu.style.top = Math.max(minTop, top) + "px";
+		menu.style.left = Math.max(minLeft, Math.min(left, maxLeft)) + "px";
+		menu.style.top = Math.max(minTop, Math.min(top, maxTop)) + "px";
 	}
 	function closeMenu() {
 		var menu = document.getElementById("row-menu");
