@@ -3,14 +3,25 @@
 All notable changes to NEXT_INDEX are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
-## 1.0.0 - 2026-11-10
+## 1.0.1 - 2026-11-10
 
 ### Added
 
-- `?download=1` streams a folder as a zip while the walk runs. Folders offer it
-  in the row menu to signed-in visitors only; files answer the same parameter
-  with an attachment.
+- `?download=1` streams a folder as a zip while the walk runs; the row menu
+  offers it, and files answer the same parameter with an attachment.
 - `-T, --title` sets the site title that the config already stored.
+
+### Changed
+
+- Downloading a folder now needs a signed-in visitor, so a public install no
+  longer hands the whole tree out as one file. A single file stays public.
+
+### Fixed
+
+- The row menu stays inside the viewport on a short screen, and scrolls when it
+  is taller than the screen.
+
+## 1.0.0 - 2026-11-10
 
 ### Changed
 
