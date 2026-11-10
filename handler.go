@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 
@@ -12,18 +11,25 @@ import (
 )
 
 func (server *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet && r.Method != http.MethodHead {
-		server.fail(w, r, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-
 	if strings.HasPrefix(r.URL.Path, "/@next-index/api/") || strings.HasPrefix(r.URL.Path, "/@next-index/assets/") {
 		server.fail(w, r, http.StatusNotFound, "page not found")
 		return
 	}
 
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		server.fail(w, r, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+
 	if server.loginRequired(r) {
-		http.Redirect(w, r, loginRedirect(r), http.StatusSeeOther)
+		urlPath := r.URL.Path
+
+		server.renderPage(w, r, &listing{
+			Path:   urlPath,
+			Crumbs: makeCrumbs(urlPath),
+			Parent: Entry{Kind: "parent", Name: "/"},
+		})
+
 		return
 	}
 
@@ -68,23 +74,6 @@ func (server *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 	}
 
 	server.serveFile(w, r, fsPath, info)
-}
-
-func (server *Server) handleLoginPage(w http.ResponseWriter, r *http.Request) {
-	if !server.loginRequired(r) {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-
-	server.renderPage(w, r, &listing{Path: "/", Crumbs: makeCrumbs("/"), Parent: Entry{Kind: "parent", Name: "/"}})
-}
-
-func loginRedirect(r *http.Request) string {
-	if r.URL.Path == "/" {
-		return loginPath
-	}
-
-	return loginPath + "?next=" + url.QueryEscape(r.URL.RequestURI())
 }
 
 func (server *Server) fail(w http.ResponseWriter, r *http.Request, status int, message string) {

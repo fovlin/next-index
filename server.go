@@ -64,8 +64,6 @@ func newServer(cfg Config, root string) (*Server, error) {
 	}, nil
 }
 
-const loginPath = "/@next-index/login"
-
 func (server *Server) loginRequired(r *http.Request) bool {
 	return server.Config.ForceLogin && !server.authenticated(r)
 }
@@ -76,7 +74,6 @@ func (server *Server) handler() http.Handler {
 	mux.HandleFunc("GET /@next-index/assets/", server.serveAsset)
 	mux.HandleFunc("GET /favicon.ico", server.serveAsset)
 
-	mux.HandleFunc("GET "+loginPath, server.handleLoginPage)
 	mux.HandleFunc("GET /@next-index/api/session", server.handleSession)
 	mux.HandleFunc("POST /@next-index/api/login", server.handleLogin)
 	mux.HandleFunc("POST /@next-index/api/logout", server.handleLogout)
@@ -87,10 +84,6 @@ func (server *Server) handler() http.Handler {
 	mux.HandleFunc("POST /@next-index/api/move", server.handleMove)
 	mux.HandleFunc("POST /@next-index/api/copy", server.handleCopy)
 	mux.HandleFunc("POST /@next-index/api/delete", server.handleDelete)
-
-	mux.HandleFunc("/@next-index/api/", func(w http.ResponseWriter, r *http.Request) {
-		server.apiError(w, http.StatusNotFound, "not found")
-	})
 
 	mux.HandleFunc("/", server.handleRoot)
 

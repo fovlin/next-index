@@ -15,6 +15,8 @@ All notable changes to NEXT_INDEX are documented here. The project follows
 
 - Downloading a folder now needs a signed-in visitor, so a public install no
   longer hands the whole tree out as one file. A single file stays public.
+- Force-login renders the sign-in card at the requested URL instead of sending
+  the browser to `/@next-index/login`; signing in reloads that same URL.
 
 ### Fixed
 

@@ -15,8 +15,6 @@
 
 	var LOCALE = "en-US";
 
-
-
 	if (state) {
 		state.entries = Array.isArray(state.entries) ? state.entries : [];
 		state.crumbs = Array.isArray(state.crumbs) ? state.crumbs : [];
@@ -54,31 +52,6 @@
 			state.theme = event.newValue === "light" || event.newValue === "dark" ? event.newValue : "";
 			syncTheme();
 		});
-	}
-
-	function systemTheme() {
-		if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-			return "dark";
-		}
-
-		return "light";
-	}
-
-	function syncTheme() {
-		applyTheme();
-		renderTopbar();
-	}
-	function currentTheme() {
-		return state.theme || systemTheme();
-	}
-
-	function applyTheme() {
-		if (state.theme) {
-			document.documentElement.dataset.theme = state.theme;
-			return;
-		}
-
-		delete document.documentElement.dataset.theme;
 	}
 
 	var FOLDER = '<path d="M5.5 4.75h4.3c.6 0 1.15.25 1.55.7l.9 1.05H18.5A2.5 2.5 0 0 1 21 9v7.75a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.75V7.25a2.5 2.5 0 0 1 2.5-2.5Z"/>';
@@ -177,6 +150,31 @@
 		}
 
 		return { key: "name", dir: 1 };
+	}
+
+	function systemTheme() {
+		if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+			return "dark";
+		}
+
+		return "light";
+	}
+
+	function syncTheme() {
+		applyTheme();
+		renderTopbar();
+	}
+	function currentTheme() {
+		return state.theme || systemTheme();
+	}
+
+	function applyTheme() {
+		if (state.theme) {
+			document.documentElement.dataset.theme = state.theme;
+			return;
+		}
+
+		delete document.documentElement.dataset.theme;
 	}
 	function esc(value) {
 		return String(value).replace(/[&<>"']/g, function (char) {
@@ -997,15 +995,6 @@
 		flipTheme();
 		renderTopbar();
 	}
-	function loginNext() {
-		var next = new URLSearchParams(window.location.search).get("next");
-
-		if (next && next.charAt(0) === "/" && next.charAt(1) !== "/" && next.indexOf("\\") === -1) {
-			return next;
-		}
-
-		return "/";
-	}
 
 	function loginFormMarkup(closable) {
 		return (
@@ -1082,7 +1071,7 @@
 					closeModal();
 
 					if (state.loginRequired) {
-						window.location.replace(loginNext());
+						window.location.replace(window.location);
 						return;
 					}
 
@@ -1543,15 +1532,6 @@
 			request.send(form);
 		});
 	}
-	if (state) {
-		if (state.loginRequired && !state.authenticated) {
-			renderLoginScreen();
-			return;
-		}
-
-		bindEvents();
-		renderPage();
-	}
 	function bindEvents() {
 		var resizeTimer = 0;
 
@@ -1688,6 +1668,16 @@
 			}
 		});
 
+	}
+
+	if (state) {
+		if (state.loginRequired && !state.authenticated) {
+			renderLoginScreen();
+			return;
+		}
+
+		bindEvents();
+		renderPage();
 	}
 
 })();
