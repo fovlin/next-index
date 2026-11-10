@@ -18,13 +18,8 @@
 	if (state) {
 		state.entries = Array.isArray(state.entries) ? state.entries : [];
 		state.crumbs = Array.isArray(state.crumbs) ? state.crumbs : [];
-		state.view = localStorage.getItem("next-index-view") === "grid" ? "grid" : "list";
 		var storedTheme = localStorage.getItem("next-index-theme");
 		state.theme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "";
-
-		if (parameters.get("view") === "grid" || parameters.get("view") === "list") {
-			state.view = parameters.get("view");
-		}
 
 		if (parameters.get("theme") === "light" || parameters.get("theme") === "dark") {
 			state.theme = parameters.get("theme");
@@ -95,8 +90,6 @@
 		more: '<circle cx="5" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="2.2" fill="currentColor" stroke="none"/>',
 		eye: '<path d="M3 12a9 6.5 0 0 1 18 0 9 6.5 0 0 1-18 0Z"/><circle cx="12" cy="12" r="3"/>',
 		select: '<rect x="3" y="3" width="18" height="18" rx="4"/><path d="m8 12 2.5 2.5L16 9"/>',
-		list: '<path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
-		grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'
 	};
 	var GROUPS = {
 		image: ["png", "jpg", "jpeg", "gif", "webp", "avif", "bmp", "ico", "svg", "tif", "tiff", "heic"],
@@ -627,13 +620,7 @@
 				"</div>";
 		}
 
-		summaryActions.innerHTML =
-			batch +
-			tools +
-			'<div class="segmented" role="group" aria-label="View mode">' +
-			'<button data-view="list" class="' + (state.view === "list" ? "active" : "") + '" title="List view" aria-label="List view">' + icon("list") + "</button>" +
-			'<button data-view="grid" class="' + (state.view === "grid" ? "active" : "") + '" title="Grid view" aria-label="Grid view">' + icon("grid") + "</button>" +
-			"</div>";
+		summaryActions.innerHTML = batch + tools;
 	}
 	function renderListing() {
 		var entries = visibleEntries();
@@ -663,7 +650,7 @@
 			return;
 		}
 
-		listing.innerHTML = state.view === "grid" ? gridMarkup(entries) : tableMarkup(entries);
+		listing.innerHTML = tableMarkup(entries);
 
 	}
 	function tableMarkup(entries) {
@@ -709,26 +696,11 @@
 
 		return '<input type="checkbox" id="select-all" aria-label="Select all"' + (checked ? " checked" : "") + ">";
 	}
-	function gridMarkup(entries) {
-		var lastPage = state.parent.name === "/" ? "" : itemMarkup(state.parent);
-
-		return (
-			'<div class="grid">' + lastPage + entries.map(itemMarkup).join("") + "</div>"
-		);
-	}
-	function entryTag(entry) {
-		if (state.selecting) {
-			return ["div", ""];
-		}
-
-		return ["a", ' href="' + esc(entry.href) + '"'];
-	}
-
 	function rowMarkup(entry) {
 		var type = typeOf(entry);
 		var size = entry.kind === "file" ? formatSize(entry.size) : "—";
 		var when = timeParts(entry.mod);
-		var link = entryTag(entry);
+		var link = state.selecting ? ["div", ""] : ["a", ' href="' + esc(entry.href) + '"'];
 
 		return (
 			'<tr' + (state.selection[entry.name] ? ' class="selected"' : "") + ' data-name="' + esc(entry.name) + '" data-href="' + esc(entry.href) + '">' +
@@ -745,25 +717,6 @@
 			'<td class="col-time time">' + esc(when.date) + "<small>" + esc(when.time) + "</small></td>" +
 			'<td class="col-actions"><div class="row-actions">' + menuMarkup(entry) + "</div></td>" +
 			"</tr>"
-		);
-	}
-	function itemMarkup(entry) {
-		var type = typeOf(entry);
-		var when = timeParts(entry.mod);
-		var link = entryTag(entry);
-		var menu = menuMarkup(entry);
-		var thumb = '<div class="thumb"><span class="entry-icon ' + type[1] + '">' + icon(type[0]) + "</span></div>";
-
-		return (
-			'<div class="tile' + (state.selection[entry.name] ? " selected" : "") + '" data-name="' + esc(entry.name) + '">' +
-			(state.selecting ? '<span class="tile-select">' + selectMarkup(entry) + "</span>" : "") +
-			'<' + link[0] + ' class="tile-main"' + link[1] + '>' +
-			thumb +
-			'<span class="tile-name" title="' + esc(entry.name) + '">' + esc(entry.name) + "</span>" +
-			'<span class="tile-meta"><span>' + esc(when.date) + "</span><span>" + esc(when.time) + "</span></span>" +
-			"</" + link[0] + ">" +
-			(menu ? '<div class="tile-actions row-actions">' + menu + "</div>" : "") +
-			"</div>"
 		);
 	}
 	function nameMarkup(entry) {
@@ -889,7 +842,7 @@
 		checkbox.indeterminate = picked > 0 && picked < entries.length;
 	}
 	function markRows(name, selected) {
-		Array.prototype.forEach.call(listing.querySelectorAll("tr[data-name], .tile[data-name]"), function (item) {
+		Array.prototype.forEach.call(listing.querySelectorAll("tr[data-name]"), function (item) {
 			if (item.dataset.name !== name) {
 				return;
 			}
@@ -929,7 +882,7 @@
 			});
 		}
 
-		Array.prototype.forEach.call(listing.querySelectorAll("tr[data-name], .tile[data-name]"), function (item) {
+		Array.prototype.forEach.call(listing.querySelectorAll("tr[data-name]"), function (item) {
 			var selected = !!state.selection[item.dataset.name];
 
 			item.classList.toggle("selected", selected);
@@ -953,11 +906,6 @@
 
 		localStorage.setItem("next-index-sort", JSON.stringify(state.sort));
 		renderListing();
-	}
-	function setView(view) {
-		state.view = view === "grid" ? "grid" : "list";
-		localStorage.setItem("next-index-view", state.view);
-		renderBody();
 	}
 	function flipTheme() {
 		var next = currentTheme() === "dark" ? "light" : "dark";
@@ -1515,13 +1463,6 @@
 	}
 	function bindEvents() {
 		summaryActions.addEventListener("click", function (event) {
-			var viewButton = event.target.closest("[data-view]");
-
-			if (viewButton) {
-				setView(viewButton.dataset.view);
-				return;
-			}
-
 			var actionButton = event.target.closest("[data-action]");
 
 			if (actionButton) {
@@ -1551,7 +1492,7 @@
 			}
 
 			if (state.selecting) {
-				var target = event.target.closest("tr[data-name], .tile[data-name]");
+				var target = event.target.closest("tr[data-name]");
 
 				if (target) {
 					event.preventDefault();
@@ -1623,8 +1564,6 @@
 				openUpload();
 			} else if (event.key === "n" || event.key === "N") {
 				openMkdir();
-			} else if (event.key === "g" || event.key === "G") {
-				setView(state.view === "grid" ? "list" : "grid");
 			}
 		});
 

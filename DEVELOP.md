@@ -174,11 +174,11 @@ bytes cached at startup, and the pages use a restrictive
 `Content-Security-Policy` (`script-src 'self'`, so no inline scripts; the
 bootstrap JSON is a `type="application/json"` data block).
 
-Sort order and view mode are stored in `localStorage`. The theme is only stored
-when it contradicts the system preference: matching the system clears the entry
-and the page follows `prefers-color-scheme` again. The `?view=` and `?theme=`
-query parameters override both for one request, which keeps screenshots and deep
-links deterministic.
+Sort order is stored in `localStorage`. The theme is only stored when it
+contradicts the system preference: matching the system clears the entry and the
+page follows `prefers-color-scheme` again. The `?theme=` query parameter
+overrides it for one request, which keeps screenshots and deep links
+deterministic.
 
 ## Tests
 

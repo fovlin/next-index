@@ -141,7 +141,6 @@ button {
 .btn svg,
 .icon-btn svg,
 .icon-btn.sm svg,
-.segmented svg,
 .entry-icon svg,
 .row-action svg,
 .menu button svg,
@@ -177,18 +176,14 @@ button {
 	border-radius: var(--radius-sm);
 	background: var(--surface);
 	overflow-x: auto;
-	scrollbar-width: none;
-}
-
-.crumbs::-webkit-scrollbar {
-	display: none;
+	scrollbar-color: var(--border-strong) transparent;
 }
 
 .crumb {
 	display: inline-flex;
 	align-items: center;
+	flex: 0 0 auto;
 	gap: 6px;
-	max-width: 216px;
 	padding: 4px 6px;
 	border-radius: var(--radius-sm);
 	color: var(--muted);
@@ -344,7 +339,7 @@ button {
 	gap: 16px;
 	margin-bottom: 8px;
 	flex-wrap: nowrap;
-	min-height: 36px;
+	min-height: 40px;
 	min-width: 0;
 	overflow: hidden;
 	container-type: inline-size;
@@ -354,10 +349,17 @@ button {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	min-width: 0;
+	overflow-x: auto;
+	scrollbar-width: none;
 	color: var(--muted);
 	font-size: var(--text-small);
 	flex-wrap: nowrap;
 	white-space: nowrap;
+}
+
+.stats::-webkit-scrollbar {
+	display: none;
 }
 
 .stats b {
@@ -387,38 +389,14 @@ button {
 	border-color: var(--border);
 }
 
-.summary.selecting .summary-actions > :is([data-action="mkdir"], [data-action="toggle-selection"]),
-.summary.selecting .segmented {
+.summary.selecting .summary-actions > :is([data-action="mkdir"], [data-action="toggle-selection"]) {
 	display: none;
 }
 
-.segmented {
-	display: inline-flex;
-	min-height: 32px;
-	align-items: center;
-	gap: 1px;
-	padding: 0px 4px;
-	border: 1px solid var(--border);
-	border-radius: var(--radius-sm);
-	background: var(--surface);
-}
-
-.segmented button {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 28px;
-	height: 24px;
-	padding: 0;
-	border: 0;
-	border-radius: var(--radius-sm);
-	background: transparent;
-	color: var(--faint);
-	cursor: pointer;
-}
-
-.segmented button:hover {
-	color: var(--text);
+.summary.selecting .summary-actions,
+.summary.selecting .batch {
+	flex: 0 1 auto;
+	min-width: 0;
 }
 
 /* card + table */
@@ -521,6 +499,7 @@ th.sorted.desc .arrow {
 }
 
 .entry {
+	padding: 8px 0px;
 	display: flex;
 	align-items: center;
 	gap: 6px;
@@ -619,8 +598,7 @@ th.sorted.desc .arrow {
 	padding-left: 10px;
 }
 
-.col-select input,
-.tile-select input {
+.col-select input {
 	vertical-align: middle;
 	width: 16px;
 	height: 16px;
@@ -629,32 +607,14 @@ th.sorted.desc .arrow {
 	cursor: pointer;
 }
 
-.table tbody tr.selected,
-.tile.selected {
+.table tbody tr.selected {
 	background: var(--surface-3);
 }
 
-.selecting tbody tr,
-.selecting .tile {
+.selecting tbody tr {
 	cursor: pointer;
 }
 
-.tile-select {
-	position: absolute;
-	top: 0;
-	left: 8px;
-	z-index: 2;
-	height: 16px;
-	display: none;
-}
-
-.tile:hover .tile-select,
-.tile.selected .tile-select,
-.selecting .tile-select {
-	display: block;
-}
-
-.segmented button.active,
 .icon-btn.active {
 	background: var(--surface-3);
 	color: var(--text);
@@ -709,6 +669,16 @@ th.sorted.desc .arrow {
 	background: var(--surface-2);
 	color: var(--muted);
 	font-size: var(--text-tiny);
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.batch::-webkit-scrollbar {
+	display: none;
+}
+
+.batch > * {
+	flex: 0 0 auto;
 }
 
 .batch .btn-sm {
@@ -719,91 +689,6 @@ th.sorted.desc .arrow {
 	width: 28px;
 	height: 28px;
 	padding: 0;
-}
-
-/* grid */
-
-.grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-	gap: 10px;
-	padding: 10px;
-}
-
-.tile {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	min-width: 0;
-	padding: 10px;
-	border: 1px solid var(--border);
-	border-radius: var(--radius-sm);
-	background: var(--surface);
-}
-
-.tile:hover {
-	border-color: var(--border-strong);
-	background: var(--surface-2);
-}
-
-.tile:has(.tile-actions:hover) {
-	border-color: var(--border);
-	background: var(--surface);
-}
-
-.tile-main {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	min-width: 0;
-	color: var(--text);
-	text-decoration: none;
-}
-
-.thumb {
-	display: grid;
-	place-items: center;
-	height: 96px;
-	overflow: hidden;
-	border: 1px solid var(--border);
-	border-radius: var(--radius-xs);
-	background: var(--surface-2);
-}
-
-.thumb .entry-icon {
-	width: 36px;
-	height: 36px;
-}
-
-.thumb .entry-icon svg {
-	width: 20px;
-	height: 20px;
-}
-
-.tile-name {
-	display: flex;
-	justify-content: space-between;
-	gap: 8px;
-	font-size: var(--text-body);
-}
-
-.tile-meta {
-	display: flex;
-	justify-content: space-between;
-	gap: 8px;
-	color: var(--faint);
-	font-family: var(--mono);
-	font-size: var(--text-tiny);
-}
-
-.tile-actions {
-	position: absolute;
-	top: 4px;
-	right: 6px;
-	display: flex;
-	gap: 1px;
-	border-radius: var(--radius-sm);
-	background: var(--surface);
 }
 
 .empty {
@@ -1314,14 +1199,9 @@ th.sorted.desc .arrow {
 	.brand-version {
 		display: none;
 	}
-
-	.crumb {
-		max-width: 148px;
-	}
 }
 
 @media (max-width: 720px) {
-
 	.topbar-inner {
 		flex-wrap: wrap;
 		gap: 8px 10px;
@@ -1352,15 +1232,6 @@ th.sorted.desc .arrow {
 		padding-left: 8px;
 	}
 
-	.grid {
-		grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-		gap: 8px;
-		padding: 8px;
-	}
-
-	.thumb {
-		height: 84px;
-	}
 }
 
 @media (max-width: 560px) {
@@ -1380,10 +1251,6 @@ th.sorted.desc .arrow {
 	.topbar-actions #logout-btn span,
 	.topbar-actions #upload-btn span {
 		display: none;
-	}
-
-	.crumb {
-		max-width: 120px;
 	}
 
 	.summary-actions .btn span {

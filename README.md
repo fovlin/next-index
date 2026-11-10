@@ -24,8 +24,8 @@ to start without one, and `passwd` writes `~/.next_index.json`. Use
 
 ## Features
 
-- Breadcrumbs, sorting, list and grid views, and a light and dark theme that
-  follows the system until you pick one.
+- Breadcrumbs, sorting, a list view, and a light and dark theme that follows
+  the system until you pick one.
 - Multi-file and whole-folder uploads with per-file progress, optional overwrite
   and automatic `name-1.ext` renaming.
 - Download a file, or a whole folder as a zip, from the row menu; folder
@@ -66,8 +66,7 @@ next-index [command] [options] [root]
 `run` applies the flags to that process only. Credentials and the root are worth
 saving with `config` when you want them to persist.
 
-Keys to press: `g` toggles list and grid, `u` uploads, `n` creates a folder,
-`Esc` closes a dialog.
+Keys to press: `u` uploads, `n` creates a folder, `Esc` closes a dialog.
 
 ## Config
 
