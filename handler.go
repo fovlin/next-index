@@ -46,6 +46,11 @@ func (server *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if info.IsDir() {
+		if r.URL.Query().Get("download") == "1" {
+			server.serveZip(w, r, fsPath)
+			return
+		}
+
 		list, err := server.buildListing(fsPath)
 		if err != nil {
 			record.Warn("list directory", fsPath, ":", err)

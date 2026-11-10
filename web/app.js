@@ -90,6 +90,7 @@
 		moon: '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z"/>',
 		sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
 		upload: '<path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
+		download: '<path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
 		folder: FOLDER,
 		folderOpen: '<path d="M5.42 19.5 h11.9 a2 2 0 0 0 1.94 -1.5 l1.2 -5 A1.6 1.6 0 0 0 18.92 10.9 H7.92 a2 2 0 0 0 -1.94 1.5 L4.72 17.6 M5.42 19.5 a2 2 0 0 1 -2 -2 V6.1 a1.6 1.6 0 0 1 1.6 -1.6 h5.1 a2 2 0 0 1 1.6 .8 l1.2 1.6 h5.5 a1.6 1.6 0 0 1 1.6 1.6 v2.4"/>',
 		folderPlus: FOLDER + '<path d="M12 10.4v5"/><path d="M9.5 12.9h5"/>',
@@ -287,9 +288,20 @@
 		var name = button.dataset.menu;
 		var menu = document.createElement("div");
 
+		var entry = state.entries.find(function (item) {
+			return item.name === name;
+		});
+
+		var download = "";
+
+		if (entry && entry.kind === "dir") {
+			download = '<button type="button" data-action="download" data-name="' + esc(name) + '">' + icon("download") + "<span>Download</span></button>";
+		}
+
 		menu.className = "menu";
 		menu.id = "row-menu";
 		menu.innerHTML =
+			download +
 			'<button type="button" data-action="details" data-name="' + esc(name) + '">' + icon("info") + "<span>Details</span></button>" +
 			'<button type="button" data-action="rename" data-name="' + esc(name) + '">' + icon("pencil") + "<span>Rename</span></button>" +
 			'<button type="button" data-action="move" data-name="' + esc(name) + '">' + icon("move") + "<span>Move</span></button>" +
@@ -855,6 +867,9 @@
 		},
 		move: function (entry) {
 			openTransfer("move", [entry.name]);
+		},
+		download: function (entry) {
+			window.location.href = entry.href + "?download=1";
 		}
 	};
 	function handleAction(action, name) {
