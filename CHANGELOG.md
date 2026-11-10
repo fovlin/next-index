@@ -22,6 +22,8 @@ All notable changes to NEXT_INDEX are documented here. The project follows
 
 - The row menu stays inside the viewport on a short screen, and scrolls when it
   is taller than the screen.
+- On a narrow screen the selection bar and the stats no longer crowd each other:
+  the summary puts the stats on their own line when both are shown.
 
 ## 1.0.0 - 2026-11-10
 
