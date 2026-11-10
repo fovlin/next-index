@@ -48,7 +48,7 @@ html {
 body {
 	margin: 0;
 	min-height: 100%;
-	min-width: 240px;
+	min-width: 320px;
 	background: var(--bg);
 	color: var(--text);
 	font-family: var(--font);
@@ -1391,19 +1391,16 @@ th.sorted.desc .arrow {
 }
 
 @media (max-width: 420px) {
+	.brand-name {
+		display: none;
+	}
+
 	.table th.col-time,
 	.table td.col-time {
 		display: none;
 	}
 
 }
-
-@media (max-width: 320px) {
-	.brand-name {
-		display: none;
-	}
-}
-
 @container (max-width: 620px) {
 	.summary.selecting .stats {
 		display: none;
@@ -1413,35 +1410,6 @@ th.sorted.desc .arrow {
 @container (max-width: 420px) {
 	.stats {
 		display: none;
-	}
-}
-
-@container (max-width: 250px) {
-	.summary.selecting .summary-actions {
-		flex: 1 1 auto;
-		min-width: 0;
-	}
-
-	.batch {
-		width: 100%;
-		height: auto;
-		min-height: 32px;
-		flex-wrap: wrap;
-		justify-content: center;
-	}
-
-	.batch > button {
-		flex: 1 1 0;
-		min-width: 0;
-	}
-
-	.batch > .icon-btn {
-		width: auto;
-	}
-
-	.batch > span {
-		flex: 1 0 100%;
-		text-align: center;
 	}
 }
 
