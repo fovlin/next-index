@@ -111,7 +111,7 @@ button {
 	display: flex;
 	align-items: center;
 	gap: 16px;
-	max-width: 1168px;
+	max-width: 960px;
 	min-height: 56px;
 	margin: 0 auto;
 	padding: 8px 24px;
@@ -332,7 +332,7 @@ button {
 .main {
 	flex: 1;
 	width: 100%;
-	max-width: 1168px;
+	max-width: 960px;
 	margin: 0 auto;
 	padding: 20px 24px 48px;
 }
@@ -344,6 +344,7 @@ button {
 	gap: 16px;
 	margin-bottom: 8px;
 	flex-wrap: nowrap;
+	min-height: 36px;
 	min-width: 0;
 	overflow: hidden;
 	container-type: inline-size;
@@ -376,7 +377,7 @@ button {
 	align-items: center;
 	margin-left: auto;
 	gap: 8px;
-	min-height: 32px;
+	min-height: 36px;
 	flex: 0 0 auto;
 	flex-wrap: nowrap;
 	white-space: nowrap;
@@ -1401,7 +1402,7 @@ th.sorted.desc .arrow {
 	}
 
 }
-@container (max-width: 620px) {
+@container (max-width: 640px) {
 	.summary.selecting .stats {
 		display: none;
 	}
