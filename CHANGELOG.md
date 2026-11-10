@@ -3,15 +3,10 @@
 All notable changes to NEXT_INDEX are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
-## 1.0.2 - 2026-11-10
+## 1.0.3 - 2026-11-10
 
 ### Changed
 
-- Force-login renders the sign-in card at the requested URL instead of sending
-  the browser to `/@next-index/login`; signing in reloads the same URL.
-- The summary is sized with container queries instead of JavaScript: the stats
-  drop below 620px while selecting and below 420px otherwise, and the page
-  keeps a 320px floor so the toolbar is never squeezed past it.
 - Overflowing rows scroll instead of being cut: the breadcrumb bar, the stats
   line and the selection bar each keep their content reachable on a narrow
   screen, and the breadcrumb names are no longer clipped to a fixed width.
@@ -21,6 +16,21 @@ All notable changes to NEXT_INDEX are documented here. The project follows
 - The grid view and the list/grid switcher. Tiles lost their thumbnails in
   0.0.7 and showed less per screen than the list, so the list is the only view
   and `g` no longer toggles anything.
+
+### Fixed
+
+- The theme button stopped working after the view switcher was deleted with the
+  helper it called.
+
+## 1.0.2 - 2026-11-10
+
+### Changed
+
+- Force-login renders the sign-in card at the requested URL instead of sending
+  the browser to `/@next-index/login`; signing in reloads the same URL.
+- The summary is sized with container queries instead of JavaScript: the stats
+  drop below 620px while selecting and below 420px otherwise, and the page
+  keeps a 320px floor so the toolbar is never squeezed past it.
 
 ### Fixed
 
