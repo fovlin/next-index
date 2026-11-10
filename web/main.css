@@ -403,14 +403,24 @@ button {
 .summary.compact .batch {
 	flex: 1 1 auto;
 	min-width: 0;
-	height: auto;
-	min-height: 32px;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	justify-content: flex-end;
 }
 
 .summary.compact .batch > * {
 	flex: 0 0 auto;
+}
+
+.summary.compact-tight .batch {
+	height: auto;
+	min-height: 32px;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+.summary.compact-tight .batch > span {
+	flex: 1 0 100%;
+	text-align: center;
 }
 
 .segmented {

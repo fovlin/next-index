@@ -623,7 +623,7 @@
 						'<button class="btn btn-sm" data-action="batch-move">' + icon("move") + "<span>Move</span></button>" +
 						'<button class="btn btn-sm" data-action="batch-delete">' + icon("trash") + "<span>Delete</span></button>"
 					: "") +
-				'<button class="icon-btn" data-action="toggle-selection" title="Done" aria-label="Done">' + icon("x") + "</button>" +
+				'<button class="btn-sm" data-action="toggle-selection" title="Done" aria-label="Done">' + icon("x") + "</button>" +
 				"</div>";
 		}
 
@@ -638,10 +638,34 @@
 		fitSummary();
 	}
 	function fitSummary() {
-		summaryRoot.classList.remove("compact");
+		var overflowing = function () {
+			return summaryRoot.scrollWidth > summaryRoot.clientWidth + 1;
+		};
 
-		if (summaryRoot.scrollWidth > summaryRoot.clientWidth + 1) {
-			summaryRoot.classList.add("compact");
+		summaryRoot.classList.remove("compact", "compact-tight");
+
+		if (!overflowing()) {
+			return;
+		}
+
+		summaryRoot.classList.add("compact");
+
+		var batch = summaryRoot.querySelector(".batch");
+
+		if (!batch) {
+			return;
+		}
+
+		var needed = 0;
+
+		Array.prototype.forEach.call(batch.children, function (child) {
+			needed += child.getBoundingClientRect().width;
+		});
+
+		needed += parseFloat(getComputedStyle(batch).columnGap || 0) * Math.max(0, batch.children.length - 1);
+
+		if (needed > batch.clientWidth + 1) {
+			summaryRoot.classList.add("compact-tight");
 		}
 	}
 	function renderListing() {
