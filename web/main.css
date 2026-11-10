@@ -1417,8 +1417,8 @@ th.sorted.desc .arrow {
 }
 
 @container (max-width: 250px) {
-	.summary-actions {
-		flex: 0 1 auto;
+	.summary.selecting .summary-actions {
+		flex: 1 1 auto;
 		min-width: 0;
 	}
 
