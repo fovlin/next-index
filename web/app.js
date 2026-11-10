@@ -125,10 +125,10 @@
 	var footer = document.getElementById("footer");
 	var toastRoot = document.getElementById("toast-root");
 	var modalRoot = document.getElementById("modal-root");
-	main.innerHTML = '<nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav><div class="summary"><div class="stats" id="stats"></div><div class="summary-actions" id="summary-actions"></div></div><div class="card" id="listing"></div>';
+	main.innerHTML = '<div class="bar"><nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav><div class="summary-actions" id="summary-actions"></div></div><div class="summary" id="summary"></div><div class="card" id="listing"></div>';
 	var crumbsRoot = document.getElementById("crumbs");
-	var summaryRoot = document.querySelector(".summary");
-	var stats = document.getElementById("stats");
+	var barRoot = document.querySelector(".bar");
+	var summaryRoot = document.getElementById("summary");
 	var summaryActions = document.getElementById("summary-actions");
 	var listing = document.getElementById("listing");
 	function readSort() {
@@ -474,8 +474,11 @@
 
 		toast("error", error.message || String(error));
 	}
+	function setFormError(element, message) {
+		element.innerHTML = message ? "<p>" + esc(message) + "</p>" : "";
+	}
 	function send(url, body, message, errorElement) {
-		errorElement.textContent = "";
+		setFormError(errorElement, "");
 
 		api(url, { method: "POST", body: JSON.stringify(body) })
 			.then(function (result) {
@@ -489,7 +492,7 @@
 					return;
 				}
 
-				errorElement.textContent = error.message;
+				setFormError(errorElement, error.message);
 			});
 	}
 
@@ -523,15 +526,9 @@
 		crumbsRoot.innerHTML = crumbs;
 	}
 	function renderTopbar() {
-		var authMarkup = "";
-		var logoutMarkup = "";
-
-		if (state.authenticated) {
-			logoutMarkup = '<button class="btn btn-sm" id="logout-btn" title="Sign out" aria-label="Sign out">' + icon("logout") + "<span>Sign out</span></button>";
-			authMarkup = '<button class="btn btn-primary" id="upload-btn" title="Upload files" aria-label="Upload files">' + icon("upload") + "<span>Upload</span></button>";
-		} else {
-			authMarkup = '<button class="btn btn-primary" id="login-btn" title="Sign in" aria-label="Sign in">' + icon("login") + "<span>Sign in</span></button>";
-		}
+		var authMarkup = state.authenticated
+			? '<button class="btn" id="logout-btn" title="Sign out" aria-label="Sign out">' + icon("logout") + "<span>Sign out</span></button>"
+			: '<button class="btn btn-primary" id="login-btn" title="Sign in" aria-label="Sign in">' + icon("login") + "<span>Sign in</span></button>";
 
 		topbar.innerHTML =
 			'<div class="topbar-inner">' +
@@ -541,7 +538,6 @@
 			'<span class="brand-version">v' + esc(state.version) + "</span>" +
 			"</a>" +
 			'<div class="topbar-actions">' +
-			logoutMarkup +
 			'<button class="icon-btn" id="refresh-btn" title="Refresh" aria-label="Refresh">' + icon("refresh") + "</button>" +
 			'<button class="icon-btn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">' + (currentTheme() === "dark" ? icon("sun") : icon("moon")) + "</button>" +
 			authMarkup +
@@ -550,13 +546,6 @@
 
 		document.getElementById("refresh-btn").addEventListener("click", refresh);
 		document.getElementById("theme-btn").addEventListener("click", toggleTheme);
-		var uploadButton = document.getElementById("upload-btn");
-
-		if (uploadButton) {
-			uploadButton.addEventListener("click", function () {
-				openUpload();
-			});
-		}
 
 		var loginButton = document.getElementById("login-btn");
 		if (loginButton) {
@@ -567,42 +556,31 @@
 
 		var logoutButton = document.getElementById("logout-btn");
 		if (logoutButton) {
-			logoutButton.addEventListener("click", logout);
+			logoutButton.addEventListener("click", function () {
+				openModal(
+					'<div class="dialog-head"><h2>Sign out?</h2>' +
+					'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
+					'<p class="sub">You can sign back in at any time.</p>' +
+					'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
+					'<button type="button" class="btn btn-primary" id="confirm-logout">Sign out</button></div>'
+				);
+
+				document.getElementById("confirm-logout").addEventListener("click", function () {
+					closeModal();
+					logout();
+				});
+			});
 		}
 	}
 	function renderSummary() {
-		summaryRoot.classList.toggle("selecting", state.selecting);
-
-		var entries = state.entries;
-		var directories = 0;
-		var totalSize = 0;
-
-		entries.forEach(function (entry) {
-			if (entry.kind === "dir") {
-				directories++;
-				return;
-			}
-
-			totalSize += entry.size || 0;
-		});
-
-		var files = entries.length - directories;
-
-		var parts = [
-			"<span><b>" + directories + "</b> " + plural(directories, "folder", "folders") + "</span>",
-			'<span class="stat-dot"></span>',
-			"<span><b>" + files + "</b> " + plural(files, "file", "files") + "</span>",
-			'<span class="stat-dot"></span>',
-			"<span><b>" + formatSize(totalSize) + "</b> total</span>"
-		];
-
-		stats.innerHTML = parts.join("");
+		barRoot.classList.toggle("selecting", state.selecting);
 
 		var names = selected();
 
 		var tools = state.authenticated
 			? '<button class="icon-btn" data-action="mkdir" title="New folder" aria-label="New folder">' + icon("folderPlus") + "</button>" +
-				'<button class="icon-btn' + (state.selecting ? " active" : "") + '" data-action="toggle-selection" title="Select files" aria-label="Select files" aria-pressed="' + state.selecting + '">' + icon("select") + "</button>"
+				'<button class="icon-btn' + (state.selecting ? " active" : "") + '" data-action="toggle-selection" title="Select files" aria-label="Select files" aria-pressed="' + state.selecting + '">' + icon("select") + "</button>" +
+				'<button class="icon-btn" data-action="upload" title="Upload files" aria-label="Upload files">' + icon("upload") + "</button>"
 			: "";
 
 		var batch = "";
@@ -620,7 +598,8 @@
 				"</div>";
 		}
 
-		summaryActions.innerHTML = batch + tools;
+		summaryRoot.innerHTML = batch;
+		summaryActions.innerHTML = tools;
 	}
 	function renderListing() {
 		var entries = visibleEntries();
@@ -982,11 +961,11 @@
 			var password = passwordInput.value;
 
 			if (!username || !password) {
-				errorElement.textContent = "Enter both a username and a password.";
+				setFormError(errorElement, "Enter both a username and a password.");
 				return;
 			}
 
-			errorElement.textContent = "";
+			setFormError(errorElement, "");
 			submitButton.disabled = true;
 			submitButton.textContent = "Signing in…";
 
@@ -1008,7 +987,7 @@
 					toast("success", "Signed in as " + state.username);
 				})
 				.catch(function (error) {
-					errorElement.textContent = error.message;
+					setFormError(errorElement, error.message);
 				})
 				.finally(function () {
 					submitButton.disabled = false;
@@ -1082,7 +1061,7 @@
 			submit: "Create",
 			run: function (name, error) {
 				if (!name) {
-					error.textContent = "Enter a folder name.";
+					setFormError(error, "Enter a folder name.");
 					return;
 				}
 
@@ -1128,7 +1107,7 @@
 			submit: "Rename",
 			run: function (name, error) {
 				if (!name) {
-					error.textContent = "Enter a new name.";
+					setFormError(error, "Enter a new name.");
 					return;
 				}
 
@@ -1166,7 +1145,7 @@
 			submit: copying ? "Copy" : "Move",
 			run: function (to, error) {
 				if (!to) {
-					error.textContent = "Enter a destination path.";
+					setFormError(error, "Enter a destination path.");
 					return;
 				}
 
@@ -1303,7 +1282,22 @@
 				return;
 			}
 
+			var limit = state.maxUploadMB > 0 ? state.maxUploadMB << 20 : 0;
+
 			Array.prototype.forEach.call(files, function (file) {
+				if (limit > 0 && file.size > limit) {
+					toast("error", file.name + " is larger than " + state.maxUploadMB + " MB");
+					return;
+				}
+
+				var added = state.uploads.some(function (item) {
+					return item.name === file.name && item.size === file.size && item.lastModified === file.lastModified;
+				});
+
+				if (added) {
+					return;
+				}
+
 				state.uploads.push(file);
 			});
 
@@ -1463,6 +1457,14 @@
 	}
 	function bindEvents() {
 		summaryActions.addEventListener("click", function (event) {
+			var actionButton = event.target.closest("[data-action]");
+
+			if (actionButton) {
+				handleAction(actionButton.dataset.action);
+			}
+		});
+
+		summaryRoot.addEventListener("click", function (event) {
 			var actionButton = event.target.closest("[data-action]");
 
 			if (actionButton) {

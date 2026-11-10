@@ -147,7 +147,14 @@ func (server *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if server.Config.MaxUploadMB > 0 {
-		limit := server.Config.MaxUploadMB << 20
+		limit := int64(server.Config.MaxUploadMB) << 20
+
+		if r.ContentLength > limit {
+			drainBody(r.Body, 64<<20)
+			server.apiError(w, http.StatusRequestEntityTooLarge, fmt.Sprintf("upload exceeds the %d MB limit", server.Config.MaxUploadMB))
+			return
+		}
+
 		r.Body = http.MaxBytesReader(w, r.Body, limit)
 	}
 
@@ -606,4 +613,9 @@ func (server *Server) apiError(w http.ResponseWriter, status int, message string
 	record.Warn("api", status, message)
 
 	writeJSON(w, status, map[string]string{"error": message})
+}
+
+func drainBody(body io.ReadCloser, max int64) {
+	io.Copy(io.Discard, io.LimitReader(body, max))
+	body.Close()
 }

@@ -168,9 +168,9 @@ button {
 .crumbs {
 	display: flex;
 	align-items: center;
+	flex: 1 1 auto;
 	gap: 1px;
 	min-width: 0;
-	margin-bottom: 10px;
 	padding: 4px 6px;
 	border: 1px solid var(--border);
 	border-radius: var(--radius-sm);
@@ -332,68 +332,47 @@ button {
 	padding: 20px 24px 48px;
 }
 
-.summary {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 16px;
-	margin-bottom: 8px;
-	flex-wrap: nowrap;
-	min-height: 40px;
-	min-width: 0;
-	overflow: hidden;
-	container-type: inline-size;
-}
-
-.stats {
+.bar {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	margin-bottom: 10px;
+}
+
+.summary {
+	display: flex;
+	justify-content: flex-end;
+	margin-bottom: 8px;
 	min-width: 0;
-	overflow-x: auto;
-	scrollbar-width: none;
-	color: var(--muted);
-	font-size: var(--text-small);
-	flex-wrap: nowrap;
-	white-space: nowrap;
+	overflow: hidden;
 }
 
-.stats::-webkit-scrollbar {
+.summary:empty {
 	display: none;
-}
-
-.stats b {
-	color: var(--text);
-	font-weight: 500;
-}
-
-.stat-dot {
-	width: 4px;
-	height: 4px;
-	border-radius: 50%;
-	background: var(--faint);
 }
 
 .summary-actions {
 	display: flex;
 	align-items: center;
-	margin-left: auto;
 	gap: 8px;
 	flex: 0 0 auto;
 	flex-wrap: nowrap;
 	white-space: nowrap;
 }
 
+.summary-actions:empty {
+	display: none;
+}
+
 .summary-actions .icon-btn {
 	border-color: var(--border);
 }
 
-.summary.selecting .summary-actions > :is([data-action="mkdir"], [data-action="toggle-selection"]) {
+.bar.selecting .summary-actions {
 	display: none;
 }
 
-.summary.selecting .summary-actions,
-.summary.selecting .batch {
+.summary .batch {
 	flex: 0 1 auto;
 	min-width: 0;
 }
@@ -931,10 +910,13 @@ th.sorted.desc .arrow {
 }
 
 .form-error {
-	min-height: 16px;
-	margin-top: 8px;
 	color: var(--red);
 	font-size: var(--text-small);
+}
+
+.form-error p {
+	margin: 0;
+	padding: 4px 0;
 }
 
 .dialog-actions {
@@ -942,7 +924,7 @@ th.sorted.desc .arrow {
 	flex-wrap: wrap;
 	justify-content: flex-end;
 	gap: 8px;
-	margin-top: 16px;
+	margin-top: 32px;
 }
 
 .dialog-actions .btn {
@@ -981,7 +963,7 @@ th.sorted.desc .arrow {
 
 .delete-target {
 	max-height: 160px;
-	margin: 10px 0 40px;
+	margin: 10px 0 0px;
 	padding: 8px 10px;
 	overflow-y: auto;
 	overscroll-behavior: contain;
@@ -1234,11 +1216,13 @@ th.sorted.desc .arrow {
 }
 
 @media (max-width: 560px) {
-	.topbar-actions #login-btn span {
+	.topbar-actions #login-btn span,
+	.topbar-actions #logout-btn span {
 		display: none;
 	}
 
-	.topbar-actions #login-btn {
+	.topbar-actions #login-btn,
+	.topbar-actions #logout-btn {
 		padding: 8px;
 	}
 
@@ -1247,13 +1231,22 @@ th.sorted.desc .arrow {
 		display: none;
 	}
 
-	.topbar-actions #logout-btn span,
-	.topbar-actions #upload-btn span {
+	.batch .btn span {
 		display: none;
 	}
+}
 
-	.summary-actions .btn span {
-		display: none;
+@media (max-width: 480px) {
+	.bar {
+		flex-wrap: wrap;
+	}
+
+	.crumbs {
+		flex: 1 0 100%;
+	}
+
+	.summary-actions {
+		margin-left: auto;
 	}
 }
 
@@ -1264,18 +1257,6 @@ th.sorted.desc .arrow {
 
 	.table th.col-time,
 	.table td.col-time {
-		display: none;
-	}
-
-}
-@container (max-width: 640px) {
-	.summary.selecting .stats {
-		display: none;
-	}
-}
-
-@container (max-width: 420px) {
-	.stats {
 		display: none;
 	}
 }
