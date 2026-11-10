@@ -48,7 +48,7 @@ html {
 body {
 	margin: 0;
 	min-height: 100%;
-	min-width: 236px;
+	min-width: 240px;
 	background: var(--bg);
 	color: var(--text);
 	font-family: var(--font);
@@ -318,7 +318,7 @@ button {
 }
 
 .empty .btn{
-	margin: 0px 2px;
+	margin: 0px 4px;
 }
 
 /* main */
@@ -913,11 +913,6 @@ th.sorted.desc .arrow {
 	--text-tiny: 16px;
 }
 
-.login-card .login-submit {
-	flex: 1;
-	height: 44px;
-}
-
 .login-theme {
 	position: absolute;
 	top: 6px;
@@ -1056,12 +1051,15 @@ th.sorted.desc .arrow {
 
 .dialog-actions {
 	display: flex;
+	flex-wrap: wrap;
 	justify-content: flex-end;
 	gap: 8px;
 	margin-top: 16px;
 }
 
 .dialog-actions .btn {
+	flex: 1;
+	height: 44px;
 	min-width: 92px;
 }
 
@@ -1318,20 +1316,6 @@ th.sorted.desc .arrow {
 	}
 }
 
-@media (max-width: 900px) {
-	.brand-name {
-		display: none;
-	}
-
-	.topbar-actions #login-btn span {
-		display: none;
-	}
-
-	.topbar-actions #login-btn {
-		padding: 8px;
-	}
-}
-
 @media (max-width: 720px) {
 	.topbar-inner {
 		flex-wrap: wrap;
@@ -1375,6 +1359,18 @@ th.sorted.desc .arrow {
 }
 
 @media (max-width: 560px) {
+	.topbar-actions #login-btn span {
+		display: none;
+	}
+
+	.topbar-actions #login-btn {
+		padding: 8px;
+	}
+
+	.brand-name {
+		display: none;
+	}
+
 	.table th.col-size,
 	.table td.col-size {
 		display: none;
