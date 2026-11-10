@@ -638,20 +638,10 @@
 		fitSummary();
 	}
 	function fitSummary() {
-		var overflowing = function () {
-			return summaryRoot.scrollWidth > summaryRoot.clientWidth + 1;
-		};
+		summaryRoot.classList.remove("compact");
 
-		summaryRoot.classList.remove("compact", "compact-tight");
-
-		if (!overflowing()) {
-			return;
-		}
-
-		summaryRoot.classList.add("compact");
-
-		if (overflowing()) {
-			summaryRoot.classList.add("compact-tight");
+		if (summaryRoot.scrollWidth > summaryRoot.clientWidth + 1) {
+			summaryRoot.classList.add("compact");
 		}
 	}
 	function renderListing() {

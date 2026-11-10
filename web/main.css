@@ -385,17 +385,32 @@ button {
 	border-color: var(--border);
 }
 
-:is(.summary.selecting, .summary.compact) .summary-actions > :is([data-action="mkdir"], [data-action="toggle-selection"]),
-:is(.summary.selecting, .summary.compact) .segmented {
+.summary.selecting .summary-actions > :is([data-action="mkdir"], [data-action="toggle-selection"]),
+.summary.selecting .segmented {
 	display: none;
 }
 
-.summary.compact-tight .stats {
+.summary.compact .stats {
 	display: none;
 }
 
-.summary.compact-tight .summary-actions {
-	margin-left: auto;
+.summary.compact .summary-actions {
+	flex: 1 1 auto;
+	justify-content: flex-end;
+	min-width: 0;
+}
+
+.summary.compact .batch {
+	flex: 1 1 auto;
+	min-width: 0;
+	height: auto;
+	min-height: 32px;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+.summary.compact .batch > * {
+	flex: 0 0 auto;
 }
 
 .segmented {
@@ -709,7 +724,7 @@ th.sorted.desc .arrow {
 	align-items: center;
 	gap: 6px;
 	height: 32px;
-	padding: 0 4px 0 10px;
+	padding: 2px 4px 2px 10px;
 	border: 1px solid var(--border);
 	border-radius: var(--radius-md);
 	background: var(--surface-2);
@@ -718,7 +733,7 @@ th.sorted.desc .arrow {
 }
 
 .batch .btn-sm {
-	padding: 0 8px;
+	padding: 0 4px;
 }
 
 .batch .icon-btn {
@@ -1327,6 +1342,7 @@ th.sorted.desc .arrow {
 }
 
 @media (max-width: 720px) {
+
 	.topbar-inner {
 		flex-wrap: wrap;
 		gap: 8px 10px;
@@ -1392,12 +1408,6 @@ th.sorted.desc .arrow {
 	}
 
 	.summary-actions .btn span {
-		display: none;
-	}
-}
-
-@media (max-width: 480px) {
-	.stats {
 		display: none;
 	}
 }
