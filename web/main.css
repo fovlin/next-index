@@ -390,13 +390,8 @@ button {
 	display: none;
 }
 
-.summary.compact-tight {
-	flex-wrap: wrap;
-	row-gap: 8px;
-}
-
 .summary.compact-tight .stats {
-	flex: 1 1 100%;
+	display: none;
 }
 
 .summary.compact-tight .summary-actions {
@@ -1398,17 +1393,6 @@ th.sorted.desc .arrow {
 
 	.summary-actions .btn span {
 		display: none;
-	}
-}
-
-@media (max-width: 620px) {
-	.summary.selecting {
-		flex-wrap: wrap;
-		row-gap: 8px;
-	}
-
-	.summary.selecting .stats {
-		flex: 1 1 100%;
 	}
 }
 
