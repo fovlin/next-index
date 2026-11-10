@@ -1423,14 +1423,20 @@ th.sorted.desc .arrow {
 	}
 
 	.batch {
+		width: 100%;
 		height: auto;
 		min-height: 32px;
 		flex-wrap: wrap;
 		justify-content: center;
 	}
 
-	.batch > * {
-		flex: 0 0 auto;
+	.batch > button {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+
+	.batch > .icon-btn {
+		width: auto;
 	}
 
 	.batch > span {
