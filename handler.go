@@ -47,6 +47,11 @@ func (server *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 
 	if info.IsDir() {
 		if r.URL.Query().Get("download") == "1" {
+			if !server.authenticated(r) {
+				server.fail(w, r, http.StatusUnauthorized, "sign in to download this folder")
+				return
+			}
+
 			server.serveZip(w, r, fsPath)
 			return
 		}

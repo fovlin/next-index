@@ -5,6 +5,13 @@ All notable changes to NEXT_INDEX are documented here. The project follows
 
 ## 1.0.0 - 2026-11-10
 
+### Added
+
+- `?download=1` streams a folder as a zip while the walk runs. Folders offer it
+  in the row menu to signed-in visitors only; files answer the same parameter
+  with an attachment.
+- `-T, --title` sets the site title that the config already stored.
+
 ### Changed
 
 - The password is no longer generated at start. `next-index passwd` asks for it
