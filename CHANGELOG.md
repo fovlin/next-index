@@ -3,6 +3,24 @@
 All notable changes to NEXT_INDEX are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## 1.0.2 - 2026-11-10
+
+### Changed
+
+- Force-login renders the sign-in card at the requested URL instead of sending
+  the browser to `/@next-index/login`; signing in reloads the same URL.
+- The summary is sized with container queries instead of JavaScript: the stats
+  drop below 620px while selecting and below 420px otherwise, and the page
+  keeps a 320px floor so the toolbar is never squeezed past it.
+
+### Fixed
+
+- A force-login page could draw nothing, because the boot code ran before the
+  icon table it needs.
+- The gated page took the query string as its path, which reached the page
+  title and the bootstrap.
+- Unknown API paths answer 404 for any method instead of 405 for POST.
+
 ## 1.0.1 - 2026-11-10
 
 ### Added
@@ -15,15 +33,11 @@ All notable changes to NEXT_INDEX are documented here. The project follows
 
 - Downloading a folder now needs a signed-in visitor, so a public install no
   longer hands the whole tree out as one file. A single file stays public.
-- Force-login renders the sign-in card at the requested URL instead of sending
-  the browser to `/@next-index/login`; signing in reloads that same URL.
 
 ### Fixed
 
 - The row menu stays inside the viewport on a short screen, and scrolls when it
   is taller than the screen.
-- On a narrow screen the stats step aside for the controls, and the page keeps
-  a 320px floor so the toolbar is never squeezed past it.
 
 ## 1.0.0 - 2026-11-10
 
