@@ -3,22 +3,43 @@
 All notable changes to NEXT_INDEX are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
-## 1.0.3 - 2026-11-10
+## 1.0.3 - 2026-11-11
 
 ### Changed
 
-- Overflowing rows scroll instead of being cut: the breadcrumb bar, the stats
-  line and the selection bar each keep their content reachable on a narrow
-  screen, and the breadcrumb names are no longer clipped to a fixed width.
+- The row above the listing now carries the folder actions: download the
+  folder, create one, start selecting and upload.
+- The selection bar only appears while selecting, keeps the same height as the
+  toolbar row on phones, and no longer shows a count.
+- The details dialog offers Download as its primary button: for files always,
+  for folders once signed in. On a signed-out install the row menu opens the
+  details dialog directly.
+- Uploading checks the size limit and duplicate files before sending anything,
+  and signing out asks for confirmation first.
+- Overflowing rows scroll instead of being cut: the breadcrumb bar and the
+  selection bar keep their content reachable on a narrow screen, and the
+  breadcrumb names are no longer clipped to a fixed width.
 
 ### Removed
 
+- The folder/file/size line under the breadcrumbs. A signed-out page now shows
+  the breadcrumbs and then the table.
 - The grid view and the list/grid switcher. Tiles lost their thumbnails in
   0.0.7 and showed less per screen than the list, so the list is the only view
   and `g` no longer toggles anything.
 
 ### Fixed
 
+- Rejecting an oversized upload used to answer 413 while the client was still
+  sending, which made browsers retry the POST twice more; the request body is
+  drained first now.
+- Downloading a file from the row menu fetched the current folder instead of
+  the file.
+- Folder archives are named after the request path, so downloading the root no
+  longer exposes the server's directory name.
+- Download links keep working when the address already carries a query string.
+- Row checkboxes line up with the entry instead of sitting a few pixels low.
+- Form errors sit 4px below the field and reserve no space while empty.
 - The theme button stopped working after the view switcher was deleted with the
   helper it called.
 

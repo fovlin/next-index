@@ -28,8 +28,8 @@ to start without one, and `passwd` writes `~/.next_index.json`. Use
   the system until you pick one.
 - Multi-file and whole-folder uploads with per-file progress, optional overwrite
   and automatic `name-1.ext` renaming.
-- Download a file, or a whole folder as a zip, from the row menu; folder
-  archives need a signed-in visitor.
+- Download a file, or a whole folder as a zip, from the row menu, the toolbar
+  or the details dialog; folder archives need a signed-in visitor.
 - Path traversal is refused, and active content is served as an attachment
   instead of running in the page. Symlinks are followed as-is: a link inside the
   root may point outside it, so only share a tree you control.

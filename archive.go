@@ -7,6 +7,7 @@ import (
 	"mime"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -14,10 +15,10 @@ import (
 )
 
 func (server *Server) serveZip(w http.ResponseWriter, r *http.Request, dirPath string) {
-	name := filepath.Base(dirPath)
+	name := "root"
 
-	if name == "." || name == string(filepath.Separator) || name == "" {
-		name = "files"
+	if urlPath := strings.Trim(r.URL.Path, "/"); urlPath != "" {
+		name = path.Base(urlPath)
 	}
 
 	name += ".zip"
