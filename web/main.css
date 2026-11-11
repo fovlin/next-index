@@ -1,10 +1,10 @@
 :root {
-	--bg: light-dark(#e8e8e8, #101010);
-	--surface: light-dark(#ebebeb, #181818);
+	--bg: light-dark(#ffffff, #101010);
+	--surface: light-dark(#ffffff, #181818);
 	--surface-2: light-dark(#efefef, #1f1f1f);
 	--surface-3: light-dark(#e8e8e8, #282828);
-	--border: light-dark(#d0d0d0, #2f2f2f);
-	--border-strong: light-dark(#b1b1b1, #3b3b3b);
+	--border: light-dark(#cfcfcf, #2f2f2f);
+	--border-strong: light-dark(#c8c8c8, #3b3b3b);
 	--text: light-dark(#1b1b1b, #ebebeb);
 	--muted: light-dark(#666666, #a0a0a0);
 	--faint: light-dark(#8a8a8a, #707070);
@@ -16,9 +16,9 @@
 	--green: light-dark(#2f7d32, #7fbf8f);
 	--amber: light-dark(#8a6d1f, #c9a86a);
 	--red: light-dark(#b3261e, #d97b7b);
-	--radius: 16px;
+	--radius: 12px;
 	--radius-md: 12px;
-	--radius-sm: 10px;
+	--radius-sm: 12px;
 	--radius-xs: 4px;
 	--font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 	--text-large: 18px;
