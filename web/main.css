@@ -168,7 +168,7 @@ button {
 .crumbs {
 	display: flex;
 	align-items: center;
-	flex: 1 1 auto;
+	flex: 1 1 200px;
 	gap: 1px;
 	min-width: 0;
 	padding: 4px 6px;
@@ -335,14 +335,15 @@ button {
 .bar {
 	display: flex;
 	align-items: center;
+	flex-wrap: wrap;
 	gap: 8px;
-	margin-bottom: 10px;
+	margin-bottom: 8px;
 }
 
 .summary {
 	display: flex;
 	justify-content: flex-end;
-	margin-bottom: 8px;
+	margin-left: auto;
 	min-width: 0;
 	overflow: hidden;
 }
@@ -353,6 +354,7 @@ button {
 
 .summary-actions {
 	display: flex;
+	min-height: 40px;
 	align-items: center;
 	gap: 8px;
 	flex: 0 0 auto;
@@ -577,7 +579,7 @@ th.sorted.desc .arrow {
 }
 
 .col-select input {
-	vertical-align: middle;
+	display: block;
 	width: 16px;
 	height: 16px;
 	margin: 0;
@@ -640,7 +642,7 @@ th.sorted.desc .arrow {
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	min-height: 36px;
+	min-height: 40px;
 	padding: 2px 4px 2px 10px;
 	border: 1px solid var(--border);
 	border-radius: var(--radius-md);
@@ -1237,10 +1239,6 @@ th.sorted.desc .arrow {
 }
 
 @media (max-width: 480px) {
-	.bar {
-		flex-wrap: wrap;
-	}
-
 	.crumbs {
 		flex: 1 0 100%;
 	}

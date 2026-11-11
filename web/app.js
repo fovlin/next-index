@@ -125,7 +125,7 @@
 	var footer = document.getElementById("footer");
 	var toastRoot = document.getElementById("toast-root");
 	var modalRoot = document.getElementById("modal-root");
-	main.innerHTML = '<div class="bar"><nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav><div class="summary-actions" id="summary-actions"></div></div><div class="summary" id="summary"></div><div class="card" id="listing"></div>';
+	main.innerHTML = '<div class="bar"><nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav><div class="summary-actions" id="summary-actions"></div><div class="summary" id="summary"></div></div><div class="card" id="listing"></div>';
 	var crumbsRoot = document.getElementById("crumbs");
 	var barRoot = document.querySelector(".bar");
 	var summaryRoot = document.getElementById("summary");
@@ -274,26 +274,29 @@
 	}
 
 	function openMenu(button) {
-		closeMenu();
-
 		var name = button.dataset.menu;
-		var menu = document.createElement("div");
-
 		var entry = state.entries.find(function (item) {
 			return item.name === name;
 		});
 
-		var download = "";
-
-		if (entry && (entry.kind !== "dir" || state.authenticated)) {
-			download = '<button type="button" data-action="download" data-name="' + esc(name) + '">' + icon("download") + "<span>Download</span></button>";
+		if (!entry) {
+			return;
 		}
+
+		if (!state.authenticated) {
+			openDetails(entry);
+			return;
+		}
+
+		closeMenu();
+
+		var menu = document.createElement("div");
 
 		menu.className = "menu";
 		menu.id = "row-menu";
 		menu.innerHTML =
 			'<button type="button" data-action="details" data-name="' + esc(name) + '">' + icon("info") + "<span>Details</span></button>" +
-			download +
+			'<button type="button" data-action="download" data-name="' + esc(name) + '">' + icon("download") + "<span>Download</span></button>" +
 			'<button type="button" data-action="rename" data-name="' + esc(name) + '">' + icon("pencil") + "<span>Rename</span></button>" +
 			'<button type="button" data-action="move" data-name="' + esc(name) + '">' + icon("move") + "<span>Move</span></button>" +
 			'<button type="button" data-action="copy" data-name="' + esc(name) + '">' + icon("copy") + "<span>Copy</span></button>" +
@@ -578,7 +581,8 @@
 		var names = selected();
 
 		var tools = state.authenticated
-			? '<button class="icon-btn" data-action="mkdir" title="New folder" aria-label="New folder">' + icon("folderPlus") + "</button>" +
+			? '<button class="icon-btn" data-action="download-folder" title="Download folder" aria-label="Download folder">' + icon("download") + "</button>" +
+				'<button class="icon-btn" data-action="mkdir" title="New folder" aria-label="New folder">' + icon("folderPlus") + "</button>" +
 				'<button class="icon-btn' + (state.selecting ? " active" : "") + '" data-action="toggle-selection" title="Select files" aria-label="Select files" aria-pressed="' + state.selecting + '">' + icon("select") + "</button>" +
 				'<button class="icon-btn" data-action="upload" title="Upload files" aria-label="Upload files">' + icon("upload") + "</button>"
 			: "";
@@ -586,14 +590,12 @@
 		var batch = "";
 
 		if (state.selecting) {
-			batch =
-				'<div class="batch">' +
-				"<span><b>" + names.length + "</b> selected</span>" +
+			batch = '<div class="batch">' +
 				(names.length
 					? '<button class="btn btn-sm" data-action="batch-copy">' + icon("copy") + "<span>Copy</span></button>" +
 						'<button class="btn btn-sm" data-action="batch-move">' + icon("move") + "<span>Move</span></button>" +
 						'<button class="btn btn-sm" data-action="batch-delete">' + icon("trash") + "<span>Delete</span></button>"
-					: "") +
+					: "<span>Select items</span>") +
 				'<button class="icon-btn" data-action="toggle-selection" title="Done" aria-label="Done">' + icon("x") + "</button>" +
 				"</div>";
 		}
@@ -740,6 +742,9 @@
 		renderBody();
 	}
 	var shellActions = {
+		back: function () {
+			window.location.href = "../";
+		},
 		mkdir: function () {
 			openMkdir();
 		},
@@ -749,8 +754,10 @@
 		login: function () {
 			openLogin();
 		},
-		back: function () {
-			window.location.href = "../";
+		"download-folder": function () {
+			var url = new URL(window.location.href);
+			url.searchParams.set("download", "1");
+			window.location.href = url.href;
 		},
 		"toggle-selection": toggleSelection,
 		"batch-copy": function () {
@@ -780,7 +787,9 @@
 			openTransfer("move", [entry.name]);
 		},
 		download: function (entry) {
-			window.location.href = entry.href + "?download=1";
+			var url = new URL(entry.href, window.location.href);
+			url.searchParams.set("download", "1");
+			window.location.href = url.href;
 		}
 	};
 	function handleAction(action, name) {
@@ -1073,7 +1082,7 @@
 		var rows = [
 			["Name", esc(entry.name)],
 			["Kind", entry.kind === "dir" ? "Folder" : entry.ext ? entry.ext.toUpperCase() + " file" : "File"],
-			["Size", entry.kind === "dir" ? "\u2014" : esc(formatSize(entry.size)) + " <span class=\"muted\">(" + entry.size + " bytes)</span>"],
+			["Size", entry.kind === "dir" ? "-" : esc(formatSize(entry.size)) + " <span class=\"muted\">(" + entry.size + " bytes)</span>"],
 			["Modified", esc(formatFull(entry.mod))],
 			["Location", esc(state.path + entry.name)]
 		];
