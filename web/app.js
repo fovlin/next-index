@@ -212,19 +212,12 @@
 
 		return (index === 0 ? String(value) : value.toFixed(1)) + " " + units[index];
 	}
-	function timeParts(unix) {
-		var date = new Date(unix * 1000);
-
-		return {
-			date: date.toLocaleDateString(LOCALE, {
-				year: "numeric",
-				month: "2-digit",
-				day: "2-digit"
-			}),
-			time: date.toLocaleTimeString(LOCALE, {
-				hour12: false
-			})
-		};
+	function formatDate(unix) {
+		return new Date(unix * 1000).toLocaleDateString(LOCALE, {
+			year: "numeric",
+			month: "2-digit",
+			day: "2-digit"
+		});
 	}
 	function formatFull(unix) {
 		return new Date(unix * 1000).toLocaleString(LOCALE, {
@@ -680,7 +673,6 @@
 	function rowMarkup(entry) {
 		var type = typeOf(entry);
 		var size = entry.kind === "file" ? formatSize(entry.size) : "—";
-		var when = timeParts(entry.mod);
 		var link = state.selecting ? ["div", ""] : ["a", ' href="' + esc(entry.href) + '"'];
 
 		return (
@@ -695,7 +687,7 @@
 			"</" + link[0] + ">" +
 			"</td>" +
 			'<td class="col-size size" title="' + (entry.kind === "file" ? entry.size + " bytes" : "") + '">' + size + "</td>" +
-			'<td class="col-time time">' + esc(when.date) + "<small>" + esc(when.time) + "</small></td>" +
+			'<td class="col-time time">' + esc(formatDate(entry.mod)) + "</td>" +
 			'<td class="col-actions">' + menuMarkup(entry) + "</td>" +
 			"</tr>"
 		);

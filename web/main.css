@@ -571,12 +571,6 @@ th.sorted.desc .arrow {
 	white-space: nowrap;
 }
 
-.time small {
-	display: block;
-	color: var(--faint);
-	font-size: var(--text-tiny);
-}
-
 .table th.col-select,
 .table td.col-select {
 	width: 26px;
