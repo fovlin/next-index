@@ -135,7 +135,7 @@ func initProgram() error {
 
 	if isDirectory(args[0]) || looksLikePath(args[0]) {
 		cmd = "run"
-		subCmdArgs = args
+		rootFlag = args[0]
 		return nil
 	}
 
