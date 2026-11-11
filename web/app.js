@@ -696,7 +696,7 @@
 			"</td>" +
 			'<td class="col-size size" title="' + (entry.kind === "file" ? entry.size + " bytes" : "") + '">' + size + "</td>" +
 			'<td class="col-time time">' + esc(when.date) + "<small>" + esc(when.time) + "</small></td>" +
-			'<td class="col-actions"><div class="row-actions">' + menuMarkup(entry) + "</div></td>" +
+			'<td class="col-actions">' + menuMarkup(entry) + "</td>" +
 			"</tr>"
 		);
 	}
