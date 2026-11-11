@@ -787,9 +787,7 @@
 			openTransfer("move", [entry.name]);
 		},
 		download: function (entry) {
-			var url = new URL(entry.href, window.location.href);
-			url.searchParams.set("download", "1");
-			window.location.href = url.href;
+			downloadEntry(entry);
 		}
 	};
 	function handleAction(action, name) {
@@ -1078,6 +1076,11 @@
 			}
 		});
 	}
+	function downloadEntry(entry) {
+		var url = new URL(entry.href, window.location.href);
+		url.searchParams.set("download", "1");
+		window.location.href = url.href;
+	}
 	function openDetails(entry) {
 		var rows = [
 			["Name", esc(entry.name)],
@@ -1095,12 +1098,26 @@
 			return "<div><dt>" + row[0] + "</dt><dd>" + row[1] + "</dd></div>";
 		}).join("");
 
+		var actions = "";
+
+		if (entry.kind !== "dir" || state.authenticated) {
+			actions = '<button type="button" class="btn btn-primary" id="detail-download">' + icon("download") + "<span>Download</span></button>";
+		}
+
 		openModal(
 			'<div class="dialog-head"><div><h2>' + esc(entry.name) + "</h2></div>" +
 			'<button type="button" class="icon-btn sm" data-close aria-label="Close">' + icon("x") + "</button></div>" +
 			'<dl class="detail-list">' + body + "</dl>" +
-			'<div class="dialog-actions"><button type="button" class="btn" data-close>Close</button></div>'
+			'<div class="dialog-actions"><button type="button" class="btn" data-close>Close</button>' + actions + "</div>"
 		);
+
+		var downloadButton = document.getElementById("detail-download");
+
+		if (downloadButton) {
+			downloadButton.addEventListener("click", function () {
+				downloadEntry(entry);
+			});
+		}
 	}
 	function openRename(entry) {
 		if (!state.authenticated) {
