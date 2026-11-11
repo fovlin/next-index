@@ -112,9 +112,9 @@ button {
 	align-items: center;
 	gap: 16px;
 	max-width: 960px;
-	min-height: 56px;
+	min-height: 48px;
 	margin: 0 auto;
-	padding: 8px 24px;
+	padding: 0px 24px;
 }
 
 .brand {
@@ -227,7 +227,7 @@ button {
 .topbar-actions {
 	display: flex;
 	align-items: center;
-	gap: 4px;
+	gap: 0px 8px;
 	flex: 0 0 auto;
 	margin-left: auto;
 }
@@ -1187,8 +1187,8 @@ th.sorted.desc .arrow {
 @media (max-width: 720px) {
 	.topbar-inner {
 		flex-wrap: wrap;
-		gap: 8px 10px;
-		padding: 8px 16px;
+		gap: 0px 8px;
+		padding: 0px 16px;
 	}
 
 	.table th.col-time,
