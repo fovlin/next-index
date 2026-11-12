@@ -3,6 +3,34 @@
 All notable changes to NEXT_INDEX are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## 1.0.4 - 2026-11-12
+
+### Added
+
+- `go test ./...` now covers the HTTP surface: listing and ranges, login and
+  write protection, mkdir/upload/rename/copy/move/delete, the upload size
+  limit, folder zips and path containment.
+
+### Changed
+
+- Upload rows show the bytes transferred out of the total, the summary follows
+  the batch, and the dialog closes when it ends.
+- Cancel, Esc and the close button abort the running request instead of
+  leaving it in the background; clicking the backdrop no longer closes a
+  dialog.
+- Rows are 48px with larger icons, the row menu button fills its cell, and the
+  header and cells share one padding so they line up.
+- Phones get edge-to-edge cards, the toolbar row wraps, and the modified date
+  stays visible.
+- The modified column shows the date only.
+
+### Fixed
+
+- Passing a folder as the subcommand (`next-index ~/folder`) served the
+  default root instead of that folder.
+- Cancelling an upload and immediately reopening the dialog could close the
+  new dialog and restart the old batch.
+
 ## 1.0.3 - 2026-11-11
 
 ### Changed
