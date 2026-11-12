@@ -125,6 +125,9 @@
 	var footer = document.getElementById("footer");
 	var toastRoot = document.getElementById("toast-root");
 	var modalRoot = document.getElementById("modal-root");
+	var activeUploads = [];
+	var uploadCancelled = false;
+	var uploadRun = 0;
 	main.innerHTML = '<div class="bar"><nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav><div class="summary-actions" id="summary-actions"></div><div class="summary" id="summary"></div></div><div class="card" id="listing"></div>';
 	var crumbsRoot = document.getElementById("crumbs");
 	var barRoot = document.querySelector(".bar");
@@ -341,14 +344,6 @@
 			'<div class="overlay" data-overlay><div class="dialog ' + (className || "") + '" role="dialog" aria-modal="true">' + html + "</div></div>";
 
 		document.body.classList.add("modal-open");
-
-		var overlay = modalRoot.querySelector("[data-overlay]");
-
-		overlay.addEventListener("mousedown", function (event) {
-			if (event.target === overlay) {
-				closeModal();
-			}
-		});
 
 		modalRoot.querySelectorAll("[data-close]").forEach(function (element) {
 			element.addEventListener("click", closeModal);
@@ -1260,7 +1255,7 @@
 			'<div class="file-list" id="file-list"></div>' +
 			'<div class="upload-meta"><label class="checkbox"><input type="checkbox" id="overwrite-checkbox"> Replace existing files</label>' +
 			'<span id="upload-summary"></span></div>' +
-			'<div class="dialog-actions"><button type="button" class="btn" data-close>Cancel</button>' +
+			'<div class="dialog-actions"><button type="button" class="btn" id="cancel-upload">Cancel</button>' +
 			'<button type="button" class="btn btn-primary" id="start-upload" disabled>Upload</button></div>',
 			"wide"
 		);
@@ -1293,6 +1288,13 @@
 
 		startButton.addEventListener("click", startUpload);
 
+		document.getElementById("cancel-upload").addEventListener("click", function () {
+			cancelUploads();
+			closeModal();
+		});
+
+		modalRoot.querySelector(".dialog-head [data-close]").addEventListener("click", cancelUploads);
+
 		renderUploadFiles();
 
 		function addUploads(files) {
@@ -1321,6 +1323,23 @@
 
 			renderUploadFiles();
 		}
+	}
+	function cancelUploads() {
+		if (!state.uploading) {
+			return;
+		}
+
+		uploadCancelled = true;
+		uploadRun++;
+		state.uploading = false;
+		state.uploads = [];
+
+		activeUploads.slice().forEach(function (request) {
+			request.abort();
+		});
+
+		activeUploads = [];
+		refresh();
 	}
 	function renderUploadFiles() {
 		var fileList = document.getElementById("file-list");
@@ -1360,6 +1379,9 @@
 		}
 
 		state.uploading = true;
+		uploadCancelled = false;
+
+		var run = ++uploadRun;
 
 		var startButton = document.getElementById("start-upload");
 		var overwriteCheckbox = document.getElementById("overwrite-checkbox");
@@ -1369,18 +1391,40 @@
 
 		var success = 0;
 		var failed = 0;
+		var sent = 0;
+		var loaded = {};
+		var totalBytes = state.uploads.reduce(function (sum, item) {
+			return sum + item.size;
+		}, 0);
+		var summary = document.getElementById("upload-summary");
 
 		var chain = Promise.resolve();
 
 		state.uploads.forEach(function (item, index) {
 			chain = chain.then(function () {
+				if (run !== uploadRun) {
+					return;
+				}
+
 				var row = document.querySelector('.file-row[data-index="' + index + '"]');
 				var progress = row ? row.querySelector(".file-progress span") : null;
+				var sizeCell = row ? row.querySelector(".fsize") : null;
 				var label = item.name;
 
-				return uploadFile(item, state.path, overwrite, function (ratio) {
+				return uploadFile(item, state.path, overwrite, function (done, total) {
 					if (progress) {
-						progress.style.width = Math.round(ratio * 100) + "%";
+						progress.style.width = Math.round((done / total) * 100) + "%";
+					}
+
+					if (sizeCell) {
+						sizeCell.textContent = formatSize(done) + " / " + formatSize(total);
+					}
+
+					sent += done - (loaded[index] || 0);
+					loaded[index] = done;
+
+					if (summary) {
+						summary.textContent = formatSize(sent) + " / " + formatSize(totalBytes);
 					}
 				})
 					.then(function (result) {
@@ -1397,14 +1441,24 @@
 						if (progress) {
 							progress.style.width = "100%";
 						}
+						if (sizeCell) {
+							sizeCell.textContent = formatSize(item.size);
+						}
 					})
 					.catch(function (error) {
+						if (error.cancelled) {
+							return;
+						}
+
 						failed++;
 						if (row) {
 							row.classList.add("failed");
 						}
 						if (progress) {
 							progress.style.width = "100%";
+						}
+						if (sizeCell) {
+							sizeCell.textContent = formatSize(item.size);
 						}
 						toast("error", label + ": " + error.message);
 					});
@@ -1413,14 +1467,32 @@
 
 		chain
 			.then(function () {
+				if (run !== uploadRun) {
+					return;
+				}
+
 				state.uploading = false;
 				state.uploads = [];
 				startButton.disabled = true;
 				startButton.textContent = "Upload";
+
+				if (summary) {
+					summary.textContent = "No files selected";
+				}
 				return refresh();
 			})
 			.then(function () {
-				closeModal();
+				if (run !== uploadRun) {
+					return;
+				}
+
+				if (document.contains(startButton)) {
+					closeModal();
+				}
+
+				if (uploadCancelled) {
+					return;
+				}
 
 				if (success > 0) {
 					toast("success", "Uploaded " + success + " " + plural(success, "file", "files"));
@@ -1434,14 +1506,27 @@
 	function uploadFile(file, targetPath, overwrite, onProgress) {
 		return new Promise(function (resolve, reject) {
 			var request = new XMLHttpRequest();
+			var settled = false;
 			var query = "?path=" + encodeURIComponent(targetPath) + (overwrite ? "&overwrite=1" : "");
+
+			function settle(fn, value) {
+				if (settled) {
+					return;
+				}
+
+				settled = true;
+				activeUploads = activeUploads.filter(function (item) {
+					return item !== request;
+				});
+				fn(value);
+			}
 
 			request.open("POST", "/@next-index/api/upload" + query);
 			request.withCredentials = true;
 
 			request.upload.addEventListener("progress", function (event) {
 				if (event.lengthComputable && onProgress) {
-					onProgress(event.loaded / event.total);
+					onProgress(event.loaded, event.total);
 				}
 			});
 
@@ -1455,21 +1540,29 @@
 				}
 
 				if (request.status >= 200 && request.status < 300) {
-					resolve(data);
+					settle(resolve, data);
 					return;
 				}
 
 				var error = new Error(data.error || "upload failed (" + request.status + ")");
 				error.status = request.status;
-				reject(error);
+				settle(reject, error);
 			});
 
 			request.addEventListener("error", function () {
-				reject(new Error("network error"));
+				settle(reject, new Error("network error"));
+			});
+
+			request.addEventListener("abort", function () {
+				var error = new Error("cancelled");
+				error.cancelled = true;
+				settle(reject, error);
 			});
 
 			var form = new FormData();
 			form.append("file", file, file.name);
+
+			activeUploads.push(request);
 			request.send(form);
 		});
 	}
@@ -1561,7 +1654,15 @@
 		document.addEventListener("keydown", function (event) {
 			if (event.key === "Escape") {
 				closeMenu();
-				closeModal();
+
+				if (modalRoot.firstChild) {
+					if (state.uploading) {
+						cancelUploads();
+					}
+
+					closeModal();
+				}
+
 				return;
 			}
 

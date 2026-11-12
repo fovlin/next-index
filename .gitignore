@@ -9,3 +9,5 @@
 /.refs/
 /.recovered-akaya*
 /.tests-backup*
+
+/*.zip

@@ -182,14 +182,18 @@ deterministic.
 
 ## Tests
 
-There is no automated test suite in the tree at the moment; `go test ./...`
-reports `[no test files]`. Until tests are restored, use a temporary `HOME` and
-a scratch root for manual checks:
+`go test ./...` runs `server_test.go`: it starts the real handler against a
+temporary root and talks to it over HTTP.
 
-- fresh `config` / `run`, generated password, second `run` with `-p`;
-- login, upload, mkdir, rename and delete;
-- path traversal attempts;
-- CORS: allowed Origin preflight/login, denied Origin `403`.
+- listing, file delivery, range requests and attachment headers;
+- login, write protection and the force-login mode;
+- mkdir, upload (rename on conflict, overwrite), rename, copy, move, delete;
+- the upload size limit (413) and unknown API routes (404);
+- folder zips: auth, archive name and entry names;
+- path containment: traversal stays inside the root, bad names are rejected.
+
+Frontend behaviour (dialogs, selection bar, upload progress, theme) is still
+checked by hand in a browser.
 
 ## Release
 

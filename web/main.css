@@ -1039,6 +1039,7 @@ th.sorted.desc .arrow {
 	border: 1px solid var(--border);
 	border-radius: var(--radius-sm);
 	background: var(--surface-2);
+	overflow: hidden;
 }
 
 .file-row .fname {
@@ -1051,9 +1052,16 @@ th.sorted.desc .arrow {
 }
 
 .file-row .fsize {
+	flex: 0 1 auto;
+	min-width: 0;
+	max-width: 50%;
+	overflow: hidden;
+	text-align: right;
+	text-overflow: ellipsis;
 	color: var(--faint);
 	font-family: var(--mono);
 	font-size: var(--text-tiny);
+	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
 }
 
@@ -1068,7 +1076,7 @@ th.sorted.desc .arrow {
 }
 
 .file-progress {
-	flex: 0 0 68px;
+	flex: 0 0 64px;
 	height: 4px;
 	overflow: hidden;
 	border-radius: 108px;
