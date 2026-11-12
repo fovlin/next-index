@@ -232,6 +232,10 @@ button {
 	margin-left: auto;
 }
 
+.topbar-actions > .btn {
+	margin-left: 4px;
+}
+
 /* buttons */
 
 .btn {
