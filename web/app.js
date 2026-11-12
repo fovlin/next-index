@@ -127,7 +127,7 @@
 	var modalRoot = document.getElementById("modal-root");
 	var activeUploads = [];
 	var uploadCancelled = false;
-	var uploadRun = 0;
+	var modalOnClose = null;
 	main.innerHTML = '<div class="bar"><nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav><div class="summary-actions" id="summary-actions"></div><div class="summary" id="summary"></div></div><div class="card" id="listing"></div>';
 	var crumbsRoot = document.getElementById("crumbs");
 	var barRoot = document.querySelector(".bar");
@@ -360,6 +360,12 @@
 	function closeModal() {
 		modalRoot.innerHTML = "";
 		document.body.classList.remove("modal-open");
+
+		if (modalOnClose) {
+			var hook = modalOnClose;
+			modalOnClose = null;
+			hook();
+		}
 	}
 	function formDialog(options) {
 		openModal(
@@ -1242,6 +1248,11 @@
 			return;
 		}
 
+		if (state.uploading) {
+			toast("error", "An upload is still running");
+			return;
+		}
+
 		state.uploads = [];
 
 		openModal(
@@ -1288,12 +1299,9 @@
 
 		startButton.addEventListener("click", startUpload);
 
-		document.getElementById("cancel-upload").addEventListener("click", function () {
-			cancelUploads();
-			closeModal();
-		});
+		modalOnClose = cancelUploads;
 
-		modalRoot.querySelector(".dialog-head [data-close]").addEventListener("click", cancelUploads);
+		document.getElementById("cancel-upload").addEventListener("click", closeModal);
 
 		renderUploadFiles();
 
@@ -1330,8 +1338,6 @@
 		}
 
 		uploadCancelled = true;
-		uploadRun++;
-		state.uploading = false;
 		state.uploads = [];
 
 		activeUploads.slice().forEach(function (request) {
@@ -1339,7 +1345,6 @@
 		});
 
 		activeUploads = [];
-		refresh();
 	}
 	function renderUploadFiles() {
 		var fileList = document.getElementById("file-list");
@@ -1381,8 +1386,6 @@
 		state.uploading = true;
 		uploadCancelled = false;
 
-		var run = ++uploadRun;
-
 		var startButton = document.getElementById("start-upload");
 		var overwriteCheckbox = document.getElementById("overwrite-checkbox");
 		var overwrite = overwriteCheckbox ? overwriteCheckbox.checked : false;
@@ -1402,7 +1405,7 @@
 
 		state.uploads.forEach(function (item, index) {
 			chain = chain.then(function () {
-				if (run !== uploadRun) {
+				if (uploadCancelled) {
 					return;
 				}
 
@@ -1465,35 +1468,19 @@
 			});
 		});
 
-		chain
-			.then(function () {
-				if (run !== uploadRun) {
-					return;
-				}
+		chain.then(function () {
+			state.uploading = false;
+			state.uploads = [];
+			startButton.disabled = true;
+			startButton.textContent = "Upload";
 
-				state.uploading = false;
-				state.uploads = [];
-				startButton.disabled = true;
-				startButton.textContent = "Upload";
+			if (summary) {
+				summary.textContent = "No files selected";
+			}
 
-				if (summary) {
-					summary.textContent = "No files selected";
-				}
-				return refresh();
-			})
-			.then(function () {
-				if (run !== uploadRun) {
-					return;
-				}
+			closeModal();
 
-				if (document.contains(startButton)) {
-					closeModal();
-				}
-
-				if (uploadCancelled) {
-					return;
-				}
-
+			if (!uploadCancelled) {
 				if (success > 0) {
 					toast("success", "Uploaded " + success + " " + plural(success, "file", "files"));
 				}
@@ -1501,7 +1488,10 @@
 				if (failed > 0 && success === 0) {
 					toast("error", "No files were uploaded.");
 				}
-			});
+			}
+
+			refresh();
+		});
 	}
 	function uploadFile(file, targetPath, overwrite, onProgress) {
 		return new Promise(function (resolve, reject) {
@@ -1656,10 +1646,6 @@
 				closeMenu();
 
 				if (modalRoot.firstChild) {
-					if (state.uploading) {
-						cancelUploads();
-					}
-
 					closeModal();
 				}
 
