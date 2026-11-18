@@ -1038,8 +1038,9 @@ th.sorted.desc .arrow {
 .file-row {
 	display: flex;
 	align-items: center;
+	min-height: 36px;
 	gap: 8px;
-	padding: 8px 8px;
+	padding: 0px 8px;
 	border: 1px solid var(--border);
 	border-radius: var(--radius-sm);
 	background: var(--surface-2);
