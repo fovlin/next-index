@@ -213,7 +213,7 @@ func compressible(extension string) bool {
 }
 
 func acceptsGzip(header string) bool {
-	for _, value := range strings.Split(header, ",") {
+	for value := range strings.SplitSeq(header, ",") {
 		fields := strings.Split(strings.TrimSpace(value), ";")
 
 		if strings.TrimSpace(fields[0]) != "gzip" {

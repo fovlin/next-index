@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -13,7 +12,7 @@ import (
 	"acovia.net/record"
 )
 
-const version = "1.0.4"
+const version = "1.0.5"
 
 var (
 	cmdMap map[string]CmdFunc
@@ -232,37 +231,11 @@ func parseFlag() error {
 	}
 
 	if allowOriginFlag != "" {
-		origin, err := normalizeOrigin(allowOriginFlag)
-		if err != nil {
-			return fmt.Errorf("cross-origin: %w", err)
-		}
-
-		config.AllowOrigin = origin
+		config.AllowOrigin = allowOriginFlag
 		configChanged = true
 	}
 
 	return nil
-}
-
-func normalizeOrigin(value string) (string, error) {
-	parsed, err := url.Parse(value)
-	if err != nil {
-		return "", err
-	}
-
-	if parsed.Scheme != "http" && parsed.Scheme != "https" {
-		return "", fmt.Errorf("must start with http:// or https://")
-	}
-
-	if parsed.Host == "" {
-		return "", fmt.Errorf("missing host")
-	}
-
-	if parsed.Path != "" && parsed.Path != "/" {
-		return "", fmt.Errorf("must not contain a path")
-	}
-
-	return strings.ToLower(parsed.Scheme) + "://" + strings.ToLower(parsed.Host), nil
 }
 
 func about() error {
