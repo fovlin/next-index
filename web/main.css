@@ -1,21 +1,25 @@
 :root {
-	--bg: light-dark(#ffffff, #101010);
-	--surface: light-dark(#ffffff, #181818);
-	--surface-2: light-dark(#efefef, #1f1f1f);
-	--surface-3: light-dark(#e8e8e8, #282828);
-	--border: light-dark(#cfcfcf, #2f2f2f);
-	--border-strong: light-dark(#c8c8c8, #3b3b3b);
-	--text: light-dark(#1b1b1b, #ebebeb);
-	--muted: light-dark(#666666, #a0a0a0);
-	--faint: light-dark(#8a8a8a, #707070);
-	--accent: #004f8f;
-	--accent-hover: #003f73;
-	--on-accent: #fff;
-	--accent-soft: light-dark(rgba(0, 79, 143, 0.1), rgba(0, 79, 143, 0.18));
-	--link: light-dark(#004f8f, #6cb0e0);
-	--green: light-dark(#2f7d32, #7fbf8f);
-	--amber: light-dark(#8a6d1f, #c9a86a);
-	--red: light-dark(#b3261e, #d97b7b);
+	--bg: light-dark(#fffdfb, #181818);
+	--surface: light-dark(#f8f6f4, #202020);
+	--surface-2: light-dark(#efedeb, #282828);
+	--surface-3: light-dark(#e7e4e1, #303030);
+	--border: light-dark(#bfbdbb, #383838);
+	--border-strong: light-dark(#9f9d9b, #4a4a4a);
+	--text: light-dark(#181818, #efefef);
+	--muted: light-dark(#484848, #b3b3b3);
+	--faint: light-dark(#707070, #808080);
+	--accent: light-dark(#8f4f00, #ff8f00);
+	--accent-hover: light-dark(#ff8f00, #8f4f00);
+	--on-accent: light-dark(#ffffff, #000000);
+	--on-accent-hover: light-dark(#181818, #efefef);
+	--accent-soft: light-dark(#ff8f000f, #ff8f000f);
+	--selection-bg: light-dark(#bf6f004f, #ff8f004f);
+	--brand: #8f4f00;
+	--on-brand: #ffffff;
+	--link: light-dark(#8f4f00, #ffaf4f);
+	--green: light-dark(#2f6f2f, #afcfaf);
+	--amber: light-dark(#8f4f00, #ff8f00);
+	--red: light-dark(#a3352b, #e08b8b);
 	--radius: 12px;
 	--radius-md: 12px;
 	--radius-sm: 12px;
@@ -76,7 +80,7 @@ button {
 }
 
 ::selection {
-	background: var(--accent-soft);
+	background: var(--selection-bg);
 }
 
 ::-webkit-scrollbar {
@@ -133,8 +137,8 @@ button {
 	width: 24px;
 	height: 24px;
 	border-radius: var(--radius-sm);
-	background: var(--accent);
-	color: var(--on-accent);
+	background: var(--brand);
+	color: var(--on-brand);
 }
 
 .brand-mark svg,
@@ -272,6 +276,7 @@ button {
 .btn-primary:hover {
 	border-color: var(--accent-hover);
 	background: var(--accent-hover);
+	color: var(--on-accent-hover);
 }
 
 .btn-danger {

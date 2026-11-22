@@ -94,16 +94,16 @@ const errorPageTemplate = `<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{status}} · NEXT_INDEX</title>
-<link rel="icon" href="/@next-index/assets/favicon.ico?v=16">
+<link rel="icon" href="/@next-index/assets/favicon.ico?v=17">
 <style>
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;display:grid;place-items:center;background:#121212;color:#e8e8e8;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI","Noto Sans SC",sans-serif;padding:24px}
-.card{max-width:420px;width:100%;text-align:center;background:#171717;border:1px solid #2c2c2c;border-radius:8px;padding:40px 32px}
-.code{color:#6cb0e0;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:44px;font-weight:600}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#181818;color:#ffffff;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI","Noto Sans SC",sans-serif;padding:24px}
+.card{max-width:420px;width:100%;text-align:center;background:#202020;border:1px solid #383838;border-radius:8px;padding:40px 32px}
+.code{color:#ffaf4f;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:44px;font-weight:600}
 h1{font-size:16px;margin:6px 0 8px;font-weight:600}
-p{color:#a0a0a0;font-size:13px;line-height:1.6;margin:0 0 22px}
-a{display:inline-block;padding:8px 14px;border-radius:6px;background:#004f8f;color:#fff;text-decoration:none;font-size:13px}
-a:hover{background:#003f73}
+p{color:#b3b3b3;font-size:13px;line-height:1.6;margin:0 0 22px}
+a{display:inline-block;padding:8px 14px;border-radius:6px;background:#ff8f00;color:#181614;text-decoration:none;font-size:13px}
+a:hover{background:#ffb300}
 </style>
 </head>
 <body>
