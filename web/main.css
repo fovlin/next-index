@@ -1095,7 +1095,7 @@ th.sorted.desc .arrow {
 	display: block;
 	width: 0;
 	height: 100%;
-	background: var(--accent);
+	background: #006fcf;
 }
 
 .file-row.done .file-progress span {
