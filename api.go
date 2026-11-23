@@ -549,11 +549,6 @@ func (server *Server) sessionCookie(token string, maxAge int) *http.Cookie {
 	}
 }
 
-func allowedOrigin(origin string) bool {
-	return origin != "" &&
-		config.AllowOrigin != "" &&
-		strings.EqualFold(origin, config.AllowOrigin)
-}
 
 func clientIP(r *http.Request) string {
 	host, _, err := net.SplitHostPort(r.RemoteAddr)

@@ -98,7 +98,7 @@ func (server *Server) wrap(next http.Handler) http.Handler {
 		w.Header().Set("Referrer-Policy", "no-referrer")
 
 		origin := r.Header.Get("Origin")
-		allowed := allowedOrigin(origin)
+		allowed := config.AllowOrigin != ""
 
 		if allowed {
 			w.Header().Set("Access-Control-Allow-Origin", config.AllowOrigin)
