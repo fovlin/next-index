@@ -8,7 +8,6 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -58,11 +57,6 @@ func (server *Server) session(authenticated bool) sessionResponse {
 }
 
 func (server *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
-	if !sameOrigin(r) {
-		server.apiError(w, http.StatusForbidden, "cross-origin request blocked")
-		return
-	}
-
 	key := clientIP(r)
 
 	if !server.Limiter.allow(key) {
@@ -100,11 +94,6 @@ func (server *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (server *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
-	if !sameOrigin(r) {
-		server.apiError(w, http.StatusForbidden, "cross-origin request blocked")
-		return
-	}
-
 	if cookie, err := r.Cookie(sessionCookieName); err == nil {
 		server.Sessions.destroy(cookie.Value)
 	}
@@ -510,11 +499,6 @@ func copyFile(source string, target string, mode os.FileMode) error {
 }
 
 func (server *Server) checkWrite(w http.ResponseWriter, r *http.Request) bool {
-	if !sameOrigin(r) {
-		server.apiError(w, http.StatusForbidden, "cross-origin request blocked")
-		return false
-	}
-
 	if !server.authenticated(r) {
 		server.apiError(w, http.StatusUnauthorized, "sign in to manage files")
 		return false
@@ -563,20 +547,6 @@ func (server *Server) sessionCookie(token string, maxAge int) *http.Cookie {
 		SameSite: sameSite,
 		Secure:   secure,
 	}
-}
-
-func sameOrigin(r *http.Request) bool {
-	origin := r.Header.Get("Origin")
-	if origin == "" {
-		return true
-	}
-
-	parsed, err := url.Parse(origin)
-	if err != nil || parsed.Host == "" {
-		return false
-	}
-
-	return strings.EqualFold(parsed.Host, r.Host) || allowedOrigin(origin)
 }
 
 func allowedOrigin(origin string) bool {
