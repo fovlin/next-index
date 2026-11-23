@@ -2,24 +2,23 @@
 	--bg: light-dark(#fffdfb, #181818);
 	--surface: light-dark(#f8f6f4, #202020);
 	--surface-2: light-dark(#efedeb, #282828);
-	--surface-3: light-dark(#e7e4e1, #303030);
+	--surface-3: light-dark(#e8e6e4, #303030);
 	--border: light-dark(#bfbdbb, #383838);
 	--border-strong: light-dark(#9f9d9b, #4a4a4a);
 	--text: light-dark(#181818, #efefef);
-	--muted: light-dark(#484848, #b3b3b3);
+	--muted: light-dark(#484848, #bfbfbf);
 	--faint: light-dark(#707070, #808080);
-	--accent: light-dark(#8f4f00, #ffaf4f);
-	--accent-hover: light-dark(#ffaf4f, #8f4f00);
-	--on-accent: light-dark(#ffffff, #000000);
-	--on-accent-hover: light-dark(#181818, #efefef);
-	--accent-soft: light-dark(#ffaf4f0f, #ffaf4f0f);
-	--selection-bg: light-dark(#bf6f004f, #ffaf4f4f);
+	--accent-soft: light-dark(#8f4f000f, #8f4f000f);
+	--selection-bg: light-dark(#bf6f004f, #8f4f004f);
+	--accent: #8f4f00;
+	--accent-hover: #cf6f00;
+	--on-accent: #ffffff;
+	--link: light-dark(#8f4f00, #ff9f2f);
+	--green: light-dark(#2f6f2f, #4f8f4f);
+	--amber: light-dark(#8f4f00, #8f4f00);
+	--red: light-dark(#8f2f2f, #cf4f4f);
 	--brand: #8f4f00;
 	--on-brand: #ffffff;
-	--link: light-dark(#8f4f00, #ffaf4f);
-	--green: light-dark(#2f6f2f, #afcfaf);
-	--amber: light-dark(#8f4f00, #ffaf4f);
-	--red: light-dark(#a3352b, #e08b8b);
 	--radius: 12px;
 	--radius-md: 12px;
 	--radius-sm: 12px;
@@ -276,7 +275,6 @@ button {
 .btn-primary:hover {
 	border-color: var(--accent-hover);
 	background: var(--accent-hover);
-	color: var(--on-accent-hover);
 }
 
 .btn-danger {
