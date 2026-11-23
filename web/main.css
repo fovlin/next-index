@@ -13,7 +13,7 @@
 	--accent: #8f4f00;
 	--accent-hover: #cf6f00;
 	--on-accent: #ffffff;
-	--link: light-dark(#8f4f00, #ff9f2f);
+	--link: light-dark(#8f4f00, #ffaf4f);
 	--green: light-dark(#2f6f2f, #4f8f4f);
 	--amber: light-dark(#8f4f00, #8f4f00);
 	--red: light-dark(#8f2f2f, #cf4f4f);
